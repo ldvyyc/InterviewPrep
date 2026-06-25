@@ -1,0 +1,218 @@
+/* ============================================
+   react-notion-x 渲染美化 —— 有质感版
+   ============================================ */
+
+.notion {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --notion-max-width: 720px;
+  --fg-color: #1c1d1f;
+  --bg-color: transparent;
+}
+
+/* ===== 文档外层白卡:更强的质感 ===== */
+.doc-shell {
+  max-width: 1180px;
+  margin: 12px auto 0;
+  padding: 0 32px;
+  position: relative;
+}
+.doc-shell .notion-page {
+  background: #ffffff;
+  border: 1px solid #e8eaed;
+  border-radius: 20px;
+  padding: 56px 64px 72px !important;
+  margin: 0 !important;
+  width: 100% !important;
+  max-width: none !important;
+  box-shadow:
+    0 1px 2px rgba(16, 24, 40, 0.04),
+    0 8px 24px rgba(16, 24, 40, 0.06);
+}
+
+/* 隐藏 Notion 顶部大封面图 + 漂浮 emoji */
+.doc-shell .notion-page-cover-wrapper,
+.doc-shell .notion-page-cover,
+.notion-page-cover-wrapper,
+.notion-page-icon-hero,
+.notion-page-icon-wrapper {
+  display: none !important;
+}
+
+/* 标题:左对齐,大字重 */
+.doc-shell .notion-title {
+  display: block !important;
+  text-align: left !important;
+  font-size: 34px !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.022em;
+  margin: 0 0 8px !important;
+  padding: 0 !important;
+  color: #14151a;
+}
+
+/* 正文排版 */
+.notion-text { line-height: 1.75; }
+.notion-h1, .notion-h2, .notion-h3 {
+  font-weight: 650 !important;
+  letter-spacing: -0.015em;
+  color: #1a1b1f;
+}
+.notion-h1 { margin-top: 1.8em !important; }
+.notion-h2 { margin-top: 1.5em !important; }
+
+/* 链接:accent 蓝 + 优雅下划线 */
+.notion-link {
+  color: var(--accent-dark) !important;
+  border-bottom: 1px solid rgba(55, 138, 221, 0.28);
+  transition: border-color 0.15s, background 0.15s;
+}
+.notion-link:hover {
+  border-bottom-color: var(--accent);
+  background: rgba(55, 138, 221, 0.06);
+}
+
+/* ===== TABLE OF CONTENTS:精致悬浮卡片 ===== */
+.notion-aside {
+  padding-top: 0 !important;
+}
+.notion-aside-table-of-contents {
+  background: #ffffff;
+  border: 1px solid #e8eaed;
+  border-radius: 16px;
+  padding: 18px 16px !important;
+  box-shadow:
+    0 1px 2px rgba(16, 24, 40, 0.04),
+    0 6px 20px rgba(16, 24, 40, 0.07);
+  margin-right: 8px;
+  max-height: 78vh;
+  overflow-y: auto;
+}
+.notion-aside-table-of-contents-header {
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #9aa0aa !important;
+  padding: 0 8px 10px !important;
+  margin-bottom: 6px;
+  border-bottom: 1px solid #f0f1f3;
+}
+.notion-table-of-contents { font-size: 12.5px; }
+.notion-table-of-contents-item {
+  border-radius: 7px;
+  padding: 4px 9px !important;
+  margin: 1px 0;
+  transition: background 0.12s, color 0.12s;
+  color: #5b6168 !important;
+  line-height: 1.45;
+}
+.notion-table-of-contents-item:hover {
+  background: #f1f6fc;
+  color: var(--accent-dark) !important;
+}
+.notion-table-of-contents-item-active,
+.notion-table-of-contents-item.notion-table-of-contents-active-item {
+  color: var(--accent-dark) !important;
+  background: #e9f2fc;
+  font-weight: 550;
+}
+
+/* ===== Callout / 引用 ===== */
+.notion-callout {
+  border-radius: 12px !important;
+  border: 1px solid #ececf0;
+  box-shadow: 0 1px 2px rgba(16,24,40,0.03);
+}
+.notion-quote {
+  border-left: 3px solid var(--accent) !important;
+  padding-left: 18px;
+  color: #44474d;
+  font-style: normal;
+}
+
+/* ===== 代码块 + 复制按钮 ===== */
+.notion-code {
+  border-radius: 12px !important;
+  position: relative;
+  border: 1px solid #e8eaed;
+}
+.notion-inline-code {
+  color: #c0392b;
+  background: rgba(55, 138, 221, 0.07) !important;
+  border-radius: 5px;
+  padding: 2px 6px;
+  font-size: 0.88em;
+}
+.code-copy-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 11px;
+  font-weight: 500;
+  font-family: 'Inter', sans-serif;
+  padding: 5px 11px;
+  border-radius: 7px;
+  border: 1px solid #d8dade;
+  background: rgba(255,255,255,0.92);
+  color: #5b6168;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s, background 0.12s, color 0.12s, border-color 0.12s;
+  backdrop-filter: blur(4px);
+}
+.notion-code:hover .code-copy-btn { opacity: 1; }
+.code-copy-btn:hover {
+  background: #fff;
+  border-color: var(--accent);
+  color: var(--accent-dark);
+}
+.code-copy-btn.copied {
+  border-color: #1d9e75;
+  color: #0f6e56;
+  background: #e1f5ee;
+  opacity: 1;
+}
+
+/* ===== KaTeX 公式:修复根号横线溢出 ===== */
+/* 块级公式容器:允许横向滚动而不是溢出拉穿页面 */
+.notion-equation-block,
+.katex-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+  max-width: 100%;
+  padding: 4px 0;
+}
+.katex-display > .katex {
+  white-space: normal;
+  max-width: 100%;
+}
+/* 关键:约束根号 \sqrt 的横线不溢出 */
+.katex .sqrt > .root { max-width: 100%; }
+.katex .overline .overline-line,
+.katex .sqrt .sqrt-line {
+  max-width: 100%;
+}
+/* 行内公式不换行导致的溢出 */
+.notion-equation-inline {
+  display: inline-block;
+  max-width: 100%;
+  overflow-x: auto;
+  vertical-align: middle;
+}
+
+/* 子页面链接干净些 */
+.notion-page-link {
+  border-radius: 9px;
+  transition: background 0.12s;
+}
+.notion-page-link:hover { background: #f3f7fc; }
+
+/* ===== 响应式 ===== */
+@media (max-width: 1100px) {
+  .notion-aside { display: none !important; } /* 窄屏隐藏 TOC */
+}
+@media (max-width: 860px) {
+  .doc-shell { padding: 0 14px; }
+  .doc-shell .notion-page { padding: 36px 26px 52px !important; }
+  .doc-shell .notion-title { font-size: 28px !important; }
+}
