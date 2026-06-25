@@ -1,0 +1,1420 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Normal Distribution · QR Interview Guide</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-chtml.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:        #0d0f14;
+    --bg2:       #13161e;
+    --bg3:       #1a1e2a;
+    --border:    #252a38;
+    --border2:   #2e3448;
+    --accent:    #7eb8f7;
+    --accent2:   #a78bfa;
+    --accent3:   #34d399;
+    --accent4:   #fb923c;
+    --accent5:   #f472b6;
+    --text:      #dde3f0;
+    --text2:     #8b95b0;
+    --text3:     #5a6480;
+    --gold:      #e2c97e;
+    --red:       #f87171;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    min-height: 100vh;
+    font-size: 15px;
+    line-height: 1.7;
+  }
+
+  /* ── Sidebar ── */
+  #sidebar {
+    width: 260px;
+    min-width: 260px;
+    background: var(--bg2);
+    border-right: 1px solid var(--border);
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    overflow-y: auto;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+  }
+
+  #sidebar::-webkit-scrollbar { width: 4px; }
+  #sidebar::-webkit-scrollbar-track { background: transparent; }
+  #sidebar::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+  .sidebar-header {
+    padding: 28px 20px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .sidebar-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    color: var(--text3);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .sidebar-title {
+    font-family: 'Fraunces', serif;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--accent);
+    line-height: 1.3;
+  }
+
+  .nav-section {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .nav-section-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    color: var(--text3);
+    text-transform: uppercase;
+    padding: 6px 20px 4px;
+  }
+
+  .nav-item {
+    display: block;
+    padding: 7px 20px;
+    color: var(--text2);
+    text-decoration: none;
+    font-size: 13px;
+    border-left: 2px solid transparent;
+    transition: all 0.15s;
+    line-height: 1.4;
+  }
+
+  .nav-item:hover {
+    color: var(--text);
+    background: var(--bg3);
+    border-left-color: var(--accent);
+  }
+
+  .nav-item.active {
+    color: var(--accent);
+    border-left-color: var(--accent);
+    background: rgba(126,184,247,0.06);
+  }
+
+  .nav-item .nav-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--text3);
+    margin-right: 8px;
+  }
+
+  /* ── Main content ── */
+  #main {
+    margin-left: 260px;
+    flex: 1;
+    max-width: 900px;
+    padding: 60px 56px 100px;
+  }
+
+  /* ── Page header ── */
+  .page-header {
+    margin-bottom: 60px;
+    padding-bottom: 40px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .page-kicker {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  .page-title {
+    font-family: 'Fraunces', serif;
+    font-size: 42px;
+    font-weight: 600;
+    line-height: 1.15;
+    color: #f0f4ff;
+    margin-bottom: 14px;
+  }
+
+  .page-subtitle {
+    color: var(--text2);
+    font-size: 15px;
+    max-width: 540px;
+    line-height: 1.6;
+  }
+
+  /* ── Sections ── */
+  .section {
+    margin-bottom: 72px;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 28px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 0.1em;
+  }
+
+  .section-title {
+    font-family: 'Fraunces', serif;
+    font-size: 22px;
+    font-weight: 600;
+    color: #eef2ff;
+  }
+
+  /* ── Cards ── */
+  .card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px 28px;
+    margin-bottom: 20px;
+  }
+
+  .card-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+    color: var(--text3);
+  }
+
+  /* ── Problem blocks ── */
+  .problem {
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-left: 3px solid var(--accent2);
+    border-radius: 0 8px 8px 0;
+    padding: 18px 22px;
+    margin-bottom: 8px;
+    font-size: 14.5px;
+  }
+
+  .problem-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    color: var(--accent2);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .answer {
+    background: rgba(52,211,153,0.04);
+    border: 1px solid rgba(52,211,153,0.15);
+    border-left: 3px solid var(--accent3);
+    border-radius: 0 8px 8px 0;
+    padding: 18px 22px;
+    margin-bottom: 20px;
+    font-size: 14.5px;
+  }
+
+  .answer-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    color: var(--accent3);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  /* ── Formula boxes ── */
+  .formula-box {
+    background: rgba(126,184,247,0.05);
+    border: 1px solid rgba(126,184,247,0.2);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin: 16px 0;
+    overflow-x: auto;
+  }
+
+  .formula-box.gold {
+    background: rgba(226,201,126,0.05);
+    border-color: rgba(226,201,126,0.2);
+  }
+
+  .formula-box.purple {
+    background: rgba(167,139,250,0.05);
+    border-color: rgba(167,139,250,0.2);
+  }
+
+  .formula-box.green {
+    background: rgba(52,211,153,0.05);
+    border-color: rgba(52,211,153,0.15);
+  }
+
+  .formula-box.orange {
+    background: rgba(251,146,60,0.05);
+    border-color: rgba(251,146,60,0.2);
+  }
+
+  .formula-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    color: var(--text3);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  /* ── Steps ── */
+  .steps { counter-reset: step; }
+
+  .step {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 16px;
+    align-items: flex-start;
+  }
+
+  .step::before {
+    counter-increment: step;
+    content: counter(step);
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    background: rgba(126,184,247,0.1);
+    border: 1px solid rgba(126,184,247,0.25);
+    border-radius: 4px;
+    min-width: 26px;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 2px;
+    flex-shrink: 0;
+  }
+
+  .step-content { flex: 1; font-size: 14.5px; }
+
+  /* ── Tags ── */
+  .tag {
+    display: inline-block;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 3px;
+    margin: 2px;
+  }
+
+  .tag-blue  { background: rgba(126,184,247,0.12); color: var(--accent); border: 1px solid rgba(126,184,247,0.25); }
+  .tag-green { background: rgba(52,211,153,0.1); color: var(--accent3); border: 1px solid rgba(52,211,153,0.2); }
+  .tag-gold  { background: rgba(226,201,126,0.1); color: var(--gold); border: 1px solid rgba(226,201,126,0.2); }
+  .tag-red   { background: rgba(248,113,113,0.1); color: var(--red); border: 1px solid rgba(248,113,113,0.2); }
+  .tag-purple{ background: rgba(167,139,250,0.1); color: var(--accent2); border: 1px solid rgba(167,139,250,0.2); }
+
+  /* ── Key insight ── */
+  .insight {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    background: rgba(226,201,126,0.06);
+    border: 1px solid rgba(226,201,126,0.18);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin: 16px 0;
+    font-size: 14px;
+  }
+
+  .insight-icon {
+    font-size: 16px;
+    margin-top: 1px;
+    flex-shrink: 0;
+  }
+
+  /* ── Grid layout ── */
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 16px 0;
+  }
+
+  .grid-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+    margin: 16px 0;
+  }
+
+  /* ── Table ── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+    margin: 16px 0;
+  }
+
+  th {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text3);
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border2);
+    text-align: left;
+  }
+
+  td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text2);
+    vertical-align: top;
+  }
+
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--bg3); }
+
+  /* ── Divider ── */
+  .divider { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
+
+  /* ── Code ── */
+  code {
+    font-family: 'DM Mono', monospace;
+    font-size: 12.5px;
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: 3px;
+    padding: 1px 5px;
+    color: var(--accent3);
+  }
+
+  /* ── Highlight text ── */
+  .hl { color: var(--accent); font-weight: 500; }
+  .hl-gold { color: var(--gold); }
+  .hl-green { color: var(--accent3); }
+  .hl-red { color: var(--red); }
+  .hl-purple { color: var(--accent2); }
+
+  p { margin-bottom: 10px; color: var(--text2); }
+  p:last-child { margin-bottom: 0; }
+
+  /* ── MathJax override ── */
+  .MathJax { color: var(--text) !important; }
+
+  /* ── Scrollbar ── */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<nav id="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-label">QR Interview Prep</div>
+    <div class="sidebar-title">Normal Distribution</div>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-label">Foundations</div>
+    <a class="nav-item" href="#s1"><span class="nav-num">01</span>基本性质与关键公式</a>
+    <a class="nav-item" href="#s2"><span class="nav-num">02</span>联合正态分布</a>
+    <a class="nav-item" href="#s3"><span class="nav-num">03</span>条件分布</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-label">Angle Formula</div>
+    <a class="nav-item" href="#s4"><span class="nav-num">04</span>角度公式与半平面概率</a>
+    <a class="nav-item" href="#s5"><span class="nav-num">05</span>经典题：联合正态概率</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-label">Conditional Expectations</div>
+    <a class="nav-item" href="#s6"><span class="nav-num">06</span>E[X | X > 0] 系列</a>
+    <a class="nav-item" href="#s7"><span class="nav-num">07</span>E[max(X,Y)] 系列</a>
+    <a class="nav-item" href="#s8"><span class="nav-num">08</span>E[X | X+Y > 0]</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-label">Sampling & Generation</div>
+    <a class="nav-item" href="#s9"><span class="nav-num">09</span>Box-Muller 变换</a>
+    <a class="nav-item" href="#s10"><span class="nav-num">10</span>Cholesky 生成相关正态</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-label">Advanced Topics</div>
+    <a class="nav-item" href="#s11"><span class="nav-num">11</span>Shrinkage Estimator</a>
+    <a class="nav-item" href="#s12"><span class="nav-num">12</span>综合题库</a>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<main id="main">
+
+  <!-- PAGE HEADER -->
+  <div class="page-header">
+    <div class="page-kicker">Quantitative Research · Interview Preparation</div>
+    <h1 class="page-title">Normal Distribution</h1>
+    <p class="page-subtitle">覆盖 QR/QT 面试中正态分布相关的核心结论、推导方法与经典题型，重点包含角度公式、条件期望、生成方法与联合正态。</p>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- SECTION 1: 基本性质 -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <section class="section" id="s1">
+    <div class="section-header">
+      <span class="section-num">01</span>
+      <h2 class="section-title">基本性质与关键公式</h2>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">标准正态 \(Z \sim \mathcal{N}(0,1)\)</div>
+        <div class="formula-box">
+          $$\phi(z) = \frac{1}{\sqrt{2\pi}}e^{-z^2/2}$$
+          $$\Phi(x) = \int_{-\infty}^{x}\phi(t)\,dt$$
+        </div>
+        <p>对称性：\(\phi(-z)=\phi(z)\)，\(\Phi(-x)=1-\Phi(x)\)</p>
+      </div>
+
+      <div class="card">
+        <div class="card-title">线性变换</div>
+        <div class="formula-box">
+          $$X \sim \mathcal{N}(\mu,\sigma^2)$$
+          $$aX + b \sim \mathcal{N}(a\mu+b,\; a^2\sigma^2)$$
+        </div>
+        <p>独立正态之和：若 \(X_i \sim \mathcal{N}(\mu_i, \sigma_i^2)\) 独立，</p>
+        <div class="formula-box">
+          $$\sum X_i \sim \mathcal{N}\!\left(\sum\mu_i,\sum\sigma_i^2\right)$$
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">重要矩与等式</div>
+      <div class="grid-3">
+        <div class="formula-box">
+          <div class="formula-label">奇数矩</div>
+          $$\mathbb{E}[Z^{2k+1}] = 0$$
+        </div>
+        <div class="formula-box green">
+          <div class="formula-label">偶数矩</div>
+          $$\mathbb{E}[Z^{2k}] = (2k-1)!!$$
+        </div>
+        <div class="formula-box gold">
+          <div class="formula-label">关键等式</div>
+          $$\mathbb{E}[Z^2] = 1,\;\mathbb{E}[Z^4] = 3$$
+        </div>
+      </div>
+      <div class="formula-box purple">
+        <div class="formula-label">标准正态归一化证明（极坐标）</div>
+        $$I^2 = \int_{-\infty}^{\infty}e^{-x^2/2}dx\cdot\int_{-\infty}^{\infty}e^{-y^2/2}dy = \int_0^{2\pi}\int_0^{\infty}e^{-r^2/2}r\,dr\,d\theta = 2\pi$$
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">截断正态 \(\mathbb{E}[Z \mid Z > 0]\)</div>
+      <div class="formula-box">
+        $$\mathbb{E}[Z \mid Z > 0] = \sqrt{\frac{2}{\pi}} \approx 0.7979$$
+      </div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-content">
+            由对称性 \(P(Z>0)=\tfrac{1}{2}\)
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-content">
+            \(\mathbb{E}[Z \cdot \mathbf{1}_{Z>0}] = \int_0^\infty z\frac{1}{\sqrt{2\pi}}e^{-z^2/2}dz = \frac{1}{\sqrt{2\pi}}\)
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-content">
+            \(\mathbb{E}[Z \mid Z>0] = \dfrac{\mathbb{E}[Z\cdot\mathbf{1}_{Z>0}]}{P(Z>0)} = \dfrac{1/\sqrt{2\pi}}{1/2} = \sqrt{\dfrac{2}{\pi}}\)
+          </div>
+        </div>
+      </div>
+      <div class="insight">
+        <span class="insight-icon">💡</span>
+        <div>一般情形：若 \(X \sim \mathcal{N}(\mu,\sigma^2)\)，则 \(\mathbb{E}[X\mid X>0] = \mu + \sigma\dfrac{\phi(-\mu/\sigma)}{\Phi(\mu/\sigma)}\)（Mills ratio）</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- SECTION 2: 联合正态 -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <section class="section" id="s2">
+    <div class="section-header">
+      <span class="section-num">02</span>
+      <h2 class="section-title">联合正态分布</h2>
+    </div>
+
+    <div class="card">
+      <div class="card-title">定义（等价刻画）</div>
+      <p><span class="hl">\((X,Y)\) 是联合正态</span>当且仅当对任意常数 \(a,b\)，\(aX+bY\) 服从（一元）正态分布。</p>
+      <div class="insight">
+        <span class="insight-icon">⚠️</span>
+        <div><span class="hl-red">注意：</span>边缘正态 ≠ 联合正态。存在 \(X,Y\) 各自服从 \(\mathcal{N}(0,1)\) 但联合分布不是正态的例子（如 \(Y=X\cdot\text{sgn}(W)\)，\(W\perp X\)）。</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">二维正态的 PDF（\(\mathbf{n=2}）</div>
+      <div class="formula-box purple">
+        $$f(x,y) = \frac{1}{2\pi\sigma_X\sigma_Y\sqrt{1-\rho^2}} \exp\!\left(-\frac{1}{2(1-\rho^2)}\left[\frac{(x-\mu_X)^2}{\sigma_X^2} - \frac{2\rho(x-\mu_X)(y-\mu_Y)}{\sigma_X\sigma_Y} + \frac{(y-\mu_Y)^2}{\sigma_Y^2}\right]\right)$$
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">仿射变换</div>
+      <p>若 \(\mathbf{X} \sim \mathcal{N}(\boldsymbol{\mu}, \Sigma)\)，\(\mathbf{Y} = c + B\mathbf{X}\)，则</p>
+      <div class="formula-box gold">
+        $$\mathbf{Y} \sim \mathcal{N}(c + B\boldsymbol{\mu},\; B\Sigma B^T)$$
+      </div>
+      <p>线性变换将联合正态映射到联合正态，协方差矩阵按 \(B\Sigma B^T\) 变换。</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">联合正态的独立性判定</div>
+      <div class="formula-box green">
+        $$\text{联合正态中：}\quad X \perp Y \iff \text{Cov}(X,Y) = 0$$
+      </div>
+      <div class="insight">
+        <span class="insight-icon">💡</span>
+        <div>这是联合正态的特殊性质——一般情况下不相关不等于独立，但联合正态中二者等价。面试高频考点。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- SECTION 3: 条件分布 -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <section class="section" id="s3">
+    <div class="section-header">
+      <span class="section-num">03</span>
+      <h2 class="section-title">条件分布</h2>
+    </div>
+
+    <div class="card">
+      <div class="card-title">二维联合正态的条件分布</div>
+      <p>设 \((X,Y)\sim\mathcal{N}\bigl((\mu_X,\mu_Y), \begin{pmatrix}\sigma_X^2 & \rho\sigma_X\sigma_Y \\ \rho\sigma_X\sigma_Y & \sigma_Y^2\end{pmatrix}\bigr)\)，给定 \(X=x\)：</p>
+      <div class="formula-box gold">
+        $$Y \mid X=x \;\sim\; \mathcal{N}\!\left(\mu_Y + \rho\frac{\sigma_Y}{\sigma_X}(x-\mu_X),\;\; \sigma_Y^2(1-\rho^2)\right)$$
+      </div>
+      <p>关键记忆：条件均值是 \(x\) 的<span class="hl">线性函数</span>；条件方差 \(\sigma_Y^2(1-\rho^2)\) 与 \(x\) 无关。</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">等价构造（Cholesky 角度）</div>
+      <p>令 \(Z_1,Z_2 \overset{iid}{\sim} \mathcal{N}(0,1)\)，构造：</p>
+      <div class="formula-box">
+        $$X = \mu_X + \sigma_X Z_1, \qquad Y = \mu_Y + \rho\sigma_Y Z_1 + \sqrt{1-\rho^2}\,\sigma_Y Z_2$$
+      </div>
+      <p>则 \((X,Y)\) 是具有相关系数 \(\rho\) 的联合正态。给定 \(X=x\) 即固定 \(Z_1 = \frac{x-\mu_X}{\sigma_X}\)，\(Y\mid X=x\) 中的随机性来自 \(\sqrt{1-\rho^2}\,\sigma_Y Z_2\)。</p>
+      <div class="insight">
+        <span class="insight-icon">💡</span>
+        <div>这个构造让条件分布的结果变得直观：<br>
+        \(\mathbb{E}[Y\mid X=x] = \mu_Y + \rho\sigma_Y \cdot \frac{x-\mu_X}{\sigma_X}\)，<br>
+        \(\mathrm{Var}(Y\mid X=x) = (1-\rho^2)\sigma_Y^2\)。</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">多维情形（高维联合正态）</div>
+      <p>设 \(\mathbf{X} = \begin{pmatrix}\mathbf{X}_1\\\mathbf{X}_2\end{pmatrix} \sim \mathcal{N}\!\left(\begin{pmatrix}\boldsymbol{\mu}_1\\\boldsymbol{\mu}_2\end{pmatrix}, \begin{pmatrix}\Sigma_{11} & \Sigma_{12}\\\Sigma_{21} & \Sigma_{22}\end{pmatrix}\right)\)，则</p>
+      <div class="formula-box purple">
+        $$\mathbf{X}_1 \mid \mathbf{X}_2 = \mathbf{x}_2 \;\sim\; \mathcal{N}\!\left(\boldsymbol{\mu}_1 + \Sigma_{12}\Sigma_{22}^{-1}(\mathbf{x}_2 - \boldsymbol{\mu}_2),\;\; \Sigma_{11} - \Sigma_{12}\Sigma_{22}^{-1}\Sigma_{21}\right)$$
+      </div>
+      <p>后一项 \(\Sigma_{11} - \Sigma_{12}\Sigma_{22}^{-1}\Sigma_{21}\) 是 Schur 补，即条件协方差矩阵。</p>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- SECTION 4: 角度公式 -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <section class="section" id="s4">
+    <div class="section-header">
+      <span class="section-num">04</span>
+      <h2 class="section-title">角度公式与半平面概率</h2>
+    </div>
+
+    <div class="card">
+      <div class="card-title">核心定理</div>
+      <p>设 \((U,V)\) 是均值为零的联合正态，相关系数为 \(\rho_{UV}\)，则</p>
+      <div class="formula-box gold" style="text-align:center">
+        $$\boxed{P(U>0,\, V>0) = \frac{1}{4} + \frac{1}{2\pi}\arcsin(\rho_{UV})}$$
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">推导：从角度理解</div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-content">
+            对零均值联合正态，作标准化变换：令 \(\tilde{U} = U/\sigma_U,\; \tilde{V} = V/\sigma_V\)，仍是相关系数 \(\rho\) 的联合正态（且方差均为1）。
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-content">
+            通过 Cholesky 分解，令 \(\tilde{U} = Z_1\)，\(\tilde{V} = \rho Z_1 + \sqrt{1-\rho^2}Z_2\)，其中 \(Z_1,Z_2 \overset{iid}{\sim}\mathcal{N}(0,1)\)。
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-content">
+            将 \((Z_1,Z_2)\) 视作平面上的均匀随机方向，转化为极坐标 \((r,\theta)\)，\(\theta\sim\text{Uniform}[0,2\pi)\)。
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-content">
+            条件 \(\{\tilde{U}>0,\tilde{V}>0\}\) 等价于 \(Z_1>0\) 且 \(\rho Z_1+\sqrt{1-\rho^2}Z_2>0\)，几何上对应方向角落在某一扇形内。
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-content">
+            扇形角度 = \(\dfrac{\pi/2 + \arcsin\rho}{2\pi}\cdot 2\pi = \dfrac{\pi}{2}+\arcsin\rho\)，<br>
+            概率 = \(\dfrac{\pi/2+\arcsin\rho}{2\pi} = \dfrac{1}{4} + \dfrac{\arcsin\rho}{2\pi}\)。
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">推广公式</div>
+      <div class="grid-2">
+        <div class="formula-box">
+          <div class="formula-label">两个半空间</div>
+          $$P(U>0, V>0) = \frac{1}{4} + \frac{\arcsin\rho}{2\pi}$$
+        </div>
+        <div class="formula-box orange">
+          <div class="formula-label">一正一负</div>
+          $$P(U>0, V<0) = \frac{1}{4} - \frac{\arcsin\rho}{2\pi}$$
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="formula-box green">
+          <div class="formula-label">\(\rho=0\)（独立）</div>
+          $$P = \frac{1}{4}$$
+        </div>
+        <div class="formula-box purple">
+          <div class="formula-label">\(\rho=1\)（完全正相关）</div>
+          $$P = \frac{1}{4}+\frac{1}{4}=\frac{1}{2}$$
+        </div>
+      </div>
+
+      <div class="insight">
+        <span class="insight-icon">📐</span>
+        <div>几何直觉：\(\rho = \cos\theta\) 其中 \(\theta\) 是两向量夹角，\(\arcsin\rho = \pi/2 - \theta\)，扇形面积 / 圆面积 就是概率。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- SECTION 5: 经典题 -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <section class="section" id="s5">
+    <div class="section-header">
+      <span class="section-num">05</span>
+      <h2 class="section-title">经典题：联合正态概率计算</h2>
+    </div>
+
+    <div class="problem">
+      <div class="problem-label">🎯 高频面试题</div>
+      <p>设 \(X,Y\overset{iid}{\sim}\mathcal{N}(0,1)\)，求 \(P(X+Y>0 \text{ 且 } X+2Y>0)\)。</p>
+      <p style="margin-top:8px"><span class="tag tag-blue">Follow-up</span> 若 \(\mathrm{Cov}(X,Y)=\rho\)，结果如何变化？</p>
+    </div>
+
+    <div class="answer">
+      <div class="answer-label">完整解法</div>
+
+      <p><strong style="color:var(--accent)">Step 1：构造联合正态向量</strong></p>
+      <p>令 \(U=X+Y\)，\(V=X+2Y\)。因 \((U,V)\) 是 \((X,Y)\) 的线性变换，仍服从联合正态。</p>
+
+      <div class="formula-box">
+        $$\mathbb{E}[U]=\mathbb{E}[V]=0$$
+        $$\mathrm{Var}(U)=\mathrm{Var}(X)+\mathrm{Var}(Y)=2$$
+        $$\mathrm{Var}(V)=\mathrm{Var}(X)+4\mathrm{Var}(Y)=5$$
+        $$\mathrm{Cov}(U,V)=\mathrm{Cov}(X+Y,\;X+2Y)=\mathrm{Var}(X)+2\mathrm{Var}(Y)+3\mathrm{Cov}(X,Y)=1+2+0=3$$
+      </div>
+
+      <p><strong style="color:var(--accent)">Step 2：计算相关系数</strong></p>
+      <div class="formula-box">
+        $$\rho_{UV} = \frac{\mathrm{Cov}(U,V)}{\sqrt{\mathrm{Var}(U)\mathrm{Var}(V)}} = \frac{3}{\sqrt{2\times5}} = \frac{3}{\sqrt{10}}$$
+      </div>
+
+      <p><strong style="color:var(--accent)">Step 3：应用角度公式</strong></p>
+      <div class="formula-box gold">
+        $$P(U>0,V>0) = \frac{1}{4}+\frac{1}{2\pi}\arcsin\!\left(\frac{3}{\sqrt{10}}\right) \approx \frac{1}{4}+\frac{1}{2\pi}\cdot 1.2490 \approx \boxed{0.4488}$$
+      </div>
+
+      <hr class="divider">
+
+      <p><strong style="color:var(--accent)">Follow-up：\(\mathrm{Cov}(X,Y)=\rho\)</strong></p>
+      <div class="formula-box">
+        $$\mathrm{Var}(U) = 2+2\rho, \quad \mathrm{Var}(V) = 5+4\rho$$
+        $$\mathrm{Cov}(U,V) = 3+3\rho$$
+        $$\rho_{UV} = \frac{3(1+\rho)}{\sqrt{(2+2\rho)(5+4\rho)}} = \frac{3\sqrt{1+\rho}}{\sqrt{2(5+4\rho)}} = \sqrt{\frac{9(1+\rho)}{2(5+4\rho)}}$$
+      </div>
+      <div class="formula-box gold">
+        $$P = \frac{1}{4}+\frac{1}{2\pi}\arcsin\!\sqrt{\frac{9(1+\rho)}{2(5+4\rho)}}$$
+      </div>
+    </div>
+
+    <div class="problem">
+      <div class="problem-label">变体题</div>
+      <p>设 \(X,Y\overset{iid}{\sim}\mathcal{N}(0,1)\)，\(Z=X+Y\)，求 \(P(X>0\mid Z>0)\)。</p>
+    </div>
+
+    <div class="answer">
+      <div class="answer-label">解法</div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-content">
+            注意 \(\mathrm{Cov}(X,Z)=\mathrm{Var}(X)=1\)，\(\mathrm{Var}(Z)=2\)，\(\rho_{XZ}=\frac{1}{\sqrt{2}}\)。
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-content">
+            \(P(X>0,Z>0) = \frac{1}{4}+\frac{1}{2\pi}\arcsin\!\frac{1}{\sqrt{2}} = \frac{1}{4}+\frac{\pi/4}{2\pi}=\frac{3}{8}\)
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-content">
+            \(P(X>0\mid Z>0) = \dfrac{P(X>0,Z>0)}{P(Z>0)} = \dfrac{3/8}{1/2} = \dfrac{3}{4}\)
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- SECTION 6: E[X|X>0] 系列 -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <section class="section" id="s6">
+    <div class="section-header">
+      <span class="section-num">06</span>
+      <h2 class="section-title">\(\mathbb{E}[X \mid X > 0]\) 系列</h2>
+    </div>
+
+    <div class="card">
+      <div class="card-title">基础结果汇总</div>
+      <table>
+        <thead>
+          <tr><th>条件期望</th><th>结果</th><th>数值</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>\(\mathbb{E}[Z \mid Z>0]\)，\(Z\sim\mathcal{N}(0,1)\)</td>
+            <td>\(\sqrt{2/\pi}\)</td>
+            <td>\(\approx 0.7979\)</td>
+          </tr>
+          <tr>
+            <td>\(\mathbb{E}[Z^2 \mid Z>0]\)</td>
+            <td>\(1\)</td>
+            <td>\(= 1\)（注：\(\mathbb{E}[Z^2]=1\) 与条件无关）</td>
+          </tr>
+          <tr>
+            <td>\(\mathbb{E}[|Z|]\)</td>
+            <td>\(\sqrt{2/\pi}\)</td>
+            <td>\(\approx 0.7979\)</td>
+          </tr>
+          <tr>
+            <td>\(\mathbb{E}[Z \mid Z>c]\)</td>
+            <td>\(\dfrac{\phi(c)}{1-\Phi(c)}\)</td>
+            <td>Mills ratio</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="problem">
+      <div class="problem-label">面试题</div>
+      <p>设 \(X,Y\overset{iid}{\sim}\mathcal{N}(0,1)\)，已知 \(X+Y>0\)，求 \(\mathbb{E}[X\mid X+Y>0]\)。</p>
+    </div>
+
+    <div class="answer">
+      <div class="answer-label">解法（利用对称性 + Cholesky）</div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-content">
+            令 \(Z=X+Y\sim\mathcal{N}(0,2)\)，则 \(\rho_{XZ}=\frac{1}{\sqrt{2}}\)。
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-content">
+            构造：\(X = \frac{Z}{\sqrt{2}}\cdot\frac{1}{\sqrt{2}} + \sqrt{1-\frac{1}{2}}\cdot W = \frac{Z}{2} + \frac{W}{\sqrt{2}}\)（其中 \(W\perp Z\)，\(W\sim\mathcal{N}(0,1)\)）。更直接地，\(\mathbb{E}[X\mid Z] = \rho_{XZ}\frac{\sigma_X}{\sigma_Z}\cdot Z = \frac{1}{\sqrt{2}}\cdot\frac{1}{\sqrt{2}}\cdot Z = \frac{Z}{2}\)。
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-content">
+            \(\mathbb{E}[X\mid Z>0] = \mathbb{E}\!\left[\frac{Z}{2}\;\middle|\; Z>0\right] = \frac{1}{2}\mathbb{E}[Z\mid Z>0] = \frac{1}{2}\cdot\sqrt{2}\cdot\sqrt{\frac{2}{\pi}} = \frac{1}{\sqrt{\pi}}\)。
+          </div>
+        </div>
+      </div>
+      <div class="formula-box gold">
+        $$\mathbb{E}[X \mid X+Y>0] = \frac{1}{\sqrt{\pi}} \approx 0.5642$$
+      </div>
+      <div class="insight">
+        <span class="insight-icon">💡</span>
+        <div>关键步骤：先用条件期望的线性性 \(\mathbb{E}[X\mid Z] = \frac{Z}{2}\)（由 Cov/Var 得），再对事件 \(\{Z>0\}\) 取期望。</div>
+      </div>
+    </div>
+
+    <div class="problem">
+      <div class="problem-label">进阶题</div>
+      <p>设 \(X\sim\mathcal{N}(0,\sigma_X^2)\)，\(Y\sim\mathcal{N}(0,\sigma_Y^2)\) 独立，求 \(\mathbb{E}[X\mid X+Y>0]\)。</p>
+    </div>
+
+    <div class="answer">
+      <div class="answer-label">解法</div>
+      <p>令 \(Z=X+Y\sim\mathcal{N}(0,\sigma_X^2+\sigma_Y^2)\)，\(\mathrm{Cov}(X,Z)=\sigma_X^2\)。</p>
+      <div class="formula-box">
+        $$\mathbb{E}[X\mid Z] = \frac{\sigma_X^2}{\sigma_X^2+\sigma_Y^2}\cdot Z$$
+      </div>
+      <div class="formula-box gold">
+        $$\mathbb{E}[X\mid Z>0] = \frac{\sigma_X^2}{\sigma_X^2+\sigma_Y^2}\cdot\mathbb{E}[Z\mid Z>0] = \frac{\sigma_X^2}{\sigma_X^2+\sigma_Y^2}\cdot\sqrt{\frac{2(\sigma_X^2+\sigma_Y^2)}{\pi}} = \sigma_X^2\sqrt{\frac{2}{\pi(\sigma_X^2+\sigma_Y^2)}}$$
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- SECTION 7: E[max(X,Y)] -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <section class="section" id="s7">
+    <div class="section-header">
+      <span class="section-num">07</span>
+      <h2 class="section-title">\(\mathbb{E}[\max(X,Y)]\) 系列</h2>
+    </div>
+
+    <div class="card">
+      <div class="card-title">核心等式</div>
+      <div class="formula-box">
+        $$\max(X,Y) = \frac{X+Y}{2} + \frac{|X-Y|}{2}$$
+      </div>
+      <p>或等价地：</p>
+      <div class="formula-box">
+        $$\max(X,Y) + \min(X,Y) = X+Y, \qquad \max(X,Y)-\min(X,Y) = |X-Y|$$
+      </div>
+    </div>
+
+    <div class="problem">
+      <div class="problem-label">经典题 · ⭐⭐⭐</div>
+      <p>设 \(X,Y\overset{iid}{\sim}\mathcal{N}(0,1)\)，求 \(\mathbb{E}[\max(X,Y)]\)。</p>
+    </div>
+
+    <div class="answer">
+      <div class="answer-label">两种解法</div>
+
+      <p><strong style="color:var(--accent)">方法一：利用 \(X-Y\)</strong></p>
+      <div class="steps">
+        <div class="step">
+          <div class="step-content">
+            令 \(W = X+Y\)，\(D = X-Y\)，则 \(W\sim\mathcal{N}(0,2)\)，\(D\sim\mathcal{N}(0,2)\)，且 \(W\perp D\)（联合正态中不相关即独立）。
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-content">
+            \(\max(X,Y) = \frac{W+|D|}{2}\)，故 \(\mathbb{E}[\max(X,Y)] = \frac{\mathbb{E}[W]+\mathbb{E}[|D|]}{2} = \frac{0+\mathbb{E}[|D|]}{2}\)。
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-content">
+            \(\mathbb{E}[|D|] = \mathbb{E}[|D|]\)，\(D\sim\mathcal{N}(0,2)\)，故 \(\mathbb{E}[|D|] = \sqrt{2}\cdot\mathbb{E}[|Z|] = \sqrt{2}\cdot\sqrt{2/\pi} = 2/\sqrt{\pi}\)。
+          </div>
+        </div>
+      </div>
+      <div class="formula-box gold">
+        $$\mathbb{E}[\max(X,Y)] = \frac{1}{\sqrt{\pi}} \approx 0.5642$$
+      </div>
+
+      <p><strong style="color:var(--accent)">方法二：直接积分（次序统计量）</strong></p>
+      <div class="formula-box">
+        $$\mathbb{E}[\max(X,Y)] = \int_{-\infty}^{\infty} x\cdot 2\Phi(x)\phi(x)\,dx = 2\int_{-\infty}^{\infty} x\Phi(x)\phi(x)\,dx$$
+      </div>
+      <p>分部积分令 \(u=\Phi(x)\)，\(dv=2x\phi(x)dx = -2d\phi(x)\)：</p>
+      <div class="formula-box">
+        $$= -2\phi(x)\Phi(x)\big|_{-\infty}^{\infty} + 2\int\phi(x)^2\,dx = 0 + 2\cdot\frac{1}{2\sqrt{\pi}} = \frac{1}{\sqrt{\pi}}$$
+      </div>
+    </div>
+
+    <div class="problem">
+      <div class="problem-label">进阶题</div>
+      <p>设 \((X,Y)\sim\mathcal{N}(0,I)\)（二维标准，相关系数 \(\rho\)），求 \(\mathbb{E}[\max(X,Y)]\)。</p>
+    </div>
+
+    <div class="answer">
+      <div class="answer-label">解法</div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-content">
+            \(W=X+Y\sim\mathcal{N}(0,2+2\rho)\)，\(D=X-Y\sim\mathcal{N}(0,2-2\rho)\)，且 \(W\perp D\)。
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-content">
+            \(\mathbb{E}[\max(X,Y)] = \frac{1}{2}\mathbb{E}[|D|] = \frac{1}{2}\cdot\sqrt{2-2\rho}\cdot\sqrt{\frac{2}{\pi}} = \sqrt{\frac{1-\rho}{\pi}}\)
+          </div>
+        </div>
+      </div>
+      <div class="formula-box gold">
+        $$\mathbb{E}[\max(X,Y)] = \sqrt{\frac{1-\rho}{\pi}}$$
+      </div>
+      <p style="margin-top:8px">验证：\(\rho=0\) 时 \(=1/\sqrt\pi\) ✓；\(\rho=1\) 时 \(=0\)（两变量相同，max=X，\(\mathbb{E}=0\)）✓；\(\rho=-1\) 时 \(=\sqrt{2/\pi}\)（max(X,-X)=|X|，\(\mathbb{E}=\sqrt{2/\pi}\)）✓。</p>
+    </div>
+
+    <div class="problem">
+      <div class="problem-label">变体：\(\mathbb{E}[\max(0,Z)]\)</div>
+    </div>
+
+    <div class="answer">
+      <div class="answer-label">解法</div>
+      <div class="formula-box">
+        $$\max(0,Z) = Z\cdot\mathbf{1}_{Z>0} = \frac{Z+|Z|}{2}$$
+      </div>
+      <div class="formula-box gold">
+        $$\mathbb{E}[\max(0,Z)] = \frac{0+\mathbb{E}[|Z|]}{2} = \frac{1}{2}\cdot\sqrt{\frac{2}{\pi}} = \frac{1}{\sqrt{2\pi}}$$
+      </div>
+      <p>金融含义：<span class="hl">这正是标准正态下 call option 的 vega 相关量。</span></p>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- SECTION 8: E[X | X+Y > 0] -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <section class="section" id="s8">
+    <div class="section-header">
+      <span class="section-num">08</span>
+      <h2 class="section-title">条件期望综合：\(\mathbb{E}[X \mid X + Y > 0]\)</h2>
+    </div>
+
+    <div class="card">
+      <div class="card-title">通用框架</div>
+      <p>对于联合正态 \((X,Y)\)，计算 \(\mathbb{E}[X\mid aX+bY>0]\) 的标准流程：</p>
+      <div class="steps">
+        <div class="step"><div class="step-content">令 \(Z=aX+bY\)，计算 \(\mathrm{Cov}(X,Z)\) 和 \(\mathrm{Var}(Z)\)。</div></div>
+        <div class="step"><div class="step-content">利用联合正态的投影：\(\mathbb{E}[X\mid Z] = \mathbb{E}[X] + \frac{\mathrm{Cov}(X,Z)}{\mathrm{Var}(Z)}(Z-\mathbb{E}[Z])\)。</div></div>
+        <div class="step"><div class="step-content">用全期望：\(\mathbb{E}[X\mid Z>0] = \mathbb{E}[\mathbb{E}[X\mid Z]\mid Z>0]\)。</div></div>
+        <div class="step"><div class="step-content">最终归结为 \(\mathbb{E}[Z\mid Z>0]\) 的计算。</div></div>
+      </div>
+    </div>
+
+    <div class="problem">
+      <div class="problem-label">综合题</div>
+      <p>设 \(X,Y\overset{iid}{\sim}\mathcal{N}(0,1)\)，\(Z = X+Y\)。</p>
+      <p>(a) 求 \(\mathbb{E}[X\mid Z]\)；</p>
+      <p>(b) 求 \(\mathbb{E}[X\mid Z>0]\)；</p>
+      <p>(c) 求 \(\mathbb{E}[Z\mid X>0]\)。</p>
+    </div>
+
+    <div class="answer">
+      <div class="answer-label">解答</div>
+      <p>(a) 由联合正态条件期望公式：</p>
+      <div class="formula-box">
+        $$\mathbb{E}[X\mid Z=z] = 0 + \frac{\mathrm{Cov}(X,Z)}{\mathrm{Var}(Z)}(z-0) = \frac{1}{2}z \implies \mathbb{E}[X\mid Z] = \frac{Z}{2}$$
+      </div>
+      <p>(b) \(\mathbb{E}[X\mid Z>0] = \mathbb{E}\left[\frac{Z}{2}\;\middle|\;Z>0\right] = \frac{1}{2}\mathbb{E}[Z\mid Z>0] = \frac{1}{2}\cdot\sqrt{2}\cdot\sqrt{\frac{2}{\pi}} = \dfrac{1}{\sqrt\pi}\)。</p>
+      <p>(c) 由对称性，\(\mathbb{E}[Z\mid X>0]=\mathbb{E}[X+Y\mid X>0] = \mathbb{E}[X\mid X>0]+\mathbb{E}[Y\mid X>0] = \sqrt{2/\pi}+0 = \sqrt{2/\pi}\)（\(Y\perp X\)）。</p>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- SECTION 9: Box-Muller -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <section class="section" id="s9">
+    <div class="section-header">
+      <span class="section-num">09</span>
+      <h2 class="section-title">Box-Muller 变换</h2>
+    </div>
+
+    <div class="card">
+      <div class="card-title">问题：如何从 \(U(0,1)\) 生成 \(\mathcal{N}(0,1)\)</div>
+      <p>逆变换法不直接可行（\(\Phi^{-1}\) 无闭合形式），Box-Muller 利用极坐标变换绕过这一困难。</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">算法</div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-content">
+            采样角度：\(\Theta \sim \text{Uniform}[0, 2\pi)\)。令 \(U_1\sim U(0,1)\)，取 \(\Theta = 2\pi U_1\)。
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-content">
+            采样半径：需要 \(R\) 使得 \((X,Y)=(R\cos\Theta, R\sin\Theta)\) 是标准二维正态。<br>
+            二维标准正态的径向分布：\(f_R(r)=re^{-r^2/2}\)（Rayleigh 分布），CDF = \(1-e^{-r^2/2}\)。<br>
+            逆变换：令 \(U_2\sim U(0,1)\)，则 \(R = \sqrt{-2\ln U_2}\)。
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-content">
+            输出两个独立标准正态：
+            <div class="formula-box gold">
+              $$X = \sqrt{-2\ln U_2}\cos(2\pi U_1), \qquad Y = \sqrt{-2\ln U_2}\sin(2\pi U_1)$$
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="insight">
+        <span class="insight-icon">📐</span>
+        <div>关键推导：\(\iint e^{-(x^2+y^2)/2}dxdy = \int_0^{2\pi}\int_0^\infty e^{-r^2/2}r\,dr\,d\theta = 2\pi\)，故联合 pdf 可分离为角度（均匀）和半径（Rayleigh）两部分。</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Marsaglia 极坐标法（Box-Muller 的改进）</div>
+      <p>避免三角函数计算：</p>
+      <div class="steps">
+        <div class="step"><div class="step-content">均匀采样单位圆内的点：采样 \((u,v)\in[-1,1]^2\)，拒绝 \(s=u^2+v^2\geq 1\)。</div></div>
+        <div class="step"><div class="step-content">输出 \(X=u\sqrt{-2\ln s/s}\)，\(Y=v\sqrt{-2\ln s/s}\)。</div></div>
+      </div>
+      <p>期望接受率 = \(\pi/4 \approx 78.5\%\)，避免了 \(\cos,\sin\) 的计算。</p>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- SECTION 10: Cholesky -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <section class="section" id="s10">
+    <div class="section-header">
+      <span class="section-num">10</span>
+      <h2 class="section-title">Cholesky 分解：生成相关正态</h2>
+    </div>
+
+    <div class="card">
+      <div class="card-title">问题设定</div>
+      <p>已知 \(Z_1,\ldots,Z_n\overset{iid}{\sim}\mathcal{N}(0,1)\)，如何构造 \(\mathbf{X}\sim\mathcal{N}(\boldsymbol{\mu},\Sigma)\)？</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Cholesky 分解法</div>
+      <div class="steps">
+        <div class="step"><div class="step-content">对正定矩阵 \(\Sigma\) 做 Cholesky 分解：\(\Sigma = LL^T\)，\(L\) 是下三角矩阵。</div></div>
+        <div class="step"><div class="step-content">令 \(\mathbf{Z}=(Z_1,\ldots,Z_n)^T\sim\mathcal{N}(\mathbf{0},I)\)。</div></step></div>
+        <div class="step"><div class="step-content">取 \(\mathbf{X} = \boldsymbol{\mu} + L\mathbf{Z}\)，则 \(\mathbb{E}[\mathbf{X}]=\boldsymbol{\mu}\)，\(\mathrm{Cov}(\mathbf{X})=LL^T=\Sigma\)。</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">二维显式构造（\(n=2\)）</div>
+      <div class="formula-box">
+        $$L = \begin{pmatrix}\sigma_X & 0\\\rho\sigma_Y & \sqrt{1-\rho^2}\,\sigma_Y\end{pmatrix}$$
+      </div>
+      <div class="formula-box gold">
+        $$X = \mu_X + \sigma_X Z_1, \qquad Y = \mu_Y + \rho\sigma_Y Z_1 + \sqrt{1-\rho^2}\,\sigma_Y Z_2$$
+      </div>
+      <p>可以验证 \(\mathrm{Corr}(X,Y)=\rho\)，且 \(Y\mid X=x\) 中 \(X\) 固定后，随机性仅来自 \(Z_2\)，方差为 \((1-\rho^2)\sigma_Y^2\)。</p>
+
+      <div class="insight">
+        <span class="insight-icon">💡</span>
+        <div>条件分布推导的几何意义：\(X\) 决定了 \(Z_1\)，\(Y\mid X\) 的分布来自 \(Z_2\) 的部分，即 \(\rho\) 捕捉了"已知"的信息量，剩余不确定性为 \(1-\rho^2\)。</div>
+      </div>
+    </div>
+
+    <div class="problem">
+      <div class="problem-label">构造题</div>
+      <p>给定 \(X,Y,Z\) 两两独立均为 \(\mathcal{N}(0,1)\)，如何构造一对相关系数恰好为 \(1/2\) 的联合正态对 \((A,B)\)？</p>
+    </div>
+
+    <div class="answer">
+      <div class="answer-label">解法</div>
+      <div class="formula-box gold">
+        $$A = X, \qquad B = \frac{X + \sqrt{3}Y}{2}$$
+      </div>
+      <p>验证：\(\mathrm{Var}(B)=\frac{1+3}{4}=1\)，\(\mathrm{Cov}(A,B)=\frac{1}{2}\)，\(\rho=\frac{1/2}{1\cdot 1}=\frac{1}{2}\)。✓</p>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- SECTION 11: Shrinkage Estimator -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <section class="section" id="s11">
+    <div class="section-header">
+      <span class="section-num">11</span>
+      <h2 class="section-title">Shrinkage Estimator（收缩估计量）</h2>
+    </div>
+
+    <div class="problem">
+      <div class="problem-label">经典设定</div>
+      <p>设 \(X\sim\mathcal{N}(0,\sigma_X^2)\) 为真实信号（未知），\(\varepsilon\sim\mathcal{N}(0,\sigma_\varepsilon^2)\) 为噪声（独立），观测 \(Z=X+\varepsilon\)。给定观测 \(Z=z\)，如何估计 \(X\)？</p>
+    </div>
+
+    <div class="answer">
+      <div class="answer-label">MMSE 估计推导</div>
+
+      <p><span class="hl">直觉：</span>\(Z\) 是 \(X\) 的含噪版本，最优估计不是直接用 \(Z\) 本身，而是按信噪比"收缩"。</p>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-content">
+            计算统计量：\(\mathbb{E}[Z]=0\)，\(\mathrm{Var}(Z)=\sigma_X^2+\sigma_\varepsilon^2\)，\(\mathrm{Cov}(X,Z)=\sigma_X^2\)。
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-content">
+            计算相关系数：\(\rho_{XZ} = \dfrac{\sigma_X^2}{\sigma_X\sqrt{\sigma_X^2+\sigma_\varepsilon^2}} = \dfrac{\sigma_X}{\sqrt{\sigma_X^2+\sigma_\varepsilon^2}}\)。
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-content">
+            由联合正态条件期望公式：
+            <div class="formula-box gold">
+              $$\mathbb{E}[X\mid Z=z] = \frac{\sigma_X^2}{\sigma_X^2+\sigma_\varepsilon^2}\cdot z = \frac{\mathrm{SNR}}{1+\mathrm{SNR}}\cdot z$$
+            </div>
+            其中 \(\mathrm{SNR}=\sigma_X^2/\sigma_\varepsilon^2\)。
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-content">
+            条件方差：\(\mathrm{Var}(X\mid Z=z) = \sigma_X^2(1-\rho_{XZ}^2) = \dfrac{\sigma_X^2\sigma_\varepsilon^2}{\sigma_X^2+\sigma_\varepsilon^2}\)。
+          </div>
+        </div>
+      </div>
+
+      <div class="insight">
+        <span class="insight-icon">📊</span>
+        <div>
+          <span class="hl">Shrinkage 系数</span> \(\lambda = \dfrac{\sigma_X^2}{\sigma_X^2+\sigma_\varepsilon^2}\in[0,1]\)：<br>
+          • \(\sigma_\varepsilon^2\to 0\)（无噪声）：\(\lambda\to 1\)，直接信任观测值；<br>
+          • \(\sigma_\varepsilon^2\to\infty\)（全噪声）：\(\lambda\to 0\)，收缩到先验均值（0）；<br>
+          • 这就是 <span class="hl-gold">James-Stein 收缩</span> 的本质，也是 Kalman Filter 更新步的基础。
+        </div>
+      </div>
+    </div>
+
+    <div class="problem">
+      <div class="problem-label">变体：多次观测</div>
+      <p>设 \(Z_1,\ldots,Z_n\) 是 \(X\) 的 iid 含噪观测（同方差 \(\sigma_\varepsilon^2\)），\(\bar{Z}=\frac{1}{n}\sum Z_i\)，求 \(\mathbb{E}[X\mid Z_1,\ldots,Z_n]\)。</p>
+    </div>
+
+    <div class="answer">
+      <div class="answer-label">解答</div>
+      <p>充分统计量为 \(\bar{Z}\sim\mathcal{N}(0,\sigma_X^2+\sigma_\varepsilon^2/n)\)，\(\mathrm{Cov}(X,\bar{Z})=\sigma_X^2\)，因此：</p>
+      <div class="formula-box gold">
+        $$\mathbb{E}[X\mid Z_1,\ldots,Z_n] = \frac{\sigma_X^2}{\sigma_X^2+\sigma_\varepsilon^2/n}\cdot\bar{Z}$$
+      </div>
+      <p>随着 \(n\to\infty\)，系数趋近于 1（无限观测下恢复真实值）。</p>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- SECTION 12: 题库 -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <section class="section" id="s12">
+    <div class="section-header">
+      <span class="section-num">12</span>
+      <h2 class="section-title">综合题库</h2>
+    </div>
+
+    <div class="problem">
+      <div class="problem-label">题 A <span class="tag tag-gold">⭐⭐</span></div>
+      <p>设 \(X,Y\overset{iid}{\sim}\mathcal{N}(0,1)\)，求 \(P(X^2+Y^2 \leq 1)\)。</p>
+    </div>
+    <div class="answer">
+      <div class="answer-label">解答</div>
+      <p>\(R^2 = X^2+Y^2\sim\chi^2(2) = \text{Exp}(1/2)\)（即 \(P(R^2\leq r) = 1-e^{-r/2}\)）。</p>
+      <div class="formula-box gold">$$P(X^2+Y^2\leq 1)=1-e^{-1/2}\approx 0.3935$$</div>
+    </div>
+
+    <div class="problem">
+      <div class="problem-label">题 B <span class="tag tag-gold">⭐⭐</span></div>
+      <p>设 \(X\sim\mathcal{N}(0,1)\)，求 \(\mathbb{E}[e^{tX}]\)（矩生成函数）。</p>
+    </div>
+    <div class="answer">
+      <div class="answer-label">解答</div>
+      <div class="formula-box gold">
+        $$M_X(t) = \mathbb{E}[e^{tX}] = e^{t^2/2}$$
+      </div>
+      <p>推导：配方 \(-\frac{x^2}{2}+tx = -\frac{(x-t)^2}{2}+\frac{t^2}{2}\)，积分归一化后得 \(e^{t^2/2}\)。</p>
+      <p>推广：若 \(X\sim\mathcal{N}(\mu,\sigma^2)\)，则 \(M_X(t)=e^{\mu t+\sigma^2t^2/2}\)。</p>
+    </div>
+
+    <div class="problem">
+      <div class="problem-label">题 C <span class="tag tag-red">⭐⭐⭐</span></div>
+      <p>设 \(X,Y,Z\overset{iid}{\sim}\mathcal{N}(0,1)\)，两两相关系数均为 \(1/2\)，求 \(P(X+Y+Z>0)\)。</p>
+    </div>
+    <div class="answer">
+      <div class="answer-label">解答</div>
+      <p>\(W=X+Y+Z\sim\mathcal{N}(0, \mathrm{Var}(W))\)。</p>
+      <p>\(\mathrm{Var}(W) = 3\cdot 1 + 2\cdot 3\cdot\frac{1}{2} = 3+3=6\)。</p>
+      <p>故 \(W\sim\mathcal{N}(0,6)\)，由对称性：</p>
+      <div class="formula-box gold">$$P(W>0) = \frac{1}{2}$$</div>
+    </div>
+
+    <div class="problem">
+      <div class="problem-label">题 D <span class="tag tag-red">⭐⭐⭐</span></div>
+      <p>设 \(X\sim\mathcal{N}(\mu,\sigma^2)\)，\(\mu>0\)，求 \(\mathbb{E}[X\mid X>0]\)。</p>
+    </div>
+    <div class="answer">
+      <div class="answer-label">解答（Mills Ratio 公式）</div>
+      <div class="formula-box gold">
+        $$\mathbb{E}[X\mid X>0] = \mu + \sigma\cdot\frac{\phi(\mu/\sigma)}{\Phi(\mu/\sigma)}$$
+      </div>
+      <p>当 \(\mu=0\)：\(\mathbb{E}[X\mid X>0]=\sigma\frac{\phi(0)}{\Phi(0)}=\sigma\cdot\frac{1/\sqrt{2\pi}}{1/2}=\sigma\sqrt{2/\pi}\) ✓。</p>
+    </div>
+
+    <div class="problem">
+      <div class="problem-label">题 E <span class="tag tag-red">⭐⭐⭐</span></div>
+      <p>设 \(X\sim\mathcal{N}(0,1)\)，用 \(Y=\text{sgn}(X)\cdot|X|\) 来构造两个边缘正态但联合非正态的随机变量，并计算 \(\mathrm{Cov}(X,Y)\)。</p>
+    </div>
+    <div class="answer">
+      <div class="answer-label">解答</div>
+      <p>取 \(W\sim\pm 1\)（独立于 \(X\)，各 \(1/2\)），令 \(Y=W\cdot X\)。</p>
+      <p>• \(Y\sim\mathcal{N}(0,1)\)（因为 \(\pm X\) 均为标准正态）。</p>
+      <p>• \(\mathrm{Cov}(X,Y)=\mathbb{E}[XY]=\mathbb{E}[WX^2]=\mathbb{E}[W]\mathbb{E}[X^2]=0\)。</p>
+      <p>• 但 \(X+Y=X(1+W)\)，当 \(W=-1\) 时恒为 0，故 \(X+Y\) <span class="hl-red">不是</span>正态分布，\((X,Y)\) <span class="hl-red">不是</span>联合正态。</p>
+      <div class="insight">
+        <span class="insight-icon">⚠️</span>
+        <div>这是"边缘正态 ≠ 联合正态"的经典反例，面试中经常被用来考察理解深度。</div>
+      </div>
+    </div>
+
+    <div class="problem">
+      <div class="problem-label">题 F <span class="tag tag-purple">⭐⭐⭐⭐ HFT风格</span></div>
+      <p>做市商对某资产定价。信号 \(S\sim\mathcal{N}(0,1)\)，观测到含噪信号 \(O=S+\varepsilon\)（\(\varepsilon\sim\mathcal{N}(0,\sigma^2)\) 独立）。<br>
+      (a) 求 fair value \(\mathbb{E}[S\mid O=o]\)；<br>
+      (b) 若交易者报价 \(q\)，资产真值 \(V\sim\mathcal{N}(q, 1)\)（以报价为中心的先验），问最优竞价策略？</p>
+    </div>
+    <div class="answer">
+      <div class="answer-label">解答</div>
+      <p>(a) 直接套 Shrinkage 公式：</p>
+      <div class="formula-box gold">
+        $$\hat{S}(o) = \mathbb{E}[S\mid O=o] = \frac{1}{1+\sigma^2}\cdot o$$
+      </div>
+      <p>(b) 做市商持有先验 fair value \(f\)，观测到报价 \(q\)。更新后的 fair value：若 \(q\) 是含噪信号，最优 bid/ask 应在 \(\hat{f}(q)\) 附近展开。实际中 spread 应覆盖 adverse selection（交易者拥有更多信息时的预期亏损）。贝叶斯更新中，"信号强度"越高（\(\sigma^2\) 越小），fair value 越接近 \(q\)，spread 越窄。</p>
+    </div>
+
+    <div class="problem">
+      <div class="problem-label">题 G — 经典脑筋急转弯</div>
+      <p>掷一枚硬币，若正面取 \(X\sim\mathcal{N}(1,1)\)，若反面取 \(X\sim\mathcal{N}(-1,1)\)。\(X\) 是正态分布吗？</p>
+    </div>
+    <div class="answer">
+      <div class="answer-label">解答</div>
+      <p>\(X\) 是<span class="hl-red">混合正态（Gaussian mixture）</span>，<span class="hl-red">不是</span>正态分布。</p>
+      <p>pdf：\(f(x) = \frac{1}{2}\phi(x-1)+\frac{1}{2}\phi(x+1)\)，有两个峰，明显偏离单峰正态。</p>
+      <p>这提示：正态的有限混合一般不是正态（除非均值相同）。</p>
+    </div>
+
+    <div class="problem">
+      <div class="problem-label">题 H <span class="tag tag-gold">⭐⭐⭐</span></div>
+      <p>设 \(Z\sim\mathcal{N}(\mu,\sigma^2)\)，求 \(\mathbb{E}[\max(0,Z)]\)（call payoff）。</p>
+    </div>
+    <div class="answer">
+      <div class="answer-label">解答</div>
+      <p>令 \(d = -\mu/\sigma\)（即 \(d = (K-S_0)/(S_0\sigma)\) 在 Black-Scholes 中）：</p>
+      <div class="formula-box gold">
+        $$\mathbb{E}[\max(0,Z)] = \mu\,\Phi(\mu/\sigma) + \sigma\,\phi(\mu/\sigma)$$
+      </div>
+      <p>验证 \(\mu=0,\sigma=1\)：\(\mathbb{E}[\max(0,Z)] = 0 + \phi(0) = 1/\sqrt{2\pi}\) ✓。</p>
+      <p>这与 Black-Scholes 公式中的 \(d_1, d_2\) 项直接对应——面试中的"联系金融"加分点。</p>
+    </div>
+
+    <!-- Quick Reference Table -->
+    <div class="card" style="margin-top:36px">
+      <div class="card-title">⚡ 快速参考：核心结论一览</div>
+      <table>
+        <thead>
+          <tr><th>结论</th><th>公式</th><th>适用条件</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>半平面概率</td>
+            <td>\(P(U>0,V>0)=\frac{1}{4}+\frac{\arcsin\rho}{2\pi}\)</td>
+            <td>零均值联合正态</td>
+          </tr>
+          <tr>
+            <td>截断正态期望</td>
+            <td>\(\mathbb{E}[Z\mid Z>0]=\sqrt{2/\pi}\)</td>
+            <td>\(Z\sim\mathcal{N}(0,1)\)</td>
+          </tr>
+          <tr>
+            <td>最大值期望</td>
+            <td>\(\mathbb{E}[\max(X,Y)]=1/\sqrt{\pi}\)</td>
+            <td>\(X,Y\overset{iid}{\sim}\mathcal{N}(0,1)\)</td>
+          </tr>
+          <tr>
+            <td>最大值（相关）</td>
+            <td>\(\mathbb{E}[\max(X,Y)]=\sqrt{(1-\rho)/\pi}\)</td>
+            <td>相关系数 \(\rho\)</td>
+          </tr>
+          <tr>
+            <td>条件期望</td>
+            <td>\(\mathbb{E}[X\mid X+Y>0]=1/\sqrt{\pi}\)</td>
+            <td>\(X,Y\overset{iid}{\sim}\mathcal{N}(0,1)\)</td>
+          </tr>
+          <tr>
+            <td>收缩估计量</td>
+            <td>\(\mathbb{E}[X\mid Z=z]=\frac{\sigma_X^2}{\sigma_X^2+\sigma_\varepsilon^2}\cdot z\)</td>
+            <td>\(Z=X+\varepsilon\)，独立</td>
+          </tr>
+          <tr>
+            <td>条件分布均值</td>
+            <td>\(\mathbb{E}[Y\mid X=x]=\mu_Y+\rho\frac{\sigma_Y}{\sigma_X}(x-\mu_X)\)</td>
+            <td>二维联合正态</td>
+          </tr>
+          <tr>
+            <td>条件分布方差</td>
+            <td>\(\mathrm{Var}(Y\mid X)=\sigma_Y^2(1-\rho^2)\)</td>
+            <td>二维联合正态</td>
+          </tr>
+          <tr>
+            <td>MGF</td>
+            <td>\(\mathbb{E}[e^{tX}]=e^{\mu t+\sigma^2t^2/2}\)</td>
+            <td>\(X\sim\mathcal{N}(\mu,\sigma^2)\)</td>
+          </tr>
+          <tr>
+            <td>Call payoff</td>
+            <td>\(\mathbb{E}[\max(0,Z)]=\mu\Phi(\mu/\sigma)+\sigma\phi(\mu/\sigma)\)</td>
+            <td>\(Z\sim\mathcal{N}(\mu,\sigma^2)\)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+</main>
+
+<script>
+  // Active nav highlighting on scroll
+  const sections = document.querySelectorAll('.section');
+  const navItems = document.querySelectorAll('.nav-item');
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const id = entry.target.id;
+        navItems.forEach(item => {
+          item.classList.toggle('active', item.getAttribute('href') === '#' + id);
+        });
+      }
+    });
+  }, { rootMargin: '-20% 0px -60% 0px' });
+
+  sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>

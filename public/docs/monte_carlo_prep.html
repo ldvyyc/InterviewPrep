@@ -1,0 +1,1762 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Monte Carlo · 全面备考</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#060910;font-family:'DM Sans',sans-serif;color:#dce7f5;min-height:100vh}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:#060910}
+::-webkit-scrollbar-thumb{background:#1a2a40;border-radius:3px}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.fu{animation:fadeUp .2s ease forwards}
+table{width:100%;border-collapse:collapse;font-size:12px;margin:10px 0}
+th{background:#0b1628;color:#7ec8f5;padding:7px 10px;text-align:left;border-bottom:1px solid #1a2a40;font-family:'JetBrains Mono',monospace;font-size:11px}
+td{padding:6px 10px;border-bottom:1px solid #0f1d2e;color:#a8bfd6;vertical-align:top;line-height:1.5}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#0a1622}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const {useState} = React;
+
+/* ═══════════════════════════ DATA ═══════════════════════════ */
+const SECTIONS = [
+  {id:'rng',    label:'np.random API',     short:'RNG', color:'#f97316', icon:'⚙'},
+  {id:'u2n',    label:'采样理论精讲',        short:'采样', color:'#22d3ee', icon:'∿'},
+  {id:'vr',     label:'方差降低',           short:'VR',  color:'#a78bfa', icon:'σ²'},
+  {id:'mcmc',   label:'MCMC',              short:'MC',  color:'#34d399', icon:'⛓'},
+  {id:'val',    label:'统计验证',           short:'VAL', color:'#fb923c', icon:'✓'},
+  {id:'fin',    label:'金融MC应用',         short:'FIN', color:'#f472b6', icon:'$'},
+];
+
+const CONTENT = {
+rng: {
+  intro: `np.random.default_rng() 是 NumPy 官方推荐的现代随机数 API（NumPy 1.17+）。
+底层使用 PCG64 算法，比旧版 Mersenne Twister 更快、质量更高、并行安全。`,
+  cards: [
+    {
+      title: 'default_rng() 参数与原理',
+      tag:'核心', tagColor:'#ef4444',
+      theory:`rng = np.random.default_rng(seed)
+
+seed 可以是：
+  int       → 常用，保证可复现
+  None      → 使用系统熵(/dev/urandom)，不可复现
+  SeedSequence → 用于并行流的独立子流
+
+内部结构：
+  Generator (接口层)
+  └── BitGenerator: PCG64 (随机比特)
+      ├── PCG64 > Mersenne Twister（统计质量）
+      ├── 无全局状态污染（每个 rng 独立）
+      └── 支持 jumped() 生成独立并行流`,
+      code:`import numpy as np
+
+# 基础用法
+rng = np.random.default_rng(42)
+
+# 可复现性验证
+rng1 = np.random.default_rng(42)
+rng2 = np.random.default_rng(42)
+assert rng1.random() == rng2.random()  # True
+
+# 并行安全：每个流独立
+rng_main = np.random.default_rng(0)
+# 生成 N 个独立子流（适合多进程MC）
+child_rngs = rng_main.spawn(4)  # numpy >= 1.25
+
+# 旧 vs 新 API 对比
+# ❌ 旧（全局状态，不安全）: np.random.randn(5)
+# ✅ 新（独立实例）        : rng.standard_normal(5)`,
+      note:'面试Tip: 务必使用 default_rng 而不是 np.random.xxx，说明理由（PCG64更好、无全局污染、并行安全）。'
+    },
+    {
+      title: '全部分布函数速查',
+      tag:'必背', tagColor:'#ef4444',
+      theory:`Generator 分布函数分类（按用途）：
+
+A. 基础均匀
+  rng.random(size)           → U[0,1)
+  rng.uniform(low, high, size) → U[a,b)
+  rng.integers(low, high, size, endpoint=False)
+
+B. 连续分布（最重要）
+  rng.standard_normal(size)          → N(0,1) 最快
+  rng.normal(loc, scale, size)       → N(μ,σ²)
+  rng.lognormal(mean, sigma, size)   → 对数正态
+  rng.exponential(scale, size)       → Exp(λ) scale=1/λ
+  rng.gamma(shape, scale, size)      → Γ(k,θ)
+  rng.beta(a, b, size)               → Beta(α,β)
+  rng.chisquare(df, size)            → χ²(k)
+  rng.standard_t(df, size)           → t(ν)
+  rng.f(dfnum, dfden, size)          → F(d1,d2)
+  rng.laplace(loc, scale, size)      → 双指数
+  rng.pareto(a, size)                → 帕累托
+  rng.weibull(a, size)               → 威布尔
+
+C. 多元分布
+  rng.multivariate_normal(mean, cov, size) → 多元正态
+  rng.dirichlet(alpha, size)               → Dirichlet
+
+D. 离散分布
+  rng.binomial(n, p, size)           → B(n,p)
+  rng.poisson(lam, size)             → Poisson(λ)
+  rng.geometric(p, size)             → 几何分布
+  rng.hypergeometric(ng,nb,ns,size)  → 超几何
+  rng.multinomial(n, pvals, size)    → 多项分布
+  rng.negative_binomial(n, p, size)  → 负二项
+
+E. 采样与排列
+  rng.choice(a, size, replace, p)    → 加权/不放回抽样
+  rng.permutation(x)                 → 返回打乱副本
+  rng.shuffle(x)                     → 原地打乱`,
+      code:`import numpy as np
+rng = np.random.default_rng(42)
+
+# ── 连续分布 ──
+z     = rng.standard_normal(10000)         # N(0,1) 最快
+x_n   = rng.normal(0.05, 0.20, 10000)     # N(μ=5%, σ=20%)
+x_exp = rng.exponential(scale=2.0, 1000)  # Exp(λ=0.5)
+x_t   = rng.standard_t(df=5, size=10000)  # 重尾t分布
+
+# ── 多元正态（金融最重要！）──
+mean = [0, 0]
+cov  = [[1, 0.7], [0.7, 1]]  # 相关系数0.7
+xy   = rng.multivariate_normal(mean, cov, size=10000)
+# 验证相关性
+import numpy as np
+print(f"实际相关: {np.corrcoef(xy.T)[0,1]:.3f}")  # ≈ 0.70
+
+# ── Dirichlet → 重心坐标 ──
+weights = rng.dirichlet([1, 1, 1], size=1000)  # 3资产组合权重
+print("权重和:", weights.sum(axis=1)[:5])  # 全为1.0
+
+# ── 加权抽样 ──
+outcomes = ['bull', 'flat', 'bear']
+probs    = [0.4, 0.35, 0.25]
+scenarios = rng.choice(outcomes, size=10000, p=probs)
+from collections import Counter
+print(Counter(scenarios))  # 频率接近概率`,
+      note:'面试Tip: standard_normal 比 normal(0,1) 快约20%（跳过参数转换）。multivariate_normal 是金融相关资产MC的核心，要熟练使用。'
+    },
+  ]
+},
+
+u2n: {
+  intro: `从 U[0,1] 出发生成各种目标分布的核心方法。掌握反变换法、极坐标变换（Box-Muller）、Expo Race 技巧，以及几何体均匀采样（圆盘、球体、球面）的 Jacobian 推导，是 Monte Carlo 底层原理面试的必考内容。`,
+  cards: [
+    {
+      title: '反变换法（Inverse CDF）',
+      tag:'基础理论', tagColor:'#3b82f6',
+      theory:`原理：设 Z ~ F(z)，若 U ~ Uniform(0,1)，则 Z = F⁻¹(U)
+
+证明：P(Z ≤ z) = P(F⁻¹(U) ≤ z)
+           = P(U ≤ F(z))   [F 单调]
+           = F(z)            ✓
+
+适用范围：任何 CDF 可求逆的分布
+  正态: Z = Φ⁻¹(U)  (scipy.stats.norm.ppf)
+  指数: Z = -ln(U)/λ
+  均匀: Z = a + (b-a)U
+
+优点：理论最精确，适合分层采样
+缺点：需要数值求 CDF 逆，尾部可能不稳定`,
+      code:`import numpy as np
+import scipy.stats as st
+
+rng = np.random.default_rng(42)
+n   = 100_000
+U   = rng.random(n)
+
+# 正态分布（用 ppf = percent point function）
+Z_norm = st.norm.ppf(U)
+
+# 指数分布（解析反函数）
+lam = 2.0
+Z_exp = -np.log(U) / lam  # F⁻¹(u) = -ln(u)/λ
+
+# 验证
+print(f"正态 mean={Z_norm.mean():.4f}, std={Z_norm.std():.4f}")
+print(f"指数 mean={Z_exp.mean():.4f} (理论: {1/lam:.4f})")
+
+# 分层采样中的核心应用
+m = 100  # 分层数
+strata_u = (np.arange(m) + rng.random(m)) / m  # 每层取一个点
+Z_stratified = st.norm.ppf(strata_u)  # 反变换到正态
+# 这样保证正态分布各分位数均有样本`,
+      note:'面试Tip: F⁻¹(U) 是分层抽样的基础。指数分布的解析反函数 -ln(U)/λ 是面试常问的推导题。'
+    },
+    {
+      title: 'Box-Muller 变换',
+      tag:'高频考点', tagColor:'#ef4444',
+      theory:`原理：从两个 U[0,1] 生成两个独立 N(0,1)
+
+设 U₁, U₂ ~ i.i.d. Uniform(0,1)：
+  Z₁ = √(-2ln U₁) · cos(2πU₂)
+  Z₂ = √(-2ln U₁) · sin(2πU₂)
+
+推导（极坐标法）：
+  令 R² = Z₁²+Z₂² ~ χ²(2) = Exp(1/2)
+  因此 R² = -2ln(U₁) → U₁ = e^(-R²/2)
+  Θ = 2πU₂ 是角度（均匀分布在圆上）
+  这正是把 2D 标准正态 "拆分" 为 (R,Θ)
+
+特点：精确、解析，比 ppf 快（无需数值求逆）`,
+      code:`import numpy as np
+
+rng = np.random.default_rng(42)
+n = 100_000
+
+U1 = rng.random(n)
+U2 = rng.random(n)
+
+# Box-Muller 变换
+R = np.sqrt(-2 * np.log(U1))
+Z1 = R * np.cos(2 * np.pi * U2)
+Z2 = R * np.sin(2 * np.pi * U2)  # 免费得到第二个!
+
+print(f"Z1: mean={Z1.mean():.4f}, std={Z1.std():.4f}")
+print(f"Z2: mean={Z2.mean():.4f}, std={Z2.std():.4f}")
+print(f"Z1, Z2 相关系数: {np.corrcoef(Z1,Z2)[0,1]:.4f}")  # ≈ 0
+
+# 直观验证：R² 应服从 Exp(1/2)，即 χ²(2)
+R_sq = R**2
+print(f"R² mean={R_sq.mean():.3f} (理论=2), var={R_sq.var():.3f} (理论=4)")
+
+# 对比精度（与 numpy 内置对比）
+Z_ref = rng.standard_normal(n)
+from scipy import stats
+_, p_ks = stats.ks_2samp(Z1, Z_ref)
+print(f"KS检验 p值: {p_ks:.4f}  (大→两者分布相同)")`,
+      note:`面试Tip: 两点记住：(1) R²=-2lnU₁ 来自于 U₁=e^(-R²/2)；(2) 一次变换同时产生两个独立正态变量 Z₁,Z₂。面试如果让你"手动实现 randn"，就用这个。`
+    },
+    {
+      title: 'Marsaglia Polar 方法',
+      tag:'进阶', tagColor:'#8b5cf6',
+      theory:`Box-Muller 的改进版：避免 sin/cos 计算
+
+算法：
+  1. 生成 U₁, U₂ ~ Uniform(-1, 1)
+  2. S = U₁² + U₂²
+  3. 若 S ≥ 1，重新生成（落在圆外则丢弃）
+  4. 否则：
+     Z₁ = U₁ · √(-2lnS / S)
+     Z₂ = U₂ · √(-2lnS / S)
+
+接受概率：π/4 ≈ 78.5%（圆面积/方形面积）
+等价性：S = U₁²+U₂² 在圆内均匀，
+       等价于 Box-Muller 的 (R,Θ)
+
+这是 NumPy 旧版 randn、C++ STL、GPU 的底层实现`,
+      code:`import numpy as np
+
+def marsaglia_normal(n, seed=42):
+    """Marsaglia Polar Method 手写实现"""
+    rng = np.random.default_rng(seed)
+    samples = []
+    attempts = 0
+    while len(samples) < n:
+        U = rng.uniform(-1, 1, (n*2, 2))  # 批量生成
+        S = U[:,0]**2 + U[:,1]**2
+        mask = S < 1  # 在圆内
+        S_valid = S[mask]
+        U_valid = U[mask]
+        attempts += len(U)
+        
+        factor = np.sqrt(-2 * np.log(S_valid) / S_valid)
+        z1 = U_valid[:,0] * factor
+        z2 = U_valid[:,1] * factor
+        
+        for z in np.concatenate([z1, z2]):
+            samples.append(z)
+            if len(samples) >= n: break
+    
+    actual_rate = n / attempts
+    print(f"接受率: {actual_rate:.3f} (理论: {np.pi/4:.3f})")
+    return np.array(samples[:n])
+
+Z = marsaglia_normal(100_000)
+print(f"mean={Z.mean():.4f}, std={Z.std():.4f}")
+print(f"峰度(excess): {((Z**4).mean() - 3):.4f}")  # N(0,1) 峰度=0`,
+      note:'面试Tip: 接受率 π/4 ≈ 78.5% 是必须知道的数字。如果面试问为什么要 S < 1，是因为要保证在圆内才能用极坐标论证等分布性。'
+    },
+    {
+      title: 'Expo Race & 离散均匀分布生成',
+      tag:'高频考点', tagColor:'#ef4444',
+      theory:`一、Expo → 离散均匀分布（Expo Race）
+────────────────────────────────
+结论：E₁,...,Eₙ iid Exp(λ)，则
+  P(argmin{E₁,...,Eₙ} = i) = 1/n
+  即"最小指数变量的下标"服从离散均匀分布 {1,...,n}
+
+证明（经典推导）：
+  P(Eᵢ = min Eⱼ) = ∫₀^∞ f(x) · P(Eⱼ > x, ∀j≠i) dx
+  
+  由于 Eⱼ iid Exp(λ):
+    P(Eⱼ > x) = e^(-λx)
+    ∏_{j≠i} P(Eⱼ > x) = (e^(-λx))^(n-1)
+  
+  ∴ P(Eᵢ = min Eⱼ) = ∫₀^∞ λe^(-λx) · e^(-λ(n-1)x) dx
+                     = ∫₀^∞ λe^(-nλx) dx
+                     = λ · [1/(nλ)] = 1/n  ✓
+
+关键洞察：λ 值不影响结果！
+  → 即使 Eᵢ ~ Exp(λᵢ) 不同速率，min 的下标分布也是
+    P(argmin = i) = λᵢ / (λ₁+…+λₙ)（加权均匀）
+
+二、Expo ↔ log ↔ Uniform 三角关系
+────────────────────────────────
+正向：若 V ~ U(0,1)，则 -1/λ · ln(V) ~ Exp(λ)
+逆向：若 X ~ Exp(λ)，则 A = e^(-λX) ~ U(0,1)
+
+推导（从 Exp 的 CDF 出发）：
+  F(x) = 1 - e^(-λx) = u
+  e^(-λx) = 1 - u
+  x = -1/λ · ln(1-u)
+  ∵ 1-U ~ U(0,1)，∴ X = -1/λ · ln(U)
+
+三、生成离散均匀分布 {1,...,n} 的算法
+────────────────────────────────
+方法：给定 X ~ Exp(λ)，令 A = e^(-λX) ~ U(0,1)
+  B = ⌊n · A⌋ + 1  →  B ~ DiscreteUniform{1,...,n}
+
+或直接：生成 U ~ U(0,1)，B = ⌊n · U⌋ + 1`,
+      code:`import numpy as np
+from collections import Counter
+
+rng = np.random.default_rng(42)
+n_draws = 200_000
+
+# ══ 方法一：Expo Race（最小下标法）══
+n = 6  # 生成 DiscreteUniform{1,...,6}
+
+# n个iid Exp(λ)，取最小值的下标
+# λ 可以任意取，不影响结果
+lam = 1.0
+E = rng.exponential(1/lam, size=(n_draws, n))
+B_race = np.argmin(E, axis=1) + 1  # 下标 +1 → {1,...,n}
+
+print("=== Expo Race（最小下标法）===")
+counts = Counter(B_race)
+for k in sorted(counts):
+    freq = counts[k] / n_draws
+    bar = "█" * int(freq * 300)
+    print(f"  {k}: {freq:.4f}  {bar}")
+print(f"理论值: {1/n:.4f}")
+
+# ══ 方法二：Expo → U → 离散均匀 ══
+X = rng.exponential(scale=1/lam, size=n_draws)  # Exp(λ)
+A = np.exp(-lam * X)                              # A ~ U(0,1)
+B_log = (np.floor(n * A) + 1).astype(int)         # B ~ DU{1,...,n}
+
+print("\\n=== Expo → log → Uniform → Discrete ===")
+counts2 = Counter(B_log)
+for k in sorted(counts2):
+    freq = counts2[k] / n_draws
+    bar = "█" * int(freq * 300)
+    print(f"  {k}: {freq:.4f}  {bar}")
+
+# ══ 验证 Expo Race 加权版本（不同λ）══
+print("\\n=== 加权 Expo Race（λᵢ 不同）===")
+lams = [1, 2, 3]  # P(argmin=i) = λᵢ/Σλ = [1/6, 2/6, 3/6]
+E_w = np.column_stack([rng.exponential(1/l, n_draws) for l in lams])
+idx = np.argmin(E_w, axis=1)
+for i, l in enumerate(lams):
+    freq = (idx == i).mean()
+    theory = l / sum(lams)
+    print(f"  λ={l}: 频率={freq:.4f}, 理论={theory:.4f}")
+
+# ══ 验证 -ln(U) ~ Exp(1) ══
+U = rng.random(n_draws)
+X_inv = -np.log(U)     # Exp(1)
+from scipy.stats import kstest
+stat, p = kstest(X_inv, 'expon')
+print(f"\\n-ln(U) ~ Exp(1) KS检验 p值: {p:.4f}  (大→通过)")`,
+      note:'面试Tip: Expo Race 是概率面试经典技巧。核心结论：n个iid Exp的最小值下标~DiscreteUniform{1,...,n}，λ值无关。推广版 P(argmin=i)=λᵢ/Σλ 在MCMC中有重要应用（如 Gillespie 算法）。'
+    },
+    {
+      title: '几何体均匀采样：圆盘 · 球体 · 球面',
+      tag:'高频考点', tagColor:'#ef4444',
+      theory:`核心工具：Jacobian 变换 + 反变换法
+所有几何采样的统一框架：
+  (1) 写出目标分布的密度（面积/体积均匀）
+  (2) 换坐标系，计算 Jacobian
+  (3) 对径向变量 r 用反变换法求 CDF → 逆变换
+  (4) 角度变量直接均匀采样
+
+━━━ ① 圆盘 Disk（半径 R，均匀面积）━━━
+极坐标：dA = r dr dθ
+f_{X,Y}(x,y) = 1/(πR²)  →  f_{r,θ}(r,θ) = r/(πR²)  [Jacobian = r]
+
+边缘密度：
+  f_r(r) = ∫₀^{2π} r/(πR²) dθ = 2r/R²
+
+反变换：
+  F_r(r) = r²/R² = U  →  r = R√U
+  θ ~ U(0, 2π)
+
+⚠️ 常见错误：用 r = R·U（不是 R√U）会导致圆心附近点太密！
+
+━━━ ② 球体 Sphere（半径 R，均匀体积）━━━
+球坐标：x=r sinθ cosφ, y=r sinθ sinφ, z=r cosθ
+det J = r² sinθ  →  dV = r² sinθ dr dθ dφ
+
+对 r 积分（均匀分布在球内）：
+  f_r(r) = 3r²/R³
+  F_r(r) = r³/R³ = V  →  r = R · V^{1/3}
+
+⚠️ 常见错误：r = R·U^{1/2}（2D 的公式用错维度！）
+
+━━━ ③ 球面 Sphere Surface（半径 R，均匀面积）━━━
+面积元：dS = R² sinθ dθ dφ（固定 r=R）
+f_{θ,φ}(θ,φ) = sinθ/(4π)  （4π 是球面面积/R²，R=1 时）
+
+对 θ 的边缘密度：
+  f_θ(θ) = ∫₀^{2π} sinθ/(4π) dφ = sinθ/2
+
+反变换（关键推导）：
+  F_θ(θ) = ∫₀^θ (1/2)sint dt = (1-cosθ)/2 = V₂
+  →  cosθ = 1 - 2V₂  →  θ = arccos(1-2V₂)
+  φ = 2πV₁
+
+等价形式：令 cosθ ~ U(-1,1)（均匀分布在 [-1,1]）
+  cosθ = 2V - 1  （V ~ U(0,1)）`,
+      code:`import numpy as np
+import matplotlib
+matplotlib.use('Agg')
+
+rng = np.random.default_rng(42)
+n = 50_000
+
+# ══ ① 圆盘均匀采样 ══
+R = 1.0
+U_r = rng.random(n)
+r_disk  = R * np.sqrt(U_r)        # r = R√U  ← 关键！
+theta   = rng.uniform(0, 2*np.pi, n)
+x_disk  = r_disk * np.cos(theta)
+y_disk  = r_disk * np.sin(theta)
+
+# 验证：各环带的点数应正比于面积
+rings = np.array([0, 0.25, 0.5, 0.75, 1.0]) * R
+for i in range(len(rings)-1):
+    r_lo, r_hi = rings[i], rings[i+1]
+    cnt = np.sum((r_disk >= r_lo) & (r_disk < r_hi))
+    area_frac = (r_hi**2 - r_lo**2) / R**2
+    print(f"环带 [{r_lo:.2f},{r_hi:.2f}]: 占比={cnt/n:.4f}, 理论={area_frac:.4f}")
+
+# ══ ② 球体均匀采样 ══
+R = 1.0
+V_r    = rng.random(n)
+r_sph  = R * V_r**(1/3)           # r = R·V^{1/3}  ← 关键！
+theta2 = np.arccos(1 - 2*rng.random(n))  # 均匀球面分布的 θ
+phi2   = rng.uniform(0, 2*np.pi, n)
+
+x_sph = r_sph * np.sin(theta2) * np.cos(phi2)
+y_sph = r_sph * np.sin(theta2) * np.sin(phi2)
+z_sph = r_sph * np.cos(theta2)
+
+# 验证：点的 |r| 分布应服从 f_r(r)=3r²
+r_actual = np.sqrt(x_sph**2 + y_sph**2 + z_sph**2)
+shells = [0, 0.25, 0.5, 0.75, 1.0]
+print("\\n球体各壳层占比验证:")
+for i in range(len(shells)-1):
+    r_lo, r_hi = shells[i], shells[i+1]
+    cnt  = np.sum((r_actual >= r_lo) & (r_actual < r_hi))
+    frac = r_hi**3 - r_lo**3  # 理论：r³/R³
+    print(f"  [{r_lo:.2f},{r_hi:.2f}]: 占比={cnt/n:.4f}, 理论={frac:.4f}")
+
+# ══ ③ 球面均匀采样 ══
+V1 = rng.random(n)
+V2 = rng.random(n)
+phi_surf   = 2 * np.pi * V1
+cos_theta  = 1 - 2 * V2                 # cosθ ~ U(-1,1)
+theta_surf = np.arccos(cos_theta)
+
+x_surf = np.sin(theta_surf) * np.cos(phi_surf)
+y_surf = np.sin(theta_surf) * np.sin(phi_surf)
+z_surf = np.cos(theta_surf)
+
+# 验证：球面点的 z 坐标 = cosθ 应服从 U(-1,1)
+print(f"\\n球面采样验证:")
+print(f"  z = cosθ: mean={z_surf.mean():.4f} (理论 0), "
+      f"min={z_surf.min():.4f}, max={z_surf.max():.4f}")
+print(f"  |xyz|²: mean={np.mean(x_surf**2+y_surf**2+z_surf**2):.6f} (理论 1)")
+
+# ══ 对比错误做法（圆盘）══
+print("\\n⚠️ 圆盘常见错误对比:")
+r_wrong = R * rng.random(n)     # 错：r = R·U（线性）
+r_right = R * np.sqrt(rng.random(n))  # 对：r = R√U
+print(f"  错误做法 r 均值: {r_wrong.mean():.4f} (圆盘理论应为 {2*R/3:.4f})")
+print(f"  正确做法 r 均值: {r_right.mean():.4f}")`,
+      note:'面试Tip: 三个公式必须记住：圆盘 r=R√U，球体 r=R·U^{1/3}，球面 cosθ=1-2V（即 cosθ~U(-1,1)）。规律：d维球 r=R·U^{1/d}。球面采样中，θ 不是均匀分布——直接用 θ=πU 是错的！'
+    },
+    {
+      title: '方法对比 & CLT 近似',
+      tag:'总结对比', tagColor:'#22d3ee',
+      theory:`各方法对比表（重要！）：
+
+方法             原理           精度  速度  场景
+Inverse CDF      F⁻¹(U)        ⭐⭐⭐⭐  ⭐    分层抽样
+Box-Muller       极坐标          ⭐⭐⭐⭐  ⭐⭐⭐  教学+底层
+Marsaglia Polar  圆内拒绝         ⭐⭐⭐⭐  ⭐⭐⭐⭐ 工程实现
+Ziggurat         分层矩形拒绝     ⭐⭐⭐⭐  ⭐⭐⭐⭐⭐ 工业级最快
+CLT 近似         ΣU_i 求均值     ⭐⭐    ⭐⭐⭐  仅作理解
+
+CLT 近似（12个均匀变量）：
+  Z = √12 · (mean(U₁...U₁₂) - 0.5)
+  缺点：尾部精度差（|Z|>3 的概率不准）`,
+      code:`import numpy as np
+import scipy.stats as st
+
+rng = np.random.default_rng(42)
+n = 100_000
+
+# 方法1：Inverse CDF
+Z_ppf = st.norm.ppf(rng.random(n))
+
+# 方法2：Box-Muller
+U1, U2 = rng.random(n), rng.random(n)
+Z_bm = np.sqrt(-2*np.log(U1)) * np.cos(2*np.pi*U2)
+
+# 方法3：NumPy 内置（Ziggurat算法）
+Z_np = rng.standard_normal(n)
+
+# 方法4：CLT 近似
+U_batch = rng.random((12, n))
+Z_clt = np.sqrt(12) * (U_batch.mean(axis=0) - 0.5)
+
+# 尾部对比（CLT 的致命弱点）
+print("P(|Z|>3) 估计:")
+for name, Z in [("PPF",Z_ppf),("Box-Muller",Z_bm),("NumPy",Z_np),("CLT",Z_clt)]:
+    emp = np.mean(np.abs(Z) > 3)
+    print(f"  {name:12s}: {emp:.4f}  (理论: 0.0027)")
+# CLT 结果会明显偏低，因为分布太薄`,
+      note:'面试Tip: Ziggurat 是 NumPy standard_normal 的实际实现。CLT 近似的尾部不准是核心缺陷，这在蒙特卡洛风险计算中是致命的。'
+    },
+  ]
+},
+
+vr: {
+  intro: `Monte Carlo 的收敛速度是 O(1/√n)。方差降低技术在相同样本量下大幅提升精度。
+五大方法各有适用场景，面试必考。`,
+  cards: [
+    {
+      title: 'Antithetic Variables（对偶变量）',
+      tag:'必考', tagColor:'#ef4444',
+      theory:`核心思想：用负相关的样本对 (U, 1-U) 代替两个独立样本
+
+原理：设估计量为 (f(U)+f(1-U))/2
+  Var(mean) = Var(f(U))/4 + Var(f(1-U))/4 + Cov(f(U),f(1-U))/2
+             = Var(f(U))/2 + Cov/2
+
+若 f 单调 → Cov(f(U), f(1-U)) < 0 → 方差降低
+
+方差降低程度：
+  Var_anti = [Var(f(U)) + Cov(f(U),f(1-U))] / 2
+  当 Cov < 0 时，Var_anti < Var_naive/2
+
+期权中的应用：
+  用 Z 和 -Z 生成镜像路径（对称随机游走）`,
+      code:`import numpy as np
+
+rng = np.random.default_rng(42)
+n   = 50_000  # 实际使用 n 对，等效 2n 个样本
+
+# ── 示例1：估计 E[e^U], U~Uniform(0,1) ──
+# 理论值 = e - 1 ≈ 1.71828
+U = rng.random(n)
+
+mc_vals   = np.exp(U)                          # 朴素MC
+anti_vals = (np.exp(U) + np.exp(1-U)) / 2     # 对偶变量
+
+print(f"真值:     {np.e - 1:.6f}")
+print(f"MC 估计:  {mc_vals.mean():.6f}, std={mc_vals.std():.5f}")
+print(f"Anti 估计:{anti_vals.mean():.6f}, std={anti_vals.std():.5f}")
+print(f"方差降低: {1 - anti_vals.var()/mc_vals.var():.1%}")
+
+# ── 示例2：欧式看涨期权定价 ──
+S0, K, T, r, sigma = 100, 100, 1.0, 0.05, 0.20
+
+def gbm_call_price(n, antithetic=False):
+    Z = rng.standard_normal(n)
+    if antithetic:
+        Z = np.concatenate([Z, -Z])   # 加入镜像
+    S_T = S0 * np.exp((r - 0.5*sigma**2)*T + sigma*np.sqrt(T)*Z)
+    payoff = np.maximum(S_T - K, 0)
+    price  = np.exp(-r*T) * payoff.mean()
+    se     = np.exp(-r*T) * payoff.std() / np.sqrt(len(payoff))
+    return price, se
+
+p_mc,   se_mc   = gbm_call_price(n, antithetic=False)
+p_anti, se_anti = gbm_call_price(n, antithetic=True)
+
+# Black-Scholes 理论值
+from scipy.stats import norm
+d1 = (np.log(S0/K)+(r+0.5*sigma**2)*T)/(sigma*np.sqrt(T))
+d2 = d1 - sigma*np.sqrt(T)
+bs = S0*norm.cdf(d1) - K*np.exp(-r*T)*norm.cdf(d2)
+
+print(f"\\nBS 理论价格: {bs:.4f}")
+print(f"MC 价格: {p_mc:.4f} ± {se_mc:.4f}")
+print(f"Anti 价格: {p_anti:.4f} ± {se_anti:.4f}")
+print(f"SE 降低: {1-se_anti/se_mc:.1%}")`,
+      note:'面试Tip: 对偶变量法最简洁，实现只需把 Z 替换为 concatenate([Z, -Z])。适用条件：payoff 关于 Z 单调（大多数期权满足）。'
+    },
+    {
+      title: 'Control Variates（控制变量）',
+      tag:'必考', tagColor:'#ef4444',
+      theory:`核心：引入已知期望的相关变量 X，通过线性修正降低方差
+
+估计量：θ_CV = Ȳ + b*(μ_X - X̄)
+  无偏性：E[θ_CV] = E[Y] ✓（因为E[X̄]=μ_X）
+
+最优系数：
+  b* = Cov(X,Y) / Var(X)
+
+方差降低：
+  Var(θ_CV) = Var(Y)/n · (1 - ρ²_{X,Y})
+
+  若 |ρ| = 0.9 → 方差降低 81%
+  若 |ρ| = 0.99 → 方差降低 98%
+
+多变量推广：
+  b* = [Var(X)]⁻¹ Cov(X, Y)  （向量形式）
+
+金融中的控制变量：
+  亚式期权的控制变量 → 几何平均期权（有解析解）`,
+      code:`import numpy as np
+from scipy.stats import norm
+
+rng = np.random.default_rng(42)
+n   = 50_000
+
+# ── 示例1：估计 E[e^U] ──
+U  = rng.random(n)
+Y  = np.exp(U)           # 目标变量
+X  = U                   # 控制变量: E[X]=0.5（已知）
+mu_X = 0.5
+
+b_star = np.cov(X, Y, ddof=1)[0,1] / np.var(X, ddof=1)
+Y_cv   = Y + b_star * (mu_X - X)
+
+print(f"真值:    {np.e-1:.6f}")
+print(f"MC:      {Y.mean():.6f} ± {Y.std()/np.sqrt(n):.6f}")
+print(f"CV:      {Y_cv.mean():.6f} ± {Y_cv.std()/np.sqrt(n):.6f}")
+rho = np.corrcoef(X, Y)[0,1]
+print(f"相关系数: {rho:.4f} → 理论方差降低: {1-rho**2:.1%}")
+
+# ── 示例2：亚式期权 → 用几何平均作为控制变量 ──
+S0, K, T, r, sigma = 100, 100, 1.0, 0.05, 0.2
+steps = 52  # 周度
+
+def asian_option_cv(n=50_000):
+    dt   = T / steps
+    Z    = rng.standard_normal((n, steps))
+    logS = np.cumsum((r-0.5*sigma**2)*dt + sigma*np.sqrt(dt)*Z, axis=1)
+    S    = S0 * np.exp(logS)
+    
+    # 亚式期权（算术平均）
+    arith_avg = S.mean(axis=1)
+    payoff_arith = np.exp(-r*T) * np.maximum(arith_avg - K, 0)
+    
+    # 控制变量：几何平均（有解析解）
+    geom_avg = np.exp(np.log(S).mean(axis=1))
+    payoff_geom = np.exp(-r*T) * np.maximum(geom_avg - K, 0)
+    
+    # 几何平均期权解析解
+    sigma_g = sigma * np.sqrt((2*steps+1)/(6*(steps+1)))
+    r_g     = 0.5*(r - 0.5*sigma**2 + sigma_g**2)
+    d1 = (np.log(S0/K)+(r_g+0.5*sigma_g**2)*T)/(sigma_g*np.sqrt(T))
+    d2 = d1 - sigma_g*np.sqrt(T)
+    mu_geom = np.exp(-r*T)*(S0*np.exp(r_g*T)*norm.cdf(d1)-K*norm.cdf(d2))
+    
+    # 最优系数
+    b = np.cov(payoff_geom, payoff_arith)[0,1] / np.var(payoff_geom)
+    cv_price = payoff_arith + b*(mu_geom - payoff_geom)
+    
+    return payoff_arith.mean(), payoff_arith.std()/np.sqrt(n), \
+           cv_price.mean(),     cv_price.std()/np.sqrt(n)
+
+p_mc, se_mc, p_cv, se_cv = asian_option_cv()
+print(f"\\n亚式 MC: {p_mc:.4f} ± {se_mc:.4f}")
+print(f"亚式 CV: {p_cv:.4f} ± {se_cv:.4f}")
+print(f"效率提升: {(se_mc/se_cv)**2:.1f}x")`,
+      note:'面试Tip: b* = Cov(X,Y)/Var(X) 要背下来，这就是线性回归的斜率。方差降低 1-ρ² 是核心公式。亚式期权+几何均值CV是高频金融MC题。'
+    },
+    {
+      title: 'Stratified Sampling（分层抽样）',
+      tag:'高频', tagColor:'#ef4444',
+      theory:`思想：将 [0,1] 分成 m 等份，每层内均匀取一个点
+
+标准分层（均匀概率层）：
+  在第 i 层 [(i-1)/m, i/m] 内取 U_i ~ Uniform(层内)
+  U_i = (i-1 + V_i) / m，其中 V_i ~ U[0,1]
+
+估计量：θ_SS = (1/m) Σ h(F⁻¹(U_i))
+（用反变换法将均匀分布映射到目标分布）
+
+方差降低来自：Eva正定理
+  Var(θ_SS) = Var(θ_MC) - Var(E[h(X)|层])
+  ≤ Var(θ_MC)  （总是不差于朴素MC）
+
+Neyman 最优分配：
+  n_i ∝ p_i · σ_i
+  （方差大的层多分配样本）`,
+      code:`import numpy as np
+import scipy.stats as st
+
+rng = np.random.default_rng(42)
+n   = 10_000
+m   = 100    # 分层数
+spb = n // m  # 每层样本数
+
+def h(x): return np.exp(-x**2)  # 目标函数
+true_val = 0.746824              # ∫₀¹ e^{-x²}dx
+
+# ── 朴素 Monte Carlo ──
+U_mc  = rng.random(n)
+mc    = h(U_mc).mean()
+mc_se = h(U_mc).std() / np.sqrt(n)
+
+# ── 分层抽样 ──
+layer_means = []
+for i in range(m):
+    lo, hi = i/m, (i+1)/m
+    U_i = lo + (hi-lo) * rng.random(spb)  # 层内均匀
+    layer_means.append(h(U_i).mean())
+ss    = np.mean(layer_means)
+ss_se = np.std(layer_means, ddof=1) / np.sqrt(m)
+
+# ── 用反变换法的分层（采样正态分布）──
+# 在正态分布上均匀覆盖各分位数
+V     = (np.arange(n) + rng.random(n)) / n
+Z_strat = st.norm.ppf(V)  # 各分位数均匀代表
+Z_naive = rng.standard_normal(n)
+
+print(f"真值:         {true_val:.6f}")
+print(f"MC:           {mc:.6f} ± {mc_se:.6f}")
+print(f"Stratified:   {ss:.6f} ± {ss_se:.6f}")
+print(f"方差降低:     {1 - (ss_se/mc_se)**2:.1%}")
+
+# 比较多次运行的方差
+trials = 1000
+mc_est   = [h(rng.random(n)).mean() for _ in range(trials)]
+def ss_once():
+    lm = []
+    for i in range(m):
+        lo,hi = i/m,(i+1)/m
+        lm.append(h(lo+(hi-lo)*rng.random(spb)).mean())
+    return np.mean(lm)
+ss_est = [ss_once() for _ in range(trials)]
+print(f"\\n实验方差 MC:  {np.var(mc_est):.2e}")
+print(f"实验方差 SS:  {np.var(ss_est):.2e}")
+print(f"方差比:       {np.var(mc_est)/np.var(ss_est):.1f}x")`,
+      note:'面试Tip: 分层抽样通过"每层均有代表"降低方差，效果取决于函数在各层的变化程度。与Importance Sampling组合（在重要区域增加层密度）效果更佳。'
+    },
+    {
+      title: 'Importance Sampling（重要性采样）',
+      tag:'必考', tagColor:'#ef4444',
+      theory:`核心思想：从更"重要"的分布 g(x) 采样，用权重 f(x)/g(x) 修正
+
+公式：
+  θ = E_f[h(X)] = ∫ h(x)f(x)dx
+     = ∫ h(x)·[f(x)/g(x)]·g(x)dx
+     = E_g[h(X)·w(X)]  其中 w(x)=f(x)/g(x)
+
+估计量：θ_IS = (1/n) Σ h(X_i)·w(X_i)，X_i ~ g
+
+最优 g*：
+  g*(x) ∝ |h(x)|·f(x)  → 方差=0（理想但不可用）
+  
+实用选择（Tilted Density / Esscher Transform）：
+  f_t(x) = e^(tx)·f(x) / M(t)
+  M(t) = E_f[e^(tX)] = MGF
+  t>0 向右移，用于捕捉右尾稀有事件
+
+⚠️ 警告：g(x) 选不好 → 方差反而爆炸！
+  检验：确保 f(x)/g(x) 的尾部有界`,
+      code:`import numpy as np
+import scipy.stats as st
+
+rng = np.random.default_rng(42)
+n   = 100_000
+
+# ── 示例1：估计 P(Z>3)，Z~N(0,1) ──
+true_p = 1 - st.norm.cdf(3)  # ≈ 0.00135
+
+# 朴素MC：几乎采不到 Z>3 的样本
+Z_mc  = rng.standard_normal(n)
+p_mc  = (Z_mc > 3).mean()
+se_mc = np.sqrt(p_mc*(1-p_mc)/n)
+
+# IS：从 N(3,1) 采样（重心移到目标区域）
+mu_g  = 3.0
+X_is  = rng.normal(mu_g, 1.0, n)
+w     = st.norm.pdf(X_is) / st.norm.pdf(X_is, mu_g, 1.0)  # f/g
+h_x   = (X_is > 3).astype(float)
+p_is  = (h_x * w).mean()
+se_is = (h_x * w).std() / np.sqrt(n)
+
+print(f"真值:     {true_p:.6f}")
+print(f"MC:       {p_mc:.6f} ± {se_mc:.6f}")
+print(f"IS:       {p_is:.6f} ± {se_is:.6f}")
+print(f"方差降低: {(se_mc/se_is)**2:.0f}x")
+
+# ── 示例2：Tilted Density 估计 P(X>10)，X~Exp(1) ──
+true_exp = np.exp(-10)  # ≈ 4.54e-5
+lam = 1.0
+t   = 0.7  # 倾斜参数，使分布向右移
+
+# Exp(λ) 的 tilted density = Exp(λ-t)，即 Exp(1-t)=Exp(0.3)
+lam_g = lam - t           # 新的 rate = 1-t = 0.3
+X_tilt = rng.exponential(1/lam_g, n)  # 从 Exp(lam_g) 采样
+
+# 权重：f(x)/g(x) = e^{-x} / ((1-t)e^{-(1-t)x}) = e^{-tx}/(1-t)
+f_x = lam * np.exp(-lam * X_tilt)
+g_x = lam_g * np.exp(-lam_g * X_tilt)
+w_tilt = f_x / g_x
+
+h_x = (X_tilt > 10).astype(float)
+p_tilt = (h_x * w_tilt).mean()
+
+print(f"\\nP(X>10) 真值:    {true_exp:.4e}")
+print(f"IS Tilted 估计:  {p_tilt:.4e}")
+
+# 有效样本数（Effective Sample Size）
+ess = n * w_tilt.mean()**2 / (w_tilt**2).mean()
+print(f"有效样本数 ESS: {ess:.0f} / {n} ({ess/n:.1%})")`,
+      note:`面试Tip: IS的核心公式是"从g采样，乘以f/g权重"。Tilted density的参数t通过最小化方差选择：通常令 μ_g 等于目标区域的边界（如 t 使均值=3 用于 P(Z>3)）。ESS = (Σwᵢ)²/Σwᵢ² 是判断IS效率的关键。`
+    },
+    {
+      title: 'Conditional MC（条件蒙特卡洛）',
+      tag:'高频', tagColor:'#ef4444',
+      theory:`原理：Rao-Blackwell 定理
+  Var(E[Y|X]) ≤ Var(Y)  （条件期望的方差更小）
+
+做法：把 Y 关于某个变量 X 取条件期望（解析计算），
+      再对 X 做MC模拟
+
+优势：消去一个随机维度 → 方差严格不增
+
+例子：估计 π
+  朴素MC: Y = I(U₁²+U₂²≤1)，只有0或1，方差大
+  CMC:   E[Y|U₁] = √(1-U₁²)，连续函数，方差小
+         只需模拟一个变量 U₁
+
+条件方差分解（Eve法则）：
+  Var(Y) = E[Var(Y|X)] + Var(E[Y|X])
+         = 残余随机性 + 可消除的波动`,
+      code:`import numpy as np
+
+rng = np.random.default_rng(42)
+n   = 100_000
+
+# ── 例1：估计 π ──
+# 朴素MC：Y = I(U₁²+U₂²≤1)
+U1, U2 = rng.random(n), rng.random(n)
+Y_mc  = (U1**2 + U2**2 <= 1).astype(float)
+pi_mc = 4 * Y_mc.mean()
+
+# CMC：E[Y|U₁] = √(1-U₁²)（解析消去 U₂）
+U1   = rng.random(n)  # 只需一个
+f_u1 = np.sqrt(np.maximum(1 - U1**2, 0))
+pi_cmc = 4 * f_u1.mean()
+
+print(f"真值:   π = {np.pi:.6f}")
+print(f"MC:     π ≈ {pi_mc:.6f}, Var = {np.var(Y_mc):.5f}")
+print(f"CMC:    π ≈ {pi_cmc:.6f}, Var = {np.var(f_u1):.5f}")
+print(f"方差比: {np.var(Y_mc)/np.var(f_u1):.2f}x")
+
+# ── 例2：欧式期权的条件MC ──
+# 对于路径依赖期权，条件化在期末价格 S_T 上
+S0, K, T, r, sigma = 100, 105, 0.5, 0.05, 0.25
+n_paths = 50_000
+
+# 朴素MC
+Z = rng.standard_normal(n_paths)
+S_T = S0 * np.exp((r-0.5*sigma**2)*T + sigma*np.sqrt(T)*Z)
+payoff_mc = np.exp(-r*T) * np.maximum(S_T - K, 0)
+
+# CMC：对障碍期权，条件化在无障碍时计算解析价值
+# 这里以 binary call 为例：payoff = I(S_T > K)
+# E[I(S_T>K)|Z] = Φ(z') 是解析可计算的
+# → 但 Z 已经决定了 S_T，实际上就是避免 0/1 跳变
+
+# 更直接的应用：Down-and-out 期权
+# CMC 对 GBM 路径中间击穿障碍的处理
+barrier = 90
+steps   = 52
+dt      = T / steps
+Z_paths = rng.standard_normal((n_paths, steps))
+log_ret  = (r-0.5*sigma**2)*dt + sigma*np.sqrt(dt)*Z_paths
+log_S    = np.log(S0) + np.cumsum(log_ret, axis=1)
+S_paths  = np.exp(log_S)
+
+# 存活路径的期权价格
+survived = S_paths.min(axis=1) > barrier
+S_T_surv = S_paths[:, -1]
+payoff_barrier = np.exp(-r*T) * np.maximum(S_T_surv - K, 0) * survived
+
+print(f"\\nDown-and-out 价格: {payoff_barrier.mean():.4f}")
+print(f"普通期权价格:       {payoff_mc.mean():.4f}")`,
+      note:'面试Tip: CMC的核心是"把能解析算的随机性消掉"。π的例子非常经典，方差降低约26%。在金融中，路径末端的解析定价（如Black-Scholes条件）是更强力的CMC应用。'
+    },
+  ]
+},
+
+mcmc: {
+  intro: `当目标分布无法直接采样时（如高维后验分布），MCMC 通过构造马尔可夫链来模拟目标分布。
+面试重点：Metropolis-Hastings 的推导与收敛性。`,
+  cards: [
+    {
+      title: 'Metropolis-Hastings 算法',
+      tag:'核心必考', tagColor:'#ef4444',
+      theory:`目标：从 p(x) ∝ f(x) 采样（不需要归一化常数！）
+
+算法：
+  1. 初始化 x₀
+  2. 提议 x' ~ q(x'|xₜ)（提议分布，可以是N(xₜ,σ²)）
+  3. 计算接受概率：
+     α = min(1, p(x')q(xₜ|x') / p(xₜ)q(x'|xₜ))
+  4. x_{t+1} = x' 以概率α，否则 = xₜ
+
+当 q 对称（如正态分布）时：α = min(1, f(x')/f(xₜ))
+
+正确性：满足 Detailed Balance（细致平衡）
+  p(x)·T(x→x') = p(x')·T(x'→x)
+  → p(x) 是链的平稳分布
+
+关键概念：
+  Burn-in: 前期未收敛样本丢弃（通常丢弃前10-20%）
+  Thinning: 每隔k步取一个样本（降低自相关）
+  Acceptance rate: 理想值20-40%（太高=移动太小，太低=拒绝太多）`,
+      code:`import numpy as np
+import scipy.stats as st
+
+rng = np.random.default_rng(42)
+
+def metropolis_hastings(log_target, x0, n_iter=100_000,
+                         proposal_std=1.0, burn_in=5000):
+    """
+    通用 Metropolis-Hastings 采样器
+    log_target: 对数目标密度函数（不需要归一化）
+    """
+    samples   = [x0]
+    accepted  = 0
+    x_current = x0
+    
+    for i in range(n_iter):
+        # 提议新点（对称正态提议）
+        x_prop = x_current + rng.normal(0, proposal_std)
+        
+        # 接受概率（对数形式避免下溢）
+        log_alpha = log_target(x_prop) - log_target(x_current)
+        alpha     = np.exp(min(0, log_alpha))  # min(1, ratio)
+        
+        if rng.random() < alpha:
+            x_current = x_prop
+            accepted += 1
+        samples.append(x_current)
+    
+    print(f"接受率: {accepted/n_iter:.2%}  (理想 20-40%)")
+    return np.array(samples[burn_in:])
+
+# ── 示例1：采样标准正态 N(0,1) ──
+log_p_normal = lambda x: -0.5 * x**2  # ∝ N(0,1)
+samples_norm = metropolis_hastings(log_p_normal, x0=0.0,
+                                    proposal_std=1.0)
+
+print(f"\\nN(0,1) 目标:")
+print(f"样本均值: {samples_norm.mean():.4f}  (理论: 0)")
+print(f"样本std:  {samples_norm.std():.4f}   (理论: 1)")
+
+# KS 检验验证收敛
+from scipy.stats import kstest
+ks_stat, p_val = kstest(samples_norm, 'norm')
+print(f"KS检验 p值: {p_val:.4f}  (大→接受正态假设)")
+
+# ── 示例2：双峰分布（直接采样困难）──
+def log_bimodal(x):
+    return np.log(0.5*st.norm.pdf(x, -3, 0.8) + 
+                  0.5*st.norm.pdf(x, +3, 0.8))
+
+samples_bi = metropolis_hastings(log_bimodal, x0=0.0,
+                                  proposal_std=2.0,
+                                  n_iter=200_000)
+print(f"\\n双峰分布 均值: {samples_bi.mean():.4f}  (理论: 0)")
+print(f"双峰分布 std:  {samples_bi.std():.4f}   (理论: ≈3.0)")
+
+# ── 示例3：调整提议分布的宽度（关键超参数）──
+results = {}
+for std in [0.1, 0.5, 1.0, 3.0, 10.0]:
+    s = metropolis_hastings(log_p_normal, x0=0.0,
+                             proposal_std=std, n_iter=20_000,
+                             burn_in=1000)
+    acf1 = np.corrcoef(s[:-1], s[1:])[0,1]
+    results[std] = acf1
+print("\\n提议宽度 vs 一阶自相关:")
+for std, acf in results.items():
+    bar = "█" * int(abs(acf)*30)
+    print(f"  std={std:5.1f}: ACF(1)={acf:.3f} {bar}")`,
+      note:'面试Tip: MCMC不需要知道归一化常数（只需要知道f(x)∝p(x)），这是它的核心优势。接受率的调节是实践中的关键——调整proposal_std使接受率在20-40%之间。'
+    },
+    {
+      title: 'MCMC 收敛诊断',
+      tag:'进阶', tagColor:'#8b5cf6',
+      theory:`判断 MCMC 是否收敛的方法：
+
+1. Trace Plot（轨迹图）
+   收敛标志：链在稳定范围内"混合良好"
+   不收敛：缓慢漂移、卡住
+
+2. Autocorrelation（自相关）
+   ACF(k) = Corr(xₜ, xₜ₊ₖ)
+   收敛时 ACF 快速衰减到0
+   Effective Sample Size (ESS):
+     ESS ≈ n / (1 + 2·Σ ACF(k))
+   
+3. Gelman-Rubin 诊断（R̂）
+   运行多条独立链，比较链内/链间方差
+   R̂ = √(V̂/W)  其中 V̂=链间方差加权，W=链内方差
+   R̂ ≈ 1.0 → 收敛  （通常 <1.1 可接受）
+
+4. Burn-in 选择
+   通常丢弃前 10-20% 的样本`,
+      code:`import numpy as np
+from scipy.stats import norm
+
+rng = np.random.default_rng(42)
+
+def run_chain(n_iter=50_000, x0=0.0, std=1.0):
+    x = x0
+    samples = []
+    for _ in range(n_iter):
+        x_new = x + rng.normal(0, std)
+        log_alpha = -0.5*x_new**2 - (-0.5*x**2)
+        if rng.random() < np.exp(min(0, log_alpha)):
+            x = x_new
+        samples.append(x)
+    return np.array(samples)
+
+# ── Effective Sample Size (ESS) ──
+def compute_ess(samples):
+    n = len(samples)
+    # 自相关
+    s2 = np.var(samples, ddof=1)
+    rho_sum = 0
+    for k in range(1, 200):
+        rho_k = np.corrcoef(samples[:-k], samples[k:])[0,1]
+        if abs(rho_k) < 0.05: break
+        rho_sum += rho_k
+    return n / (1 + 2*rho_sum)
+
+samples = run_chain(50_000)
+burn_in_n = 5000
+s = samples[burn_in_n:]
+
+ess = compute_ess(s)
+print(f"样本总数:     {len(s)}")
+print(f"ESS:          {ess:.0f}  ({ess/len(s):.1%})")
+print(f"ACF(1):       {np.corrcoef(s[:-1], s[1:])[0,1]:.4f}")
+
+# ── Gelman-Rubin R̂ ──
+def gelman_rubin(chains):
+    """多链收敛诊断"""
+    n_chains, n = len(chains), len(chains[0])
+    chain_means = [c.mean() for c in chains]
+    chain_vars  = [c.var(ddof=1) for c in chains]
+    
+    grand_mean = np.mean(chain_means)
+    B = n * np.var(chain_means, ddof=1)   # 链间方差
+    W = np.mean(chain_vars)                # 链内方差
+    
+    V_hat = (n-1)/n * W + (1 + 1/n_chains) * B/n
+    R_hat = np.sqrt(V_hat / W)
+    return R_hat, B, W
+
+# 从不同起点运行4条链
+chains = [run_chain(n_iter=20_000, x0=x0)[5000:] 
+          for x0 in [-5, -2, 2, 5]]
+
+R_hat, B, W = gelman_rubin(chains)
+print(f"\\nGelman-Rubin R̂ = {R_hat:.4f}  (<1.1 视为收敛)")
+print(f"链间方差 B:  {B:.4f}")
+print(f"链内方差 W:  {W:.4f}")`,
+      note:'面试Tip: ESS/n 是判断MCMC效率的核心指标。对于简单1D正态，ESS通常达到50-80%。Gelman-Rubin R̂ 是多链收敛的标准检验，R̂<1.1是普遍接受的收敛标准。'
+    },
+  ]
+},
+
+val: {
+  intro: `如何验证模拟数据是否符合理论分布，以及比较两组数据是否来自同一分布。
+统计验证是MC模拟结果可信度的保障。`,
+  cards: [
+    {
+      title: 'Chi-Square & KS 检验',
+      tag:'必考', tagColor:'#ef4444',
+      theory:`卡方检验（离散分布）：
+  T = Σ (N_i - E_i)² / E_i ~ χ²(k-1)
+  N_i = 观测频数，E_i = 理论期望频数
+  p = P(χ²(k-1) ≥ T_obs)
+
+参数未知时：
+  先估计参数 → 代入计算期望频数
+  自由度调整：χ²(k-1-m)，m = 估计参数个数
+  或使用模拟法（参数Bootstrap）
+
+KS 检验（连续分布）：
+  D = max_x |F̂(x) - F(x)|
+  F̂(x) = (1/n)·#{i: X_i ≤ x}（经验CDF）
+  
+  优点：无需分箱，适合连续分布
+  分布自由（参数已知时）
+  参数未知时需用模拟修正`,
+      code:`import numpy as np
+import scipy.stats as st
+from scipy.stats import chi2
+
+rng = np.random.default_rng(42)
+
+# ══ 1. 卡方检验：验证 Poisson 分布 ══
+# 模拟：100天的事故次数，假设 Poisson(λ=2)
+lam_true = 2.0
+n = 200
+data = rng.poisson(lam_true, n)
+
+# 分类（合并尾部使每格期望≥5）
+max_k = 7
+observed = np.bincount(np.clip(data, 0, max_k), minlength=max_k+1)
+observed[-1] = (data >= max_k).sum()  # 合并尾部
+
+# 理论期望（参数已知）
+probs = np.array([st.poisson.pmf(k, lam_true) for k in range(max_k)] + 
+                  [1 - st.poisson.cdf(max_k-1, lam_true)])
+expected = n * probs
+
+# 确保期望 >= 5（合并小格）
+T_stat = ((observed - expected)**2 / expected).sum()
+df     = len(observed) - 1  # 自由度
+p_val  = 1 - chi2.cdf(T_stat, df)
+
+print("=== 卡方检验（Poisson，参数已知）===")
+print(f"T统计量 = {T_stat:.3f}")
+print(f"自由度  = {df}")
+print(f"p值     = {p_val:.4f}")
+print(f"结论:   {'接受 Poisson(2)' if p_val>0.05 else '拒绝 Poisson(2)'}")
+
+# 参数未知时：先估计 λ̂，再检验（自由度 -1）
+lam_hat = data.mean()
+probs_hat = np.array([st.poisson.pmf(k, lam_hat) for k in range(max_k)] + 
+                      [1 - st.poisson.cdf(max_k-1, lam_hat)])
+expected_hat = n * probs_hat
+T_hat = ((observed - expected_hat)**2 / expected_hat).sum()
+p_hat = 1 - chi2.cdf(T_hat, df - 1)  # 少1个自由度！
+print(f"\\n参数未知情况下 p值 = {p_hat:.4f}  (df={df-1})")
+
+# ══ 2. KS 检验：验证正态性 ══
+print("\\n=== KS 检验（正态分布）===")
+X = rng.normal(0, 1, 500)
+
+# 参数已知
+ks_stat, p_ks = st.kstest(X, 'norm')
+print(f"参数已知: D={ks_stat:.4f}, p={p_ks:.4f}")
+
+# 参数未知（Lilliefors 检验）
+mu_hat, std_hat = X.mean(), X.std(ddof=1)
+X_standardized  = (X - mu_hat) / std_hat
+ks_stat2, p_ks2 = st.kstest(X_standardized, 'norm')
+# ⚠️ p值偏大，需用模拟修正！
+print(f"参数估计后: D={ks_stat2:.4f}, p(未修正)={p_ks2:.4f}  ← 需要模拟修正！")
+
+# 模拟法修正 p 值
+def simulate_ks_pval(data, dist='norm', n_sim=2000):
+    n = len(data)
+    mu, std = data.mean(), data.std(ddof=1)
+    D_obs = st.kstest((data-mu)/std, 'norm')[0]
+    D_sims = []
+    for _ in range(n_sim):
+        X_sim = rng.normal(mu, std, n)
+        mu_s, std_s = X_sim.mean(), X_sim.std(ddof=1)
+        D_s = st.kstest((X_sim-mu_s)/std_s, 'norm')[0]
+        D_sims.append(D_s)
+    return (np.array(D_sims) >= D_obs).mean()
+
+p_sim = simulate_ks_pval(X)
+print(f"模拟修正 p值: {p_sim:.4f}  ← 更准确")`,
+      note:'面试Tip: 参数未知时，用估计参数代入检验会使 p 值偏大（倾向接受 H₀），需要修正自由度或用参数Bootstrap模拟真实 p 值。这是非常常见的错误。'
+    },
+    {
+      title: 'Wilcoxon/Mann-Whitney & Permutation Test',
+      tag:'高频', tagColor:'#f97316',
+      theory:`秩和检验（Rank-Sum Test）：
+  检验两组样本是否来自同一分布（非参数检验）
+
+步骤：
+  1. 合并两组，排序赋秩
+  2. R = 第一组的秩之和
+  3. H₀下：E[R] = n(n+m+1)/2
+           Var[R] = nm(n+m+1)/12
+
+大样本正态近似：
+  Z = (R - E[R]) / √Var[R] ~ N(0,1)
+
+Permutation Test（置换检验）：
+  更通用的非参数方法
+  1. 计算观测统计量 T_obs
+  2. 随机打乱标签，重复B次
+  3. p = #{T_perm ≥ T_obs} / B
+
+Kruskal-Wallis（多组推广）：
+  H = 12/[N(N+1)] · Σ Rᵢ²/nᵢ - 3(N+1)
+  H ~ χ²(k-1)`,
+      code:`import numpy as np
+import scipy.stats as st
+
+rng = np.random.default_rng(42)
+
+# ══ 1. Mann-Whitney U 检验（自动调用）══
+print("=== Mann-Whitney U 检验 ===")
+group1 = rng.normal(0, 1, 50)    # 系统A的输出
+group2 = rng.normal(0.3, 1, 50)  # 系统B的输出（轻微不同）
+
+U_stat, p_mw = st.mannwhitneyu(group1, group2, alternative='two-sided')
+print(f"U统计量: {U_stat:.1f}")
+print(f"p值:     {p_mw:.4f}")
+print(f"结论:    {'两组分布相同（p>0.05）' if p_mw>0.05 else '两组分布不同（p≤0.05）'}")
+
+# 手动实现：计算秩和
+def rank_sum_test(x, y):
+    n, m = len(x), len(y)
+    combined = np.concatenate([x, y])
+    ranks    = st.rankdata(combined)  # 处理并列值
+    R = ranks[:n].sum()              # 第一组秩和
+    
+    E_R   = n * (n + m + 1) / 2
+    Var_R = n * m * (n + m + 1) / 12
+    Z     = (R - E_R) / np.sqrt(Var_R)
+    p_two = 2 * min(st.norm.cdf(Z), 1-st.norm.cdf(Z))
+    
+    return R, Z, p_two
+
+R, Z, p = rank_sum_test(group1, group2)
+print(f"\\n手动计算 R={R:.0f}, Z={Z:.4f}, p={p:.4f}")
+
+# ══ 2. Permutation Test（置换检验）══
+print("\\n=== Permutation Test ===")
+def permutation_test(x, y, stat_fn=None, n_perm=10000):
+    if stat_fn is None:
+        stat_fn = lambda a, b: abs(a.mean() - b.mean())
+    
+    n_x = len(x)
+    combined = np.concatenate([x, y])
+    T_obs = stat_fn(x, y)
+    
+    T_perm = []
+    for _ in range(n_perm):
+        perm = rng.permutation(combined)
+        T_perm.append(stat_fn(perm[:n_x], perm[n_x:]))
+    T_perm = np.array(T_perm)
+    
+    p_val = (T_perm >= T_obs).mean()
+    return T_obs, p_val, T_perm
+
+T_obs, p_perm, T_dist = permutation_test(group1, group2)
+print(f"观测统计量: {T_obs:.4f}")
+print(f"Permutation p值: {p_perm:.4f}")
+
+# ══ 3. Kruskal-Wallis（3组以上）══
+print("\\n=== Kruskal-Wallis（3组）===")
+g1 = rng.normal(0,   1, 40)
+g2 = rng.normal(0.5, 1, 40)
+g3 = rng.normal(1.0, 1, 40)
+
+H_stat, p_kw = st.kruskal(g1, g2, g3)
+print(f"H统计量: {H_stat:.4f}")
+print(f"p值:     {p_kw:.4f}")
+print(f"结论:    {'3组分布相同' if p_kw>0.05 else '至少一组分布不同'}")`,
+      note:'面试Tip: Mann-Whitney 检验是非参数检验（不需要正态假设），适合MC输出的分布比较。Permutation Test 是最通用的方法，可以用任意统计量。'
+    },
+  ]
+},
+
+fin: {
+  intro: `金融MC的核心应用：GBM路径模拟、期权定价、风险度量（VaR/ES）、相关资产。
+这是你简历中 Millennium 实习相关的核心内容。`,
+  cards: [
+    {
+      title: 'GBM 路径模拟与期权定价',
+      tag:'必考', tagColor:'#ef4444',
+      theory:`几何布朗运动（GBM）：
+  dS = μS dt + σS dW
+  
+精确离散化（无近似误差）：
+  S_{t+dt} = S_t · exp((μ-σ²/2)dt + σ√dt·Z)
+  Z ~ N(0,1)
+
+欧式看涨期权：
+  C = e^{-rT} · E[max(S_T - K, 0)]
+
+希腊字母（MC估计）：
+  Delta：Delta ≈ (C(S+ε) - C(S-ε)) / 2ε
+  Vega：Vega ≈ (C(σ+ε) - C(σ-ε)) / 2ε
+  （使用相同随机数：Common Random Numbers）
+
+Black-Scholes 验证（欧式）：
+  d₁ = (ln(S/K)+(r+σ²/2)T) / (σ√T)
+  d₂ = d₁ - σ√T
+  C  = S·Φ(d₁) - Ke^{-rT}·Φ(d₂)`,
+      code:`import numpy as np
+from scipy.stats import norm
+
+rng = np.random.default_rng(42)
+
+# ── Black-Scholes 解析公式 ──
+def bs_call(S, K, T, r, sigma):
+    d1 = (np.log(S/K) + (r+0.5*sigma**2)*T) / (sigma*np.sqrt(T))
+    d2 = d1 - sigma*np.sqrt(T)
+    return S*norm.cdf(d1) - K*np.exp(-r*T)*norm.cdf(d2)
+
+# ── GBM 路径模拟 ──
+S0, K, T, r, sigma = 100, 100, 1.0, 0.05, 0.2
+n_paths = 500_000
+
+# 单步（欧式期权）
+Z     = rng.standard_normal(n_paths)
+S_T   = S0 * np.exp((r-0.5*sigma**2)*T + sigma*np.sqrt(T)*Z)
+price_mc = np.exp(-r*T) * np.maximum(S_T - K, 0).mean()
+price_bs = bs_call(S0, K, T, r, sigma)
+se_mc    = np.exp(-r*T) * np.maximum(S_T-K, 0).std() / np.sqrt(n_paths)
+
+print(f"BS 解析: {price_bs:.4f}")
+print(f"MC 估计: {price_mc:.4f} ± {se_mc:.4f}")
+
+# ── 多步路径（路径依赖期权）──
+steps = 252
+dt    = T / steps
+n_p   = 100_000
+
+Z_paths = rng.standard_normal((n_p, steps))
+log_S   = np.log(S0) + np.cumsum(
+    (r-0.5*sigma**2)*dt + sigma*np.sqrt(dt)*Z_paths, axis=1)
+S_paths = np.exp(log_S)  # shape (n_paths, steps)
+
+# 亚式期权（算术平均）
+arith_payoff = np.exp(-r*T)*np.maximum(S_paths.mean(axis=1)-K, 0)
+# 障碍期权（Down-and-Out, 障碍 H=85）
+H = 85
+survived     = S_paths.min(axis=1) > H
+dao_payoff   = np.exp(-r*T)*np.maximum(S_paths[:,-1]-K, 0)*survived
+# Lookback 期权（最大值）
+lookback_payoff = np.exp(-r*T)*np.maximum(S_paths.max(axis=1)-K, 0)
+
+print(f"\\n亚式期权:   {arith_payoff.mean():.4f}")
+print(f"障碍期权:   {dao_payoff.mean():.4f}")
+print(f"Lookback:  {lookback_payoff.mean():.4f}")
+
+# ── MC 估计希腊字母（Common Random Numbers）──
+eps = 0.01
+Z_fixed = rng.standard_normal(n_paths)  # 固定随机数！
+
+def mc_price(S_input, K=K, T=T, r=r, sig=sigma):
+    ST = S_input * np.exp((r-0.5*sig**2)*T + sig*np.sqrt(T)*Z_fixed)
+    return np.exp(-r*T) * np.maximum(ST-K, 0).mean()
+
+delta = (mc_price(S0+eps) - mc_price(S0-eps)) / (2*eps)
+vega  = (mc_price(S0, sig=sigma+0.001) - mc_price(S0, sig=sigma-0.001)) / 0.002
+
+# BS 解析希腊字母
+d1 = (np.log(S0/K)+(r+0.5*sigma**2)*T)/(sigma*np.sqrt(T))
+d2 = d1-sigma*np.sqrt(T)
+delta_bs = norm.cdf(d1)
+vega_bs  = S0*norm.pdf(d1)*np.sqrt(T)
+
+print(f"\\nDelta: MC={delta:.4f}, BS={delta_bs:.4f}")
+print(f"Vega:  MC={vega:.4f}, BS={vega_bs:.4f}")`,
+      note:'面试Tip: 使用 Common Random Numbers（固定同一组Z）计算希腊字母，方差比独立采样小得多。多步路径一定用精确离散化 exp((r-σ²/2)dt + σ√dt·Z) 而不是近似。'
+    },
+    {
+      title: '相关资产 & VaR / ES',
+      tag:'必考', tagColor:'#ef4444',
+      theory:`多资产相关性（Cholesky 分解）：
+  Σ = L·Lᵀ（Cholesky 分解）
+  若 Z ~ N(0,I)，则 X = L·Z ~ N(0,Σ)
+
+VaR（Value at Risk）：
+  VaR_α = F⁻¹(1-α) = 分位数
+  P(损失 > VaR_α) = α
+
+ES（Expected Shortfall / CVaR）：
+  ES_α = E[损失 | 损失 > VaR_α]
+       = (1/α) ∫_{VaR} f(x)dx
+  
+  ES 比 VaR 更"一致"（满足次可加性）
+  ES = VaR + E[超额损失] / α
+
+GBM 下 VaR 解析：
+  VaR_α = S₀·(1 - exp((μ-σ²/2)T + σ√T·Φ⁻¹(α)))`,
+      code:`import numpy as np
+from scipy.stats import norm
+from scipy import linalg
+
+rng = np.random.default_rng(42)
+n   = 500_000
+
+# ══ 1. 相关资产模拟（Cholesky）══
+mu    = np.array([0.08, 0.12, 0.10])  # 年化收益率
+sigma = np.array([0.15, 0.22, 0.18])  # 年化波动率
+corr  = np.array([[1.00, 0.65, 0.40],
+                   [0.65, 1.00, 0.55],
+                   [0.40, 0.55, 1.00]])
+
+# 协方差矩阵
+cov = np.diag(sigma) @ corr @ np.diag(sigma)
+
+# Cholesky 分解
+L = linalg.cholesky(cov, lower=True)
+
+# 生成相关正态随机数
+T = 1.0
+Z = rng.standard_normal((3, n))
+corr_Z = L @ Z  # shape (3, n)
+
+# 验证相关结构
+print("相关矩阵验证:")
+print(np.corrcoef(corr_Z).round(3))
+
+# GBM 路径（相关资产）
+log_ret  = (mu - 0.5*sigma**2).reshape(-1,1) * T + corr_Z * np.sqrt(T)
+S0_vec   = np.array([100, 80, 120])
+S_T      = S0_vec.reshape(-1,1) * np.exp(log_ret)
+
+# ══ 2. 投资组合 VaR / ES ══
+weights = np.array([0.4, 0.35, 0.25])
+P0 = (weights * S0_vec).sum()
+
+# 投资组合价值
+P_T   = (weights.reshape(-1,1) * S_T).sum(axis=0)
+PnL   = P_T - P0        # 盈亏
+losses = -PnL           # 损失（正数=亏钱）
+
+# VaR 和 ES
+alpha = 0.01   # 99% VaR
+VaR_99 = np.quantile(losses, 1-alpha)
+ES_99  = losses[losses >= VaR_99].mean()
+
+print(f"\\n投资组合初始价值: {P0:.2f}")
+print(f"99% VaR: {VaR_99:.2f} ({VaR_99/P0:.2%})")
+print(f"99% ES:  {ES_99:.2f} ({ES_99/P0:.2%})")
+
+# 解析 VaR（单资产GBM）
+def gbm_var(S0, mu, sigma, T, alpha):
+    z = norm.ppf(alpha)
+    return S0 * (1 - np.exp((mu-0.5*sigma**2)*T + sigma*np.sqrt(T)*z))
+
+print(f"\\n资产1 解析VaR(99%): {gbm_var(100,0.08,0.15,T,0.01):.2f}")
+
+# ══ 3. 波动率表面特征提取（结合你的实习背景）══
+# EWMA 波动率
+def ewma_vol(returns, lam=0.94):
+    var = np.zeros(len(returns))
+    var[0] = returns[0]**2
+    for t in range(1, len(returns)):
+        var[t] = lam*var[t-1] + (1-lam)*returns[t]**2
+    return np.sqrt(var * 252)
+
+# 模拟日收益率
+daily_ret = rng.standard_normal(252) * 0.01
+vol_series = ewma_vol(daily_ret)
+print(f"\\nEWMA 年化波动率（最新）: {vol_series[-1]:.2%}")`,
+      note:'面试Tip: Cholesky分解生成相关多元正态是金融MC的标准流程。ES比VaR更重要（巴塞尔III已经转向ES）。记住 ES_α = E[Loss | Loss > VaR_α] 的直观解释：超过VaR时平均亏多少。'
+    },
+  ]
+},
+};
+
+/* ═══════════════════════════ COMPONENTS ═══════════════════════════ */
+
+function Tag({text, color}){
+  return <span style={{
+    background:color+'1a', color, border:`1px solid ${color}35`,
+    borderRadius:4, padding:'2px 9px', fontSize:11,
+    fontFamily:"'JetBrains Mono',monospace",
+    fontWeight:700, letterSpacing:1, whiteSpace:'nowrap'
+  }}>{text}</span>;
+}
+
+function CopyBtn({code}){
+  const [ok, setOk] = useState(false);
+  return (
+    <button onClick={()=>{
+      navigator.clipboard.writeText(code);
+      setOk(true); setTimeout(()=>setOk(false),2000);
+    }} style={{
+      position:'absolute', top:10, right:10,
+      background: ok?'#0f2a1a':'#07111f',
+      color: ok?'#4ade80':'#2e4a6a',
+      border:`1px solid ${ok?'#4ade8040':'#0f1d2e'}`,
+      borderRadius:4, padding:'3px 11px',
+      fontSize:11, cursor:'pointer',
+      fontFamily:"'JetBrains Mono',monospace"
+    }}>{ok?'✓ copied':'copy'}</button>
+  );
+}
+
+function Card({card}){
+  const [open, setOpen] = useState(false);
+  const [tab, setTab]   = useState('theory');
+  return (
+    <div style={{
+      background:'#060d1a', border:`1px solid ${open?'#1a3050':'#0c1a2e'}`,
+      borderRadius:10, marginBottom:10, overflow:'hidden'
+    }}>
+      <div onClick={()=>setOpen(!open)} style={{
+        padding:'13px 18px', cursor:'pointer',
+        display:'flex', alignItems:'center',
+        justifyContent:'space-between', gap:12
+      }}>
+        <div style={{display:'flex', alignItems:'center', gap:10, flexWrap:'wrap'}}>
+          <Tag text={card.tag} color={card.tagColor}/>
+          <span style={{color:'#c8ddf5', fontWeight:600, fontSize:14}}>{card.title}</span>
+        </div>
+        <span style={{color:'#2e4a6a', fontSize:16, flexShrink:0}}>{open?'▲':'▼'}</span>
+      </div>
+      {open && (
+        <div style={{borderTop:'1px solid #0c1a2e'}} className="fu">
+          <div style={{display:'flex', borderBottom:'1px solid #0c1a2e'}}>
+            {[['theory','📐 理论'],['code','💻 代码']].map(([t,l])=>(
+              <button key={t} onClick={()=>setTab(t)} style={{
+                padding:'9px 18px', background:tab===t?'#0a1525':'transparent',
+                color:tab===t?'#60a5fa':'#2e4a6a',
+                border:'none', borderBottom:tab===t?'2px solid #60a5fa':'2px solid transparent',
+                cursor:'pointer', fontSize:12, fontWeight:600, letterSpacing:.5
+              }}>{l}</button>
+            ))}
+          </div>
+          <div style={{padding:20}}>
+            {tab==='theory' && (
+              <pre style={{
+                color:'#7dd3fc', fontSize:12.5, lineHeight:1.85,
+                whiteSpace:'pre-wrap', margin:0,
+                background:'#030810', padding:16,
+                borderRadius:8, border:'1px solid #0c1a2e',
+                fontFamily:"'JetBrains Mono',monospace"
+              }}>{card.theory}</pre>
+            )}
+            {tab==='code' && (
+              <div style={{position:'relative', marginTop:4}}>
+                <CopyBtn code={card.code}/>
+                <pre style={{
+                  background:'#020810', border:'1px solid #0c1a2e',
+                  borderRadius:8, padding:'14px 16px', overflowX:'auto',
+                  fontSize:12, lineHeight:1.75, color:'#b0c8e4',
+                  fontFamily:"'JetBrains Mono','Fira Code',monospace", margin:0
+                }}>{card.code}</pre>
+              </div>
+            )}
+            <div style={{
+              marginTop:14, background:'#0c1a0e',
+              border:'1px solid #1a3a1a', borderLeft:'3px solid #4ade80',
+              borderRadius:6, padding:'10px 14px'
+            }}>
+              <span style={{color:'#86efac', fontSize:11, fontWeight:700}}>💡 </span>
+              <span style={{color:'#94b8a0', fontSize:12, lineHeight:1.7}}>{card.note}</span>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function App(){
+  const [active, setActive] = useState('rng');
+  const sec = SECTIONS.find(s=>s.id===active);
+  const content = CONTENT[active];
+  const totalCards = Object.values(CONTENT).flatMap(c=>c.cards).length;
+
+  return (
+    <div style={{minHeight:'100vh', background:'#060910'}}>
+      {/* Header */}
+      <div style={{
+        background:'linear-gradient(180deg,#08111f 0%,#060910 100%)',
+        borderBottom:'1px solid #0c1a2e', padding:'20px 28px 0'
+      }}>
+        <div style={{maxWidth:980, margin:'0 auto'}}>
+          <div style={{display:'flex', alignItems:'center', gap:14, marginBottom:18}}>
+            <div style={{
+              width:44, height:44, borderRadius:10, flexShrink:0,
+              background:'linear-gradient(135deg,#6366f1,#8b5cf6)',
+              display:'flex', alignItems:'center', justifyContent:'center',
+              fontFamily:"'JetBrains Mono',monospace",
+              fontWeight:900, fontSize:16, color:'#fff', letterSpacing:-1
+            }}>MC</div>
+            <div>
+              <div style={{fontSize:17, fontWeight:700, color:'#e2eefa', letterSpacing:-.3}}>
+                Monte Carlo · 全面备考
+              </div>
+              <div style={{fontSize:11.5, color:'#1e3a5a', marginTop:2, fontFamily:"'JetBrains Mono',monospace"}}>
+                {SECTIONS.length} 模块 · {totalCards} 专题 · 理论 + 代码 + 面试Tips
+              </div>
+            </div>
+          </div>
+          <div style={{display:'flex', gap:2, overflowX:'auto', paddingBottom:0}}>
+            {SECTIONS.map(s=>(
+              <button key={s.id} onClick={()=>setActive(s.id)} style={{
+                padding:'9px 14px', background:'transparent', border:'none',
+                borderBottom:active===s.id?`2px solid ${s.color}`:'2px solid transparent',
+                color:active===s.id?s.color:'#1e3a5a',
+                cursor:'pointer', fontSize:12, fontWeight:700,
+                whiteSpace:'nowrap', transition:'color .15s',
+                fontFamily:"'JetBrains Mono',monospace"
+              }}>
+                <span style={{
+                  background:active===s.id?s.color+'22':'transparent',
+                  border:active===s.id?`1px solid ${s.color}40`:'1px solid transparent',
+                  borderRadius:3, padding:'1px 5px', marginRight:6, fontSize:11
+                }}>{s.short}</span>
+                {s.icon} {s.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Content */}
+      <div style={{maxWidth:980, margin:'0 auto', padding:'24px 28px'}}>
+        {/* Section header */}
+        <div style={{
+          display:'flex', alignItems:'flex-start', gap:14, marginBottom:22,
+          background:'#060d1a', border:`1px solid #0c1a2e`,
+          borderLeft:`3px solid ${sec.color}`, borderRadius:10, padding:'16px 20px'
+        }}>
+          <div style={{
+            width:42, height:42, borderRadius:8, flexShrink:0,
+            background:sec.color+'18', border:`1px solid ${sec.color}35`,
+            display:'flex', alignItems:'center', justifyContent:'center',
+            fontSize:20, color:sec.color
+          }}>{sec.icon}</div>
+          <div>
+            <div style={{fontSize:17, fontWeight:700, color:'#dce7f5'}}>{sec.label}</div>
+            <div style={{fontSize:12.5, color:'#4a7a9a', marginTop:5, lineHeight:1.6}}>
+              {content.intro}
+            </div>
+          </div>
+        </div>
+
+        {content.cards.map((c,i)=><Card key={i} card={c}/>)}
+
+        {/* Quick reference cheatsheet */}
+        {active==='vr' && (
+          <div style={{
+            marginTop:24, background:'#060d1a',
+            border:'1px solid #0c1a2e', borderRadius:12, padding:22
+          }}>
+            <div style={{fontSize:12, fontWeight:800, color:'#a78bfa', marginBottom:14, letterSpacing:1}}>
+              ⚡ 方差降低方法速查对比
+            </div>
+            <table>
+              <thead><tr>
+                <th>方法</th><th>核心公式</th><th>方差降低</th><th>适用条件</th><th>难度</th>
+              </tr></thead>
+              <tbody>
+                {[
+                  ['Antithetic','E[(f(U)+f(1-U))/2]','30-70%','f 单调','⭐'],
+                  ['Control Variate','Ȳ + b*(μ_X-X̄)','50-98%','需已知E[X]','⭐⭐'],
+                  ['Conditional MC','E[h(X)|Y=y]','50-99%','能解析条件期望','⭐⭐⭐'],
+                  ['Stratified','(1/m)Σ h(F⁻¹(u_i))','20-80%','能分层','⭐⭐'],
+                  ['Importance Sampling','(1/n)Σ h(X)f(X)/g(X)','100x-1000x','需设计好g','⭐⭐⭐⭐'],
+                ].map(([m,f,v,c,d],i)=>(
+                  <tr key={i}>
+                    <td style={{color:'#a78bfa',fontWeight:600}}>{m}</td>
+                    <td style={{fontFamily:"'JetBrains Mono',monospace",color:'#7dd3fc',fontSize:11}}>{f}</td>
+                    <td style={{color:'#4ade80'}}>{v}</td>
+                    <td>{c}</td>
+                    <td>{d}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {active==='val' && (
+          <div style={{
+            marginTop:24, background:'#060d1a',
+            border:'1px solid #0c1a2e', borderRadius:12, padding:22
+          }}>
+            <div style={{fontSize:12, fontWeight:800, color:'#fb923c', marginBottom:14, letterSpacing:1}}>
+              ⚡ 统计检验方法选择指南
+            </div>
+            <table>
+              <thead><tr>
+                <th>目标</th><th>数据类型</th><th>参数</th><th>推荐方法</th><th>自由度</th>
+              </tr></thead>
+              <tbody>
+                {[
+                  ['验证离散分布','分类频数','已知','卡方检验','k-1'],
+                  ['验证离散分布','分类频数','未知','卡方+修正/Bootstrap','k-1-m'],
+                  ['验证连续分布','连续样本','已知','KS检验','Distribution-free'],
+                  ['验证连续分布','连续样本','未知','KS+模拟(Lilliefors)','需模拟'],
+                  ['比较两组','连续/序数','—','Wilcoxon/Mann-Whitney','正态近似'],
+                  ['比较多组','连续/序数','—','Kruskal-Wallis','χ²(k-1)'],
+                  ['任意比较','任意','—','Permutation Test','模拟分布'],
+                ].map(([g,d,p,m,df],i)=>(
+                  <tr key={i}>
+                    <td style={{color:'#c8ddf5'}}>{g}</td>
+                    <td>{d}</td>
+                    <td style={{color:p==='已知'?'#4ade80':'#fb923c'}}>{p}</td>
+                    <td style={{color:'#60a5fa',fontWeight:600}}>{m}</td>
+                    <td style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:'#7dd3fc'}}>{df}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {/* Global tips footer */}
+        <div style={{
+          marginTop:28, background:'#060d1a',
+          border:'1px solid #0c1a2e', borderRadius:12, padding:22
+        }}>
+          <div style={{fontSize:12, fontWeight:800, color:'#6366f1', marginBottom:16, letterSpacing:1}}>
+            🎯 Monte Carlo 面试通用策略
+          </div>
+          <div style={{display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(280px,1fr))', gap:8}}>
+            {[
+              ['说清目标','先陈述要估计的期望/积分，再说方法。MC=用样本均值估计期望，这是基础。'],
+              ['提收敛速度','O(1/√n) 是MC的核心，要主动说。想提高精度10倍需要100倍样本。'],
+              ['提方差降低','任何MC题都可以顺带提：对偶变量/控制变量/分层/IS，说哪个最适合当前问题。'],
+              ['提随机数API','用 np.random.default_rng(seed) 而不是 np.random.randn，说明 PCG64 优点。'],
+              ['提验证方法','模拟完成后用BS公式或解析值验证，用KS检验验证分布。'],
+              ['提金融直觉','每个公式连接金融意义：GBM的漂移项是 (r-σ²/2) 不是r，要能解释为什么。'],
+            ].map(([k,v],i)=>(
+              <div key={i} style={{
+                display:'flex', gap:10, alignItems:'flex-start',
+                background:'#030810', borderRadius:6, padding:'9px 12px',
+                border:'1px solid #0c1a2e'
+              }}>
+                <span style={{color:'#6366f1',fontWeight:800,fontSize:12,minWidth:60,flexShrink:0}}>{k}</span>
+                <span style={{color:'#2e5070',fontSize:12,lineHeight:1.6}}>{v}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>

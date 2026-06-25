@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>概率不等式 · 完全参考手册</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,700;1,400&family=JetBrains+Mono:wght@400;500&family=Noto+Serif+SC:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body, {
+    delimiters: [
+      {left:'$$',right:'$$',display:true},
+      {left:'$',right:'$',display:false}
+    ]
+  });"></script>
+<style>
+  :root {
+    --bg:        #0d0f14;
+    --surface:   #13161e;
+    --surface2:  #1a1e2a;
+    --border:    #252a38;
+    --accent:    #c8a96e;
+    --accent2:   #7ec8c8;
+    --red:       #e07070;
+    --green:     #7ec8a0;
+    --text:      #ddd5c4;
+    --muted:     #7a7a8a;
+    --sidebar-w: 260px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'EB Garamond', 'Noto Serif SC', serif;
+    font-size: 17px;
+    line-height: 1.8;
+    display: flex;
+  }
+
+  /* ── SIDEBAR ── */
+  #sidebar {
+    position: fixed; top: 0; left: 0;
+    width: var(--sidebar-w);
+    height: 100vh;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    padding: 28px 0 40px;
+    z-index: 100;
+  }
+  #sidebar h2 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: .18em;
+    color: var(--muted);
+    text-transform: uppercase;
+    padding: 0 22px 14px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 14px;
+  }
+  #sidebar a {
+    display: block;
+    padding: 6px 22px;
+    font-size: 14px;
+    color: var(--muted);
+    text-decoration: none;
+    transition: color .15s, background .15s;
+    border-left: 2px solid transparent;
+  }
+  #sidebar a:hover, #sidebar a.active {
+    color: var(--accent);
+    background: rgba(200,169,110,.07);
+    border-left-color: var(--accent);
+  }
+  #sidebar .section-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: .14em;
+    color: var(--accent2);
+    text-transform: uppercase;
+    padding: 18px 22px 4px;
+  }
+
+  /* ── MAIN ── */
+  #main {
+    margin-left: var(--sidebar-w);
+    max-width: 900px;
+    padding: 56px 60px 100px;
+    flex: 1;
+  }
+
+  /* ── HEADER ── */
+  .page-header {
+    margin-bottom: 56px;
+    padding-bottom: 28px;
+    border-bottom: 1px solid var(--border);
+  }
+  .page-header .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: .2em;
+    color: var(--accent2);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .page-header h1 {
+    font-size: 2.6rem;
+    font-weight: 500;
+    color: var(--accent);
+    letter-spacing: -.01em;
+    line-height: 1.2;
+  }
+  .page-header p {
+    margin-top: 12px;
+    color: var(--muted);
+    font-size: 15px;
+  }
+
+  /* ── SECTION ── */
+  .section {
+    margin-bottom: 72px;
+  }
+  .section-title {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 28px;
+  }
+  .section-title .num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--accent2);
+    letter-spacing: .1em;
+  }
+  .section-title h2 {
+    font-size: 1.55rem;
+    font-weight: 500;
+    color: var(--accent);
+  }
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* ── THEOREM BOX ── */
+  .thm {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 4px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+  }
+  .thm-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: .15em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  /* ── DISPLAY MATH ── */
+  .math-block {
+    background: #0a0c12;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 18px 24px;
+    margin: 16px 0;
+    overflow-x: auto;
+    text-align: center;
+  }
+
+  /* ── PROOF ── */
+  .proof {
+    background: var(--surface);
+    border-left: 3px solid var(--accent2);
+    padding: 16px 22px;
+    margin: 14px 0;
+    border-radius: 0 4px 4px 0;
+  }
+  .proof-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: .14em;
+    color: var(--accent2);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  /* ── CAUTION / NOTE ── */
+  .caution {
+    background: rgba(224,112,112,.08);
+    border: 1px solid rgba(224,112,112,.3);
+    border-left: 3px solid var(--red);
+    padding: 14px 20px;
+    margin: 14px 0;
+    border-radius: 0 4px 4px 0;
+  }
+  .caution-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: .14em;
+    color: var(--red);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .note {
+    background: rgba(126,200,160,.07);
+    border-left: 3px solid var(--green);
+    padding: 14px 20px;
+    margin: 14px 0;
+    border-radius: 0 4px 4px 0;
+  }
+  .note-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: .14em;
+    color: var(--green);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  /* ── EXAMPLE ── */
+  .example {
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    margin: 20px 0;
+  }
+  .example-header {
+    background: var(--surface2);
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .example-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: .16em;
+    color: var(--bg);
+    background: var(--accent2);
+    padding: 2px 8px;
+    border-radius: 2px;
+    text-transform: uppercase;
+  }
+  .example-title {
+    font-size: 14px;
+    color: var(--text);
+  }
+  .example-body {
+    padding: 18px 22px;
+    background: var(--surface);
+  }
+  .example-sol {
+    background: var(--surface2);
+    border-top: 1px solid var(--border);
+    padding: 14px 22px;
+  }
+  .example-sol-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: .14em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  /* ── TABLE ── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 15px;
+    margin: 16px 0;
+  }
+  th {
+    background: var(--surface2);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--accent2);
+    padding: 10px 14px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  td {
+    padding: 9px 14px;
+    border-bottom: 1px solid rgba(37,42,56,.7);
+    vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+
+  /* ── MISC ── */
+  p { margin-bottom: 10px; }
+  strong { color: var(--accent); font-weight: 500; }
+  em { color: var(--accent2); font-style: italic; }
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .85em;
+    background: var(--surface2);
+    padding: 1px 5px;
+    border-radius: 3px;
+    color: var(--accent2);
+  }
+
+  /* scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════ SIDEBAR ═══════════════════ -->
+<nav id="sidebar">
+  <h2>概率不等式 · 参考手册</h2>
+
+  <div class="section-label">基础工具</div>
+  <a href="#jensen">Jensen 不等式</a>
+  <a href="#variance-decomp">方差分解 / 期望迭代</a>
+
+  <div class="section-label">范数与内积</div>
+  <a href="#norms">Lᵖ 范数</a>
+  <a href="#cauchy">Cauchy–Schwarz</a>
+  <a href="#holder">Hölder 不等式</a>
+  <a href="#young">Young 不等式</a>
+  <a href="#minkowski">Minkowski 不等式</a>
+
+  <div class="section-label">概率集中不等式</div>
+  <a href="#markov">Markov 不等式</a>
+  <a href="#chebyshev">Chebyshev 不等式</a>
+  <a href="#cantelli">Cantelli 不等式</a>
+  <a href="#chernoff">Chernoff 界</a>
+
+  <div class="section-label">随机求和</div>
+  <a href="#wald">Wald 方程</a>
+
+  <div class="section-label">综合对比</div>
+  <a href="#compare">不等式对比表</a>
+</nav>
+
+<!-- ═══════════════════ MAIN ═══════════════════ -->
+<main id="main">
+
+  <header class="page-header">
+    <div class="eyebrow">Quant Research · Probability Theory</div>
+    <h1>概率不等式<br>完全参考手册</h1>
+    <p>涵盖 Jensen、Markov、Chebyshev、Cantelli、Hölder、Young、Wald 及方差分解，附推导与例题。</p>
+  </header>
+
+  <!-- ══════════════════════════════════════════
+       §1  JENSEN
+  ═══════════════════════════════════════════ -->
+  <section class="section" id="jensen">
+    <div class="section-title">
+      <span class="num">01</span>
+      <h2>Jensen 不等式</h2>
+    </div>
+
+    <div class="thm">
+      <div class="thm-title">定理 · Jensen Inequality</div>
+      <p>设 $\varphi$ 为<strong>凸函数</strong>，$X$ 为可积随机变量，则</p>
+      <div class="math-block">
+        $$\varphi\!\bigl(\mathbb{E}[X]\bigr) \;\le\; \mathbb{E}\!\bigl[\varphi(X)\bigr]$$
+      </div>
+      <p>等号成立当且仅当：$X$ a.s. 为常数，或 $\varphi$ 在 $X$ 的值域上是线性的。</p>
+    </div>
+
+    <div class="proof">
+      <div class="proof-label">推导</div>
+      <p>设 $m = \mathbb{E}[X]$。凸函数在任意点处存在支撑超平面（次梯度），故 $\exists\, a,b$ 使得</p>
+      $$\varphi(x) \;\ge\; ax + b \quad\forall x, \qquad \varphi(m) = am + b$$
+      <p>对两边取期望：$\mathbb{E}[\varphi(X)] \ge a\mathbb{E}[X] + b = am + b = \varphi(m)$。$\square$</p>
+    </div>
+
+    <p><strong>条件版本</strong>（给定 $\sigma$-域 $\mathcal{G}$）：</p>
+    <div class="math-block">
+      $$\varphi\!\bigl(\mathbb{E}[X\mid\mathcal{G}]\bigr) \;\le\; \mathbb{E}\!\bigl[\varphi(X)\mid\mathcal{G}\bigr]$$
+    </div>
+
+    <p><strong>凹函数</strong>（$\varphi'' \le 0$，如 $\log x$）时不等号方向反转：$\varphi(\mathbb{E}[X]) \ge \mathbb{E}[\varphi(X)]$。</p>
+
+    <!-- Example 1 -->
+    <div class="example">
+      <div class="example-header">
+        <span class="example-tag">例题 1</span>
+        <span class="example-title">AM–GM 不等式（算术平均 ≥ 几何平均）</span>
+      </div>
+      <div class="example-body">
+        <p>证明：对正数 $x_1,\ldots,x_n$，</p>
+        $$\frac{x_1+\cdots+x_n}{n} \;\ge\; (x_1\cdots x_n)^{1/n}$$
+      </div>
+      <div class="example-sol">
+        <div class="example-sol-label">解</div>
+        <p>令 $X$ 为在 $\{x_1,\ldots,x_n\}$ 上均匀分布的离散随机变量。因 $\log$ 是<em>凹函数</em>，Jensen 给出</p>
+        $$\log\!\left(\frac{\sum x_i}{n}\right) = \log\mathbb{E}[X] \;\ge\; \mathbb{E}[\log X] = \frac{\sum \log x_i}{n} = \log(x_1\cdots x_n)^{1/n}$$
+        <p>两边取指数即得。$\square$</p>
+      </div>
+    </div>
+
+    <!-- Example 2 -->
+    <div class="example">
+      <div class="example-header">
+        <span class="example-tag">例题 2</span>
+        <span class="example-title">指数分布 MLE 的偏性</span>
+      </div>
+      <div class="example-body">
+        <p>$X_i \sim \text{Exp}(\lambda)$，MLE 为 $\hat\lambda = 1/\bar{X}$。说明 $\hat\lambda$ 有偏。</p>
+      </div>
+      <div class="example-sol">
+        <div class="example-sol-label">解</div>
+        <p>$\varphi(t) = 1/t$ 在 $t>0$ 上是<strong>凸函数</strong>（$\varphi'' = 2/t^3 > 0$）。Jensen 给出</p>
+        $$\mathbb{E}\!\left[\frac{1}{\bar{X}}\right] \;\ge\; \frac{1}{\mathbb{E}[\bar{X}]} = \frac{1}{1/\lambda} = \lambda$$
+        <p>精确值：$\sum X_i \sim \text{Gamma}(n, 1/\lambda)$，利用负矩公式 $\mathbb{E}[1/Y]=\frac{1}{\beta(\alpha-1)}$：</p>
+        $$\mathbb{E}[\hat\lambda] = n\cdot\mathbb{E}\!\left[\frac{1}{\sum X_i}\right] = n\cdot\frac{\lambda}{n-1} = \frac{n}{n-1}\lambda > \lambda$$
+        <p>无偏修正：$\hat\lambda_{\text{unbiased}} = \dfrac{n-1}{n}\cdot\dfrac{1}{\bar{X}}$。</p>
+      </div>
+    </div>
+
+    <!-- Example 3 -->
+    <div class="example">
+      <div class="example-header">
+        <span class="example-tag">例题 3</span>
+        <span class="example-title">$\mathbb{E}[X^2] \ge (\mathbb{E}[X])^2$</span>
+      </div>
+      <div class="example-body">
+        <p>证明方差非负，即 $\text{Var}(X) = \mathbb{E}[X^2] - (\mathbb{E}[X])^2 \ge 0$。</p>
+      </div>
+      <div class="example-sol">
+        <div class="example-sol-label">解</div>
+        <p>$\varphi(x)=x^2$ 凸（$\varphi''=2>0$），Jensen 直接给出 $\mathbb{E}[X^2] \ge (\mathbb{E}[X])^2$。$\square$</p>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ══════════════════════════════════════════
+       §2  方差分解 / 期望迭代
+  ═══════════════════════════════════════════ -->
+  <section class="section" id="variance-decomp">
+    <div class="section-title">
+      <span class="num">02</span>
+      <h2>期望迭代 · 方差分解</h2>
+    </div>
+
+    <div class="thm">
+      <div class="thm-title">全期望公式 (Law of Total Expectation)</div>
+      <div class="math-block">
+        $$\mathbb{E}[X] = \mathbb{E}\!\bigl[\mathbb{E}[X\mid Y]\bigr]$$
+      </div>
+    </div>
+
+    <div class="thm">
+      <div class="thm-title">全方差公式 / Eve's Law (Law of Total Variance)</div>
+      <div class="math-block">
+        $$\text{Var}(X) \;=\; \underbrace{\mathbb{E}\!\bigl[\text{Var}(X\mid Y)\bigr]}_{\text{组内方差（期望）}} \;+\; \underbrace{\text{Var}\!\bigl(\mathbb{E}[X\mid Y]\bigr)}_{\text{组间方差}}$$
+      </div>
+      <p>记忆口诀：<strong>Var = E[Var] + Var[E]</strong>（先条件，再各自求方差/期望，最后取外层）。</p>
+    </div>
+
+    <div class="proof">
+      <div class="proof-label">推导</div>
+      $$\text{Var}(X) = \mathbb{E}[X^2] - (\mathbb{E}[X])^2$$
+      <p>利用 $\mathbb{E}[X^2] = \mathbb{E}[\mathbb{E}[X^2\mid Y]]$ 及 $\mathbb{E}[X^2\mid Y] = \text{Var}(X\mid Y) + (\mathbb{E}[X\mid Y])^2$：</p>
+      $$= \mathbb{E}[\text{Var}(X\mid Y)] + \mathbb{E}[(\mathbb{E}[X\mid Y])^2] - (\mathbb{E}[\mathbb{E}[X\mid Y]])^2
+      = \mathbb{E}[\text{Var}(X\mid Y)] + \text{Var}(\mathbb{E}[X\mid Y]) \quad\square$$
+    </div>
+
+    <div class="example">
+      <div class="example-header">
+        <span class="example-tag">例题 4</span>
+        <span class="example-title">混合泊松模型</span>
+      </div>
+      <div class="example-body">
+        <p>设 $\Lambda \sim \text{Gamma}(\alpha, \beta)$，$X\mid\Lambda \sim \text{Poisson}(\Lambda)$。求 $\text{Var}(X)$。</p>
+      </div>
+      <div class="example-sol">
+        <div class="example-sol-label">解</div>
+        <p>已知 $\mathbb{E}[X\mid\Lambda]=\Lambda$，$\text{Var}(X\mid\Lambda)=\Lambda$（泊松性质）。</p>
+        $$\text{Var}(X) = \mathbb{E}[\Lambda] + \text{Var}(\Lambda) = \alpha\beta + \alpha\beta^2 = \alpha\beta(1+\beta)$$
+        <p>（负二项分布的方差公式）。</p>
+      </div>
+    </div>
+
+    <div class="example">
+      <div class="example-header">
+        <span class="example-tag">例题 5</span>
+        <span class="example-title">随机样本量的方差</span>
+      </div>
+      <div class="example-body">
+        <p>$N$ 为随机变量，$X_1,X_2,\ldots$ i.i.d.，$S_N = X_1+\cdots+X_N$，$N\perp X_i$。求 $\text{Var}(S_N)$。</p>
+      </div>
+      <div class="example-sol">
+        <div class="example-sol-label">解</div>
+        <p>$\mathbb{E}[S_N\mid N]=N\mu$，$\text{Var}(S_N\mid N)=N\sigma^2$，故</p>
+        $$\text{Var}(S_N) = \mathbb{E}[N\sigma^2] + \text{Var}(N\mu) = \sigma^2\mathbb{E}[N] + \mu^2\text{Var}(N)$$
+        <p>这与 Wald 方程配合使用极为常见。</p>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ══════════════════════════════════════════
+       §3  NORMS
+  ═══════════════════════════════════════════ -->
+  <section class="section" id="norms">
+    <div class="section-title">
+      <span class="num">03</span>
+      <h2>$L^p$ 范数</h2>
+    </div>
+
+    <div class="thm">
+      <div class="thm-title">定义</div>
+      <p><strong>离散/向量</strong>：$\|x\|_p = \left(\sum_i |x_i|^p\right)^{1/p}$，$1\le p < \infty$；$\|x\|_\infty = \max_i|x_i|$。</p>
+      <p><strong>随机变量</strong>：$\|X\|_p = \left(\mathbb{E}|X|^p\right)^{1/p}$。</p>
+    </div>
+
+    <table>
+      <tr><th>范数</th><th>几何形状（二维单位球）</th><th>直觉</th></tr>
+      <tr><td>$L^1$</td><td>菱形（Manhattan）</td><td>各坐标绝对值之和；更均匀</td></tr>
+      <tr><td>$L^2$</td><td>圆形（Euclidean）</td><td>标准距离</td></tr>
+      <tr><td>$L^\infty$</td><td>正方形</td><td>取最大坐标；关注峰值</td></tr>
+    </table>
+
+    <div class="thm">
+      <div class="thm-title">性质：$p$ 越小越均匀，$p$ 越大越重视峰值</div>
+      <p>对固定向量 $x$，若 $p \le q$，则 $\|x\|_p \ge \|x\|_q$（即 $\|x\|_1 \ge \|x\|_2 \ge \cdots \ge \|x\|_\infty$）。</p>
+    </div>
+
+    <div class="thm">
+      <div class="thm-title">对偶范数</div>
+      <p>$L^p$ 的对偶范数是 $L^q$，其中 $\frac{1}{p}+\frac{1}{q}=1$。定义为</p>
+      $$\|y\|_q = \sup_{\|x\|_p \le 1} \langle x, y\rangle$$
+      <p>"从 $y$ 方向看单位球能延伸多远。" $L^1 \leftrightarrow L^\infty$，$L^2$ 自对偶。</p>
+    </div>
+
+    <div class="note">
+      <div class="note-label">ML 应用：正则化与稀疏性</div>
+      <p>$L^1$ 正则化（Lasso）：最优性条件 $0 \in \nabla f(w^*) + \lambda\partial\|w\|_1$，其中次梯度集 $\partial\|w\|_1 = \{g : g_i = \text{sign}(w_i)$ 若 $w_i\ne 0$，$g_i\in[-1,1]$ 若 $w_i=0\}$。若 $|\nabla_i f(w^*)| < \lambda$，则 $w_i^*=0$（稀疏）。</p>
+    </div>
+
+  </section>
+
+  <!-- ══════════════════════════════════════════
+       §4  CAUCHY–SCHWARZ
+  ═══════════════════════════════════════════ -->
+  <section class="section" id="cauchy">
+    <div class="section-title">
+      <span class="num">04</span>
+      <h2>Cauchy–Schwarz 不等式</h2>
+    </div>
+
+    <div class="thm">
+      <div class="thm-title">定理</div>
+      <div class="math-block">
+        $$|\mathbb{E}[XY]|^2 \;\le\; \mathbb{E}[X^2]\,\mathbb{E}[Y^2]$$
+      </div>
+      <p>等号成立 iff $X = cY$ a.s.（$c$ 为常数）。向量版本：$|\langle x,y\rangle| \le \|x\|_2\|y\|_2$，即 $(\sum x_i y_i)^2 \le (\sum x_i^2)(\sum y_i^2)$。</p>
+      <p>本质：$\langle x,y\rangle = \|x\|\|y\|\cos\theta \le \|x\|\|y\|$。</p>
+    </div>
+
+    <div class="proof">
+      <div class="proof-label">推导（判别式法）</div>
+      <p>对任意 $t\in\mathbb{R}$，$0 \le \mathbb{E}[(X+tY)^2] = \mathbb{E}[X^2] + 2t\mathbb{E}[XY] + t^2\mathbb{E}[Y^2]$。</p>
+      <p>此关于 $t$ 的二次函数恒非负，故判别式 $\Delta = 4(\mathbb{E}[XY])^2 - 4\mathbb{E}[X^2]\mathbb{E}[Y^2] \le 0$。$\square$</p>
+    </div>
+
+    <div class="thm">
+      <div class="thm-title">应用：相关系数 $|\rho| \le 1$</div>
+      <p>令 $U = \frac{X-\mu_X}{\sigma_X}$，$V = \frac{Y-\mu_Y}{\sigma_Y}$，则 $|\rho| = |\mathbb{E}[UV]| \le \sqrt{\mathbb{E}[U^2]\mathbb{E}[V^2]} = 1$。</p>
+    </div>
+
+    <div class="example">
+      <div class="example-header">
+        <span class="example-tag">例题 6</span>
+        <span class="example-title">$X \perp Y$，$Y > 0$，证明 $\frac{1}{\mathbb{E}[Y]} \le \mathbb{E}\!\left[X \cdot \frac{1}{Y}\right]$ 的上界</span>
+      </div>
+      <div class="example-body">
+        <p>$X, Y$ 独立，$Y > 0$。利用 C-S 证明 $1 = (\mathbb{E}[\sqrt{X/Y}\cdot\sqrt{Y}])^2 \le \mathbb{E}[X/Y]\cdot\mathbb{E}[Y]$（即 $\frac{1}{\mathbb{E}[Y]} \le \mathbb{E}[X/Y]/\mathbb{E}[X]$，设 $\mathbb{E}[X]=1$）。</p>
+      </div>
+      <div class="example-sol">
+        <div class="example-sol-label">解</div>
+        <p>令 $A=\sqrt{X/Y}$，$B=\sqrt{Y}$。C-S：$(\mathbb{E}[AB])^2 \le \mathbb{E}[A^2]\mathbb{E}[B^2]$，即 $(\mathbb{E}[\sqrt{X}])^2 \le \mathbb{E}[X/Y]\cdot\mathbb{E}[Y]$，故 $\mathbb{E}[X/Y] \ge (\mathbb{E}[\sqrt{X}])^2/\mathbb{E}[Y]$。</p>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ══════════════════════════════════════════
+       §5  HÖLDER
+  ═══════════════════════════════════════════ -->
+  <section class="section" id="holder">
+    <div class="section-title">
+      <span class="num">05</span>
+      <h2>Hölder 不等式</h2>
+    </div>
+
+    <div class="thm">
+      <div class="thm-title">定理</div>
+      <p>设 $p > 1$，$q > 1$，$\frac{1}{p}+\frac{1}{q}=1$，则</p>
+      <div class="math-block">
+        $$\mathbb{E}[|XY|] \;\le\; \|X\|_p\,\|Y\|_q = \bigl(\mathbb{E}|X|^p\bigr)^{1/p}\bigl(\mathbb{E}|Y|^q\bigr)^{1/q}$$
+      </div>
+      <p>等号成立 iff $|X|^p = c|Y|^q$ a.s.。C-S 是 $p=q=2$ 的特例。</p>
+    </div>
+
+    <div class="proof">
+      <div class="proof-label">由 Young 不等式推导</div>
+      <p>不妨设 $\|X\|_p = \|Y\|_q = 1$。对 $a = |X|$，$b = |Y|$，$\lambda = 1/p$ 应用 Young 不等式：</p>
+      $$|X||Y| \le \frac{|X|^p}{p} + \frac{|Y|^q}{q}$$
+      <p>取期望：$\mathbb{E}[|XY|] \le \frac{1}{p}+\frac{1}{q} = 1 = \|X\|_p\|Y\|_q$。$\square$</p>
+    </div>
+
+  </section>
+
+  <!-- ══════════════════════════════════════════
+       §6  YOUNG
+  ═══════════════════════════════════════════ -->
+  <section class="section" id="young">
+    <div class="section-title">
+      <span class="num">06</span>
+      <h2>Young 不等式</h2>
+    </div>
+
+    <div class="thm">
+      <div class="thm-title">定理</div>
+      <p>$a, b \ge 0$，$p, q > 1$，$\frac{1}{p}+\frac{1}{q}=1$，则</p>
+      <div class="math-block">
+        $$ab \;\le\; \frac{a^p}{p} + \frac{b^q}{q}$$
+      </div>
+      <p>等号成立 iff $a^p = b^q$。</p>
+    </div>
+
+    <div class="proof">
+      <div class="proof-label">由 Jensen 推导（$e^x$ 是凸函数）</div>
+      <p>令 $\lambda = 1/p$，$1-\lambda = 1/q$，$x = \ln a^p$，$y = \ln b^q$。$e^x$ 凸，Jensen：</p>
+      $$e^{\lambda x + (1-\lambda)y} \le \lambda e^x + (1-\lambda)e^y$$
+      $$\Rightarrow\quad e^{\frac{\ln a^p}{p}+\frac{\ln b^q}{q}} = ab \;\le\; \frac{a^p}{p}+\frac{b^q}{q} \quad\square$$
+    </div>
+
+  </section>
+
+  <!-- ══════════════════════════════════════════
+       §7  MINKOWSKI
+  ═══════════════════════════════════════════ -->
+  <section class="section" id="minkowski">
+    <div class="section-title">
+      <span class="num">07</span>
+      <h2>Minkowski 不等式（三角不等式的 $L^p$ 版）</h2>
+    </div>
+
+    <div class="thm">
+      <div class="thm-title">定理</div>
+      <div class="math-block">
+        $$\|X+Y\|_p \;\le\; \|X\|_p + \|Y\|_p, \quad p \ge 1$$
+      </div>
+      <p>即 $L^p$ 范数满足三角不等式（范数公理之一）。由 Hölder 不等式证明。</p>
+    </div>
+
+  </section>
+
+  <!-- ══════════════════════════════════════════
+       §8  MARKOV
+  ═══════════════════════════════════════════ -->
+  <section class="section" id="markov">
+    <div class="section-title">
+      <span class="num">08</span>
+      <h2>Markov 不等式</h2>
+    </div>
+
+    <div class="thm">
+      <div class="thm-title">定理</div>
+      <p>$X \ge 0$，$a > 0$，则</p>
+      <div class="math-block">
+        $$\Pr(X \ge a) \;\le\; \frac{\mathbb{E}[X]}{a}$$
+      </div>
+    </div>
+
+    <div class="proof">
+      <div class="proof-label">推导</div>
+      $$X \ge a \cdot \mathbf{1}_{\{X \ge a\}} \quad\Rightarrow\quad \mathbb{E}[X] \ge a\cdot\Pr(X \ge a) \quad\square$$
+    </div>
+
+    <div class="caution">
+      <div class="caution-label">局限性</div>
+      <p>Markov 仅利用了均值信息，界通常非常松。例如 $\mathbb{E}[X]=5$，$\Pr(X\ge 20)\le 1/4$——仅知道"至多 25%"，实际可能远小。</p>
+    </div>
+
+    <div class="example">
+      <div class="example-header">
+        <span class="example-tag">例题 7</span>
+        <span class="example-title">股票损失概率上界</span>
+      </div>
+      <div class="example-body">
+        <p>某资产日收益率（损失取正值）$L \ge 0$，$\mathbb{E}[L] = 0.02$。问日损失超过 10% 的概率上界。</p>
+      </div>
+      <div class="example-sol">
+        <div class="example-sol-label">解</div>
+        $$\Pr(L \ge 0.10) \le \frac{0.02}{0.10} = 0.20$$
+        <p>即最多有 20% 的天数日亏损超过 10%。</p>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ══════════════════════════════════════════
+       §9  CHEBYSHEV
+  ═══════════════════════════════════════════ -->
+  <section class="section" id="chebyshev">
+    <div class="section-title">
+      <span class="num">09</span>
+      <h2>Chebyshev 不等式</h2>
+    </div>
+
+    <div class="thm">
+      <div class="thm-title">定理</div>
+      <div class="math-block">
+        $$\Pr\!\bigl(|X - \mu| \ge t\bigr) \;\le\; \frac{\sigma^2}{t^2}$$
+      </div>
+      <p>其中 $\mu = \mathbb{E}[X]$，$\sigma^2 = \text{Var}(X)$，$t > 0$。</p>
+    </div>
+
+    <div class="proof">
+      <div class="proof-label">由 Markov 推导</div>
+      <p>令 $Y = (X-\mu)^2 \ge 0$，对 $Y$ 应用 Markov，$a = t^2$：</p>
+      $$\Pr(|X-\mu|\ge t) = \Pr(Y \ge t^2) \le \frac{\mathbb{E}[Y]}{t^2} = \frac{\sigma^2}{t^2} \quad\square$$
+    </div>
+
+    <div class="thm">
+      <div class="thm-title">置信区间构造</div>
+      <p>令 $1 - \delta = 1 - \sigma^2/t^2$，解得 $t = \sigma/\sqrt{\delta}$，故以至少 $1-\delta$ 的概率有 $|X-\mu| < \sigma/\sqrt{\delta}$。</p>
+    </div>
+
+    <div class="example">
+      <div class="example-header">
+        <span class="example-tag">例题 8</span>
+        <span class="example-title">样本均值的置信界</span>
+      </div>
+      <div class="example-body">
+        <p>$X_1,\ldots,X_n$ i.i.d.，$\text{Var}(X_i)=\sigma^2$。$\bar{X}_n = \frac{1}{n}\sum X_i$。问 $\Pr(|\bar{X}_n - \mu| \ge \varepsilon)$ 的上界。</p>
+      </div>
+      <div class="example-sol">
+        <div class="example-sol-label">解</div>
+        <p>$\text{Var}(\bar{X}_n) = \sigma^2/n$，Chebyshev 给出</p>
+        $$\Pr(|\bar{X}_n - \mu| \ge \varepsilon) \le \frac{\sigma^2}{n\varepsilon^2}$$
+        <p>这直接证明了<strong>大数定律</strong>（弱收敛）：固定 $\varepsilon$，$n\to\infty$ 时右侧趋于 0。</p>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ══════════════════════════════════════════
+       §10  CANTELLI
+  ═══════════════════════════════════════════ -->
+  <section class="section" id="cantelli">
+    <div class="section-title">
+      <span class="num">10</span>
+      <h2>Cantelli 不等式（单边 Chebyshev）</h2>
+    </div>
+
+    <div class="thm">
+      <div class="thm-title">定理</div>
+      <div class="math-block">
+        $$\Pr(X - \mu \ge t) \;\le\; \frac{\sigma^2}{\sigma^2 + t^2}, \quad t > 0$$
+      </div>
+      <p>与 Chebyshev 的双边界不同，Cantelli 给出<strong>单边</strong>（上尾）的更紧的界。</p>
+    </div>
+
+    <div class="proof">
+      <div class="proof-label">推导（令 $Y = X - \mu + \lambda$，优化 $\lambda$）</div>
+      <p>对 $Y = X - \mu + \lambda \ge 0$（$\lambda > 0$）应用 Markov：</p>
+      $$\Pr(X-\mu \ge t) = \Pr(Y \ge t+\lambda) \le \frac{\mathbb{E}[Y^2]}{(t+\lambda)^2} = \frac{\sigma^2 + \lambda^2}{(t+\lambda)^2}$$
+      <p>对 $\lambda$ 最小化右侧，令导数为零得 $\lambda^* = \sigma^2/t$，代入得</p>
+      $$\Pr(X-\mu \ge t) \le \frac{\sigma^2}{\sigma^2+t^2} \quad\square$$
+    </div>
+
+    <div class="note">
+      <div class="note-label">金融应用：单边风控 / VaR 上界</div>
+      <p>给定资产收益 $R$，$\mu = \mathbb{E}[R]$，$\sigma^2 = \text{Var}(R)$。损失 $L = -R$，则</p>
+      $$\Pr(L \ge \mu_L + t) \le \frac{\sigma^2}{\sigma^2 + t^2}$$
+      <p>可用于在分布未知时估计 VaR 的无分布上界。</p>
+    </div>
+
+    <div class="example">
+      <div class="example-header">
+        <span class="example-tag">例题 9</span>
+        <span class="example-title">Cantelli vs Chebyshev 对比</span>
+      </div>
+      <div class="example-body">
+        <p>$\sigma = 3$，$t = 9$。分别用 Chebyshev 和 Cantelli 给出 $\Pr(X-\mu \ge 9)$ 的上界。</p>
+      </div>
+      <div class="example-sol">
+        <div class="example-sol-label">解</div>
+        <p>Chebyshev（双边除以 2 近似单边）：$\Pr(|X-\mu|\ge 9) \le \frac{9}{81} = \frac{1}{9} \approx 11.1\%$，单边至多 $11.1\%$。</p>
+        <p>Cantelli（直接单边）：$\Pr(X-\mu \ge 9) \le \frac{9}{9+81} = \frac{9}{90} = \frac{1}{10} = 10\%$。</p>
+        <p>Cantelli 给出更紧的单边界（$10\%$ vs $11.1\%$）。</p>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ══════════════════════════════════════════
+       §11  CHERNOFF
+  ═══════════════════════════════════════════ -->
+  <section class="section" id="chernoff">
+    <div class="section-title">
+      <span class="num">11</span>
+      <h2>Chernoff 界（指数矩方法）</h2>
+    </div>
+
+    <div class="thm">
+      <div class="thm-title">一般形式</div>
+      <p>对任意 $s > 0$，</p>
+      <div class="math-block">
+        $$\Pr(X \ge a) \;\le\; \inf_{s>0} e^{-sa}\,\mathbb{E}[e^{sX}] = \inf_{s>0} e^{-sa + \log M_X(s)}$$
+      </div>
+      <p>其中 $M_X(s) = \mathbb{E}[e^{sX}]$ 为<strong>矩母函数 (MGF)</strong>。</p>
+    </div>
+
+    <div class="proof">
+      <div class="proof-label">由 Markov 推导</div>
+      <p>$e^{sx}$ 单调递增，故 $X \ge a \Leftrightarrow e^{sX} \ge e^{sa}$。Markov：</p>
+      $$\Pr(X \ge a) = \Pr(e^{sX} \ge e^{sa}) \le \frac{\mathbb{E}[e^{sX}]}{e^{sa}} = e^{-sa} M_X(s)$$
+      <p>对 $s > 0$ 取下确界。$\square$</p>
+    </div>
+
+    <div class="example">
+      <div class="example-header">
+        <span class="example-tag">例题 10</span>
+        <span class="example-title">Bernoulli 求和的 Chernoff 界</span>
+      </div>
+      <div class="example-body">
+        <p>$X_i \sim \text{Bernoulli}(p)$ i.i.d.，$S_n = \sum_{i=1}^n X_i$，$\mu = np$。证明对 $\delta > 0$：</p>
+        $$\Pr(S_n \ge (1+\delta)\mu) \le \left(\frac{e^\delta}{(1+\delta)^{1+\delta}}\right)^\mu$$
+      </div>
+      <div class="example-sol">
+        <div class="example-sol-label">解（思路）</div>
+        <p>$M_{X_i}(s) = 1 - p + pe^s$。故 $M_{S_n}(s) = (1-p+pe^s)^n$。</p>
+        <p>Chernoff：$\Pr(S_n \ge a) \le e^{-sa}(1-p+pe^s)^n$，令 $a = (1+\delta)\mu$，$s = \ln(1+\delta)$ 优化后得上式。</p>
+        <p>指数衰减速率远优于 Chebyshev 的多项式衰减，适合大偏差分析。</p>
+      </div>
+    </div>
+
+    <div class="note">
+      <div class="note-label">Hoeffding 不等式（有界随机变量）</div>
+      <p>若 $a_i \le X_i \le b_i$，$S_n = \sum X_i$，则</p>
+      $$\Pr\!\left(S_n - \mathbb{E}[S_n] \ge t\right) \;\le\; \exp\!\left(-\frac{2t^2}{\sum_{i=1}^n (b_i-a_i)^2}\right)$$
+    </div>
+
+  </section>
+
+  <!-- ══════════════════════════════════════════
+       §12  WALD
+  ═══════════════════════════════════════════ -->
+  <section class="section" id="wald">
+    <div class="section-title">
+      <span class="num">12</span>
+      <h2>Wald 方程</h2>
+    </div>
+
+    <div class="thm">
+      <div class="thm-title">定理</div>
+      <p>设 $X_1, X_2, \ldots$ i.i.d.，$N$ 为非负整数值随机变量，$N \perp (X_1, X_2, \ldots)$，$\mathbb{E}|X_i| < \infty$，$\mathbb{E}[N] < \infty$。令 $S_N = X_1 + \cdots + X_N$，则</p>
+      <div class="math-block">
+        $$\mathbb{E}[S_N] \;=\; \mathbb{E}[N]\cdot\mathbb{E}[X_i]$$
+      </div>
+      <p>此外（Wald 二阶方程）：</p>
+      <div class="math-block">
+        $$\text{Var}(S_N) \;=\; \mathbb{E}[N]\cdot\text{Var}(X_i) + \bigl(\mathbb{E}[X_i]\bigr)^2\cdot\text{Var}(N)$$
+      </div>
+    </div>
+
+    <div class="proof">
+      <div class="proof-label">推导（全期望）</div>
+      $$\mathbb{E}[S_N] = \mathbb{E}[\mathbb{E}[S_N \mid N]] = \mathbb{E}[N \cdot \mathbb{E}[X_i]] = \mathbb{E}[N]\cdot\mu$$
+      <p>方差部分由全方差公式（§2）直接给出，与例题 5 完全一致。</p>
+    </div>
+
+    <div class="example">
+      <div class="example-header">
+        <span class="example-tag">例题 11</span>
+        <span class="example-title">赌徒问题（随机步数的总盈亏）</span>
+      </div>
+      <div class="example-body">
+        <p>赌徒每局赢 $+1$ 或输 $-1$，各以 $1/2$ 概率。博弈在第 $N$ 局停止，$N \sim \text{Geom}(p)$ 独立于每局结果。求总盈亏 $S_N$ 的期望和方差。</p>
+      </div>
+      <div class="example-sol">
+        <div class="example-sol-label">解</div>
+        <p>$\mathbb{E}[X_i]=0$，$\text{Var}(X_i)=1$，$\mathbb{E}[N]=1/p$，$\text{Var}(N)=(1-p)/p^2$。</p>
+        $$\mathbb{E}[S_N] = \mathbb{E}[N]\cdot 0 = 0$$
+        $$\text{Var}(S_N) = \frac{1}{p}\cdot 1 + 0^2\cdot\frac{1-p}{p^2} = \frac{1}{p}$$
+      </div>
+    </div>
+
+    <div class="example">
+      <div class="example-header">
+        <span class="example-tag">例题 12</span>
+        <span class="example-title">复合泊松过程</span>
+      </div>
+      <div class="example-body">
+        <p>保险理赔：$N \sim \text{Poisson}(\lambda)$ 次理赔，每次金额 $X_i$ i.i.d.，$\mathbb{E}[X_i]=\mu_X$，$\text{Var}(X_i)=\sigma_X^2$。求总理赔 $S_N$ 的均值和方差。</p>
+      </div>
+      <div class="example-sol">
+        <div class="example-sol-label">解</div>
+        <p>$\mathbb{E}[N]=\text{Var}(N)=\lambda$（泊松性质），故</p>
+        $$\mathbb{E}[S_N] = \lambda\mu_X, \qquad \text{Var}(S_N) = \lambda\sigma_X^2 + \mu_X^2\lambda = \lambda(\sigma_X^2 + \mu_X^2) = \lambda\mathbb{E}[X_i^2]$$
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ══════════════════════════════════════════
+       §13  COMPARISON TABLE
+  ═══════════════════════════════════════════ -->
+  <section class="section" id="compare">
+    <div class="section-title">
+      <span class="num">13</span>
+      <h2>集中不等式对比表</h2>
+    </div>
+
+    <table>
+      <tr>
+        <th>不等式</th>
+        <th>形式</th>
+        <th>所需信息</th>
+        <th>衰减速率</th>
+        <th>适用场景</th>
+      </tr>
+      <tr>
+        <td><strong>Markov</strong></td>
+        <td>$\Pr(X\ge a)\le \mu/a$</td>
+        <td>$\mathbb{E}[X]$</td>
+        <td>$O(1/a)$，多项式</td>
+        <td>最弱，兜底</td>
+      </tr>
+      <tr>
+        <td><strong>Chebyshev</strong></td>
+        <td>$\Pr(|X-\mu|\ge t)\le \sigma^2/t^2$</td>
+        <td>均值 + 方差</td>
+        <td>$O(1/t^2)$，多项式</td>
+        <td>双边，LLN 证明</td>
+      </tr>
+      <tr>
+        <td><strong>Cantelli</strong></td>
+        <td>$\Pr(X-\mu\ge t)\le \sigma^2/(\sigma^2+t^2)$</td>
+        <td>均值 + 方差</td>
+        <td>$O(1/t^2)$，比 C 紧</td>
+        <td>单边，VaR 上界</td>
+      </tr>
+      <tr>
+        <td><strong>Chernoff</strong></td>
+        <td>$\Pr(X\ge a)\le e^{-sa}M_X(s)$</td>
+        <td>MGF 存在</td>
+        <td>指数衰减</td>
+        <td>大偏差，尾部极细</td>
+      </tr>
+      <tr>
+        <td><strong>Hoeffding</strong></td>
+        <td>$\Pr(S_n - \mu \ge t)\le e^{-2t^2/\sum(b_i-a_i)^2}$</td>
+        <td>有界区间</td>
+        <td>指数衰减</td>
+        <td>有界 r.v.，ML 泛化</td>
+      </tr>
+    </table>
+
+    <div class="note">
+      <div class="note-label">强弱关系</div>
+      <p>Markov $\Rightarrow$ Chebyshev（令 $Y=(X-\mu)^2$）$\Rightarrow$ Cantelli（优化辅助参数）。Chernoff 由 Markov 作用于 $e^{sX}$ 得到，是所有多项式界的指数加强版。</p>
+    </div>
+
+  </section>
+
+</main>
+
+<script>
+  // Highlight active sidebar link on scroll
+  const sections = document.querySelectorAll('section.section');
+  const links = document.querySelectorAll('#sidebar a');
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const id = e.target.id;
+        const link = document.querySelector(`#sidebar a[href="#${id}"]`);
+        if (link) link.classList.add('active');
+      }
+    });
+  }, { threshold: 0.3 });
+  sections.forEach(s => obs.observe(s));
+</script>
+</body>
+</html>

@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mean · Median · Mode — 完整分析</title>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{delimiters:[
+    {left:'$$',right:'$$',display:true},
+    {left:'$',right:'$',display:false}
+  ],throwOnError:false})"></script>
+
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&family=Noto+Serif+SC:wght@400;600&display=swap" rel="stylesheet">
+
+<style>
+:root{--ink:#18150f;--paper:#f8f4ed;--paper2:#eee9df;--red:#8b2000;--blue:#1a4f8a;--green:#1e5c30;--rule:#cfc5b0;--mono-bg:#1c1814;--mono-fg:#dfd0a8;--mono-cm:#7aaa5a;--mono-hl:#f0c96e;--mono-rs:#e88050}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--paper);color:var(--ink);font-family:'Lora','Noto Serif SC',serif;font-size:17px;line-height:1.85}
+body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(transparent,transparent 35px,var(--rule) 35px,var(--rule) 35.6px);opacity:.17;pointer-events:none;z-index:0}
+.wrap{max-width:860px;margin:0 auto;padding:64px 44px;position:relative;z-index:1}
+
+header{margin-bottom:64px}
+.eyebrow{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:4px;text-transform:uppercase;color:var(--red);margin-bottom:10px}
+h1{font-size:2.6rem;font-weight:600;line-height:1.15;color:var(--ink);border-left:5px solid var(--red);padding-left:20px}
+.subtitle{margin-top:10px;font-style:italic;color:#6a5f50;font-size:1rem;padding-left:25px}
+
+.toc{background:var(--paper2);border:1px solid var(--rule);border-radius:4px;padding:18px 22px;margin-bottom:52px;display:inline-block;min-width:260px}
+.toc-title{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--red);margin-bottom:8px}
+.toc ol{padding-left:18px}
+.toc li{font-size:.91rem;margin:3px 0}
+.toc a{color:var(--blue);text-decoration:none;border-bottom:1px solid transparent;transition:border-color .2s}
+.toc a:hover{border-color:var(--blue)}
+
+h2{font-size:1.42rem;font-weight:600;color:var(--red);margin:56px 0 18px;display:flex;align-items:center;gap:12px}
+.sn{font-family:'JetBrains Mono',monospace;font-size:.78rem;background:var(--red);color:#fff;width:26px;height:26px;display:flex;align-items:center;justify-content:center;border-radius:50%;flex-shrink:0}
+h3{font-size:1.06rem;font-weight:600;color:var(--blue);margin:28px 0 10px}
+p{margin-bottom:14px}
+
+.cb{background:var(--mono-bg);color:var(--mono-fg);font-family:'JetBrains Mono',monospace;font-size:.82rem;line-height:1.9;padding:22px 26px;border-radius:4px;border-left:4px solid var(--red);margin:18px 0;overflow-x:auto;white-space:pre}
+.cb .cm{color:var(--mono-cm);font-style:italic}
+.cb .rs{color:var(--mono-rs);font-weight:500}
+
+.box{border:1.5px solid var(--rule);background:var(--paper2);padding:18px 22px;border-radius:3px;margin:22px 0;position:relative}
+.box::before{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:2.5px;text-transform:uppercase;position:absolute;top:-8px;left:14px;padding:0 6px}
+.box.key{border-color:var(--red);background:#fdf5ee}
+.box.key::before{content:'关键结论';color:var(--red);background:#fdf5ee}
+.box.def{border-color:var(--blue);background:#f0f5fc}
+.box.def::before{content:'定义';color:var(--blue);background:#f0f5fc}
+.box.prf{border-color:var(--green);background:#f0f8f2}
+.box.prf::before{content:'证明';color:var(--green);background:#f0f8f2}
+.box.thm{border-color:#6a3d9a;background:#f6f0fd}
+.box.thm::before{content:'定理';color:#6a3d9a;background:#f6f0fd}
+
+.two{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:18px 0}
+.dg{background:#fff;border:1px solid var(--rule);border-radius:4px;padding:14px;margin:18px 0;text-align:center}
+.dg figcaption{font-size:.82rem;color:#6a5f50;margin-top:8px;font-style:italic}
+
+table{width:100%;border-collapse:collapse;margin:18px 0;font-size:.91rem}
+th{background:var(--red);color:#fff;padding:9px 13px;text-align:left;font-weight:600}
+td{padding:9px 13px;border-bottom:1px solid var(--rule)}
+tr:nth-child(even) td{background:var(--paper2)}
+
+.steps{counter-reset:st}
+.step{counter-increment:st;display:flex;gap:14px;margin-bottom:18px;align-items:flex-start}
+.step::before{content:counter(st);font-family:'JetBrains Mono',monospace;font-size:.78rem;background:var(--blue);color:#fff;width:24px;height:24px;display:flex;align-items:center;justify-content:center;border-radius:50%;flex-shrink:0;margin-top:2px}
+.step div{flex:1}
+
+em{font-style:italic;color:var(--red)}
+strong{font-weight:600}
+hr{border:none;border-top:1.5px solid var(--rule);margin:52px 0}
+
+.katex-display{overflow-x:auto;overflow-y:hidden;margin:1.2em 0!important}
+.katex{font-size:1.05em}
+
+footer{margin-top:80px;padding-top:22px;border-top:1px solid var(--rule);font-family:'JetBrains Mono',monospace;font-size:10px;color:#9a8e80;letter-spacing:1.5px}
+
+@media(max-width:620px){.two{grid-template-columns:1fr}.wrap{padding:40px 20px}h1{font-size:1.9rem}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">Statistics Notes · Princeton MFin</div>
+  <h1>Mean、Median 与 Mode<br>的几何含义与证明</h1>
+  <p class="subtitle">生存函数凸性 · 几何分布 · 严格递减 pdf · 力矩平衡</p>
+</header>
+
+<nav class="toc">
+  <div class="toc-title">目录</div>
+  <ol>
+    <li><a href="#s0">笔记总览</a></li>
+    <li><a href="#s1">三个统计量的 PDF / CDF 几何含义</a></li>
+    <li><a href="#s2">质心与力矩：为何 Mean ≠ 面积平分</a></li>
+    <li><a href="#s3">题目一：扑克牌 K（几何分布）</a></li>
+    <li><a href="#s4">题目二：严格递减 pdf → Mean &gt; Median</a></li>
+    <li><a href="#s5">延伸：德国坦克问题</a></li>
+    <li><a href="#s6">延伸：HHH 连续三正面</a></li>
+    <li><a href="#s7">综合对比</a></li>
+  </ol>
+</nav>
+
+<!-- ══════════════ S0 ══════════════ -->
+<section id="s0">
+<h2><span class="sn">0</span>笔记总览</h2>
+<p>四张图片涵盖两道核心题目及其延伸问题：</p>
+<div class="two">
+  <div class="box def">
+    <strong>题目一（离散）</strong><br>
+    52张扑克牌有放回抽取，直到首次抽到K，令 $X$ 为总次数。<br>
+    求 $X$ 的 mean 与 median 并比较。
+  </div>
+  <div class="box def">
+    <strong>题目二（连续）</strong><br>
+    连续随机变量 $X$ 服从<strong>严格递减的 pdf</strong>。<br>
+    证明 $\mathbb{E}[X] > \operatorname{Median}(X)$。
+  </div>
+</div>
+<p>延伸问题：<strong>德国坦克问题</strong>（无偏估计总量 $N$）和<strong>HHH</strong>（Markov 链求期望投掷次数）。</p>
+</section>
+
+<hr>
+
+<!-- ══════════════ S1 ══════════════ -->
+<section id="s1">
+<h2><span class="sn">1</span>三个统计量的 PDF / CDF 几何含义</h2>
+
+<div class="two">
+  <div class="box def">
+    <strong>Mode 众数</strong>
+    <ul style="padding-left:16px;margin-top:8px;font-size:.93rem">
+      <li><b>PDF：</b>峰值点，$f'(x_0)=0$，$f$ 最大</li>
+      <li><b>CDF：</b>$F(x)$ 斜率最大处，因 $F'(x)=f(x)$</li>
+    </ul>
+  </div>
+  <div class="box def">
+    <strong>Median 中位数</strong>
+    <ul style="padding-left:16px;margin-top:8px;font-size:.93rem">
+      <li><b>PDF：</b>将曲线下面积等分为两个 $\frac{1}{2}$</li>
+      <li><b>CDF：</b>$F(m)=\frac{1}{2}$，S 形曲线与 $y=\frac{1}{2}$ 的交点</li>
+    </ul>
+  </div>
+</div>
+<div class="box def">
+  <strong>Mean 均值</strong>
+  <ul style="padding-left:16px;margin-top:8px;font-size:.93rem">
+    <li><b>PDF：</b>密度曲线的质心 $\displaystyle\mu = \int_{-\infty}^{\infty} x\,f(x)\,dx$，离均值越远的质量贡献越大</li>
+    <li><b>CDF（生存函数面积）：</b>$\displaystyle\mu = \int_0^\infty S(x)\,dx$，即 $S(x)=1-F(x)$ 曲线下的全部面积</li>
+  </ul>
+</div>
+
+<h3>为什么 $\mu = \int_0^\infty S(x)\,dx$？</h3>
+<p>对非负连续随机变量，用 Fubini 定理交换积分次序：</p>
+
+$$\mu = \int_0^\infty x\,f(x)\,dx = \int_0^\infty\!\!\int_0^x dt\,f(x)\,dx = \int_0^\infty\!\!\int_t^\infty f(x)\,dx\,dt = \int_0^\infty P(X>t)\,dt = \int_0^\infty S(t)\,dt$$
+
+<div class="box key">
+  均值 $\mu$ = 生存函数 $S(x)$ 曲线下的面积（不是 PDF 面积的平分）。右尾越厚，这个面积越大，$\mu$ 被拉得越右，超过 median。
+</div>
+</section>
+
+<hr>
+
+<!-- ══════════════ S2 ══════════════ -->
+<section id="s2">
+<h2><span class="sn">2</span>质心与力矩：为何 Mean ≠ 面积平分</h2>
+
+<h3>Median——面积平分</h3>
+<p>找 $m$ 使左侧概率 = 右侧概率 = $\frac{1}{2}$：</p>
+$$\int_{-\infty}^{m} f(x)\,dx = \frac{1}{2} \iff F(m)=\frac{1}{2}$$
+<p>每块区域贡献相等，<strong>与其离 $m$ 的距离无关</strong>。</p>
+
+<h3>Mean——力矩平衡</h3>
+<p>把 PDF 视为悬在 $x$ 轴上的薄板，质心是使左右<em>力矩</em>（质量 × 距离）平衡的支点：</p>
+
+$$\int_{-\infty}^{\mu}(\mu - x)\,f(x)\,dx = \int_{\mu}^{\infty}(x-\mu)\,f(x)\,dx$$
+
+合并要求净力矩为零：
+
+$$\int_{-\infty}^{\infty}(x - \mu)\,f(x)\,dx = 0 \implies \mu = \int_{-\infty}^{\infty} x\,f(x)\,dx$$
+
+<div class="box key">
+  <strong>力矩 = 质量 × 距离。</strong>右尾虽然面积小（概率质量少），但离支点距离远，力矩可以很大。为了左右力矩平衡，支点（mean）必须向右偏移，超越 median。<br><br>
+  这是右偏分布 $\mu > m$ 的物理根源。
+</div>
+
+<div class="dg">
+  <svg viewBox="0 0 640 175" xmlns="http://www.w3.org/2000/svg" style="max-width:600px;width:100%">
+    <defs>
+      <marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </marker>
+    </defs>
+    <line x1="40" y1="136" x2="610" y2="136" stroke="#bbb" stroke-width="1" marker-end="url(#ah)"/>
+    <path d="M55,136 C70,134 98,106 128,74 C158,42 188,26 218,24 C248,22 278,36 312,58 C348,82 394,116 454,134 C494,138 544,138 602,137 L602,136 L55,136 Z" fill="rgba(139,32,0,.06)" stroke="none"/>
+    <path d="M55,136 C70,134 98,106 128,74 C158,42 188,26 218,24 C248,22 278,36 312,58 C348,82 394,116 454,134 C494,138 544,138 602,137" fill="none" stroke="#4a7fc1" stroke-width="2.2"/>
+    <!-- median line -->
+    <line x1="240" y1="16" x2="240" y2="136" stroke="#1565c0" stroke-width="1.6" stroke-dasharray="5,3"/>
+    <text x="240" y="152" text-anchor="middle" font-family="serif" font-style="italic" font-size="14" fill="#1565c0">m</text>
+    <text x="148" y="110" text-anchor="middle" font-family="serif" font-size="17" fill="#1565c0" opacity=".65">½</text>
+    <text x="374" y="126" text-anchor="middle" font-family="serif" font-size="17" fill="#1565c0" opacity=".50">½</text>
+    <!-- mean line -->
+    <line x1="295" y1="16" x2="295" y2="136" stroke="#8b2000" stroke-width="1.6" stroke-dasharray="5,3"/>
+    <text x="295" y="152" text-anchor="middle" font-family="serif" font-style="italic" font-size="14" fill="#8b2000">μ</text>
+    <!-- weights -->
+    <rect x="115" y="84" width="28" height="18" rx="2" fill="#1565c0" opacity=".5"/>
+    <text x="129" y="97" text-anchor="middle" font-size="9" fill="white" font-family="sans-serif">大质量</text>
+    <rect x="442" y="112" width="18" height="14" rx="2" fill="#8b2000" opacity=".45"/>
+    <text x="451" y="123" text-anchor="middle" font-size="9" fill="white" font-family="sans-serif">小质量</text>
+    <!-- distance arrows -->
+    <line x1="129" y1="144" x2="240" y2="144" stroke="#1565c0" stroke-width=".8" marker-end="url(#ah)" marker-start="url(#ah)"/>
+    <line x1="295" y1="144" x2="451" y2="144" stroke="#8b2000" stroke-width=".8" marker-end="url(#ah)" marker-start="url(#ah)"/>
+    <text x="185" y="141" text-anchor="middle" font-size="10" fill="#1565c0" font-family="sans-serif">d₁ 小</text>
+    <text x="371" y="141" text-anchor="middle" font-size="10" fill="#8b2000" font-family="sans-serif">d₂ 大</text>
+    <text x="488" y="55" font-size="11" fill="#8b2000" font-family="sans-serif">右尾：面积小但 d₂ 大</text>
+    <text x="488" y="70" font-size="11" fill="#8b2000" font-family="sans-serif">→ 力矩 d₂ 大，把 μ 右拉</text>
+  </svg>
+  <figcaption>左侧质量大但距近，右侧质量小但距远。力矩平衡点（mean）在面积平分点（median）右侧。</figcaption>
+</div>
+</section>
+
+<hr>
+
+<!-- ══════════════ S3 ══════════════ -->
+<section id="s3">
+<h2><span class="sn">3</span>题目一：扑克牌 K——几何分布</h2>
+
+<h3>问题设定</h3>
+<p>52 张扑克牌（含 4 张 K），有放回地抽取直到首次抽到 K，令 $X$ 为总次数。</p>
+
+$$X \sim \operatorname{Geometric}\!\left(p = \frac{4}{52} = \frac{1}{13}\right)$$
+
+<h3>Mean（期望）</h3>
+
+<div class="box prf">
+  <div class="steps">
+    <div class="step">
+      <div>几何分布期望公式：$\mathbb{E}[X] = \dfrac{1}{p}$</div>
+    </div>
+    <div class="step">
+      <div>代入 $p = \dfrac{1}{13}$：
+        $$\mathbb{E}[X] = 13$$
+      </div>
+    </div>
+  </div>
+  <p style="font-size:.9rem;color:#444;margin-top:4px">推导：$\displaystyle\mathbb{E}[X] = \sum_{k=1}^{\infty} k\cdot p\,(1-p)^{k-1} = p\cdot\frac{1}{\bigl[1-(1-p)\bigr]^2} = \frac{1}{p}$</p>
+</div>
+
+<h3>Median（中位数）</h3>
+<p>求最小整数 $m$ 使得 $P(X \le m) \ge \dfrac{1}{2}$：</p>
+
+$$P(X \le m) = 1 - (1-p)^m \ge \frac{1}{2} \implies (1-p)^m \le \frac{1}{2} \implies m \ge \frac{\ln 2}{-\ln(1-p)}$$
+
+<div class="cb">代入 p = 1/13：
+
+m ≥ ln 2 / ln(13/12)
+  = 0.6931 / 0.0800
+  ≈ 8.66
+
+<span class="rs">Median = ⌈8.66⌉ = 9</span></div>
+
+<div class="box key">
+  $$\underbrace{\mathbb{E}[X] = 13}_{\text{Mean}} > \underbrace{9}_{\text{Median}}$$
+  几何分布右偏（右尾无限延伸），极端大值将期望拉高，符合"严格递减 pmf $\Rightarrow$ Mean $>$ Median"。<br><br>
+  一般公式（小 $p$ 近似）：
+  $$\text{Median} \approx \frac{\ln 2}{p} \approx \frac{0.693}{p} \approx 0.693 \times \mathbb{E}[X]$$
+</div>
+</section>
+
+<hr>
+
+<!-- ══════════════ S4 ══════════════ -->
+<section id="s4">
+<h2><span class="sn">4</span>题目二：严格递减 pdf → Mean &gt; Median</h2>
+
+<h3>4.1 关键工具：生存函数的凸性</h3>
+
+<div class="box def">
+  设 $X \ge 0$，pdf $f(x)$ 在 $(0,\infty)$ 上<strong>严格递减</strong>（$f'(x) < 0$），则生存函数 $S(x) = 1 - F(x)$ 满足：
+  $$S'(x) = -f(x) < 0 \quad(\text{单调递减})$$
+  $$S''(x) = -f'(x) > 0 \quad(\textbf{严格凸函数！})$$
+  中位数 $m$：$S(m) = \dfrac{1}{2}$。均值 $\mu = \displaystyle\int_0^\infty S(x)\,dx$。
+</div>
+
+<div class="dg">
+  <svg viewBox="0 0 620 255" xmlns="http://www.w3.org/2000/svg" style="max-width:580px;width:100%">
+    <defs>
+      <marker id="ah2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+        <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </marker>
+    </defs>
+    <!-- S(x) area -->
+    <path d="M55,30 C100,35 170,76 250,126 C330,170 430,213 560,230 L560,236 L55,236 Z" fill="rgba(183,28,28,.08)" stroke="none"/>
+    <!-- S(x) curve -->
+    <path d="M55,30 C100,35 170,76 250,126 C330,170 430,213 560,230" fill="none" stroke="#8b2000" stroke-width="2.5"/>
+    <!-- tangent at m=250, y=126, slope ≈ -(230-30)/(560-55)*0.6 = -0.59 -->
+    <line x1="68" y1="219" x2="432" y2="4" stroke="#2a5c8b" stroke-width="1.5" stroke-dasharray="7,4"/>
+    <!-- axes -->
+    <line x1="55" y1="236" x2="575" y2="236" stroke="#aaa" stroke-width="1" marker-end="url(#ah2)"/>
+    <line x1="55" y1="236" x2="55" y2="14" stroke="#aaa" stroke-width="1" marker-end="url(#ah2)"/>
+    <!-- median dashes -->
+    <line x1="250" y1="236" x2="250" y2="126" stroke="#1565c0" stroke-width="1.5" stroke-dasharray="4,3"/>
+    <line x1="55" y1="126" x2="250" y2="126" stroke="#1565c0" stroke-width="1" stroke-dasharray="3,3"/>
+    <!-- mean dashes -->
+    <line x1="316" y1="236" x2="316" y2="162" stroke="#8b2000" stroke-width="1.5" stroke-dasharray="4,3"/>
+    <!-- ticks -->
+    <line x1="50" y1="30" x2="60" y2="30" stroke="#888" stroke-width="1"/>
+    <line x1="50" y1="126" x2="60" y2="126" stroke="#1565c0" stroke-width="1"/>
+    <!-- axis labels -->
+    <text x="30" y="34" text-anchor="end" font-family="serif" font-size="13" fill="#555">1</text>
+    <text x="44" y="130" text-anchor="end" font-family="serif" font-size="13" fill="#1565c0">½</text>
+    <text x="250" y="250" text-anchor="middle" font-family="serif" font-style="italic" font-size="14" fill="#1565c0">m</text>
+    <text x="316" y="250" text-anchor="middle" font-family="serif" font-style="italic" font-size="14" fill="#8b2000">μ</text>
+    <text x="572" y="238" font-family="serif" font-style="italic" font-size="14" fill="#888">x</text>
+    <text x="40" y="18" text-anchor="end" font-family="serif" font-style="italic" font-size="14" fill="#888">S</text>
+    <!-- area label -->
+    <text x="130" y="195" text-anchor="middle" font-size="11" fill="#8b2000" font-family="sans-serif">红色面积 = μ</text>
+    <!-- convexity note -->
+    <text x="136" y="94" font-size="10" fill="#2a5c8b" font-family="sans-serif">曲线在切线上方（凸）</text>
+    <!-- legend -->
+    <rect x="398" y="32" width="158" height="68" fill="white" stroke="#ddd" stroke-width=".8" rx="3"/>
+    <line x1="410" y1="50" x2="436" y2="50" stroke="#8b2000" stroke-width="2.5"/>
+    <text x="444" y="54" font-size="11" fill="#333" font-family="sans-serif">S(x)：严格凸</text>
+    <line x1="410" y1="67" x2="436" y2="67" stroke="#2a5c8b" stroke-width="1.5" stroke-dasharray="6,4"/>
+    <text x="444" y="71" font-size="11" fill="#333" font-family="sans-serif">m 处切线</text>
+    <rect x="410" y="77" width="11" height="10" fill="rgba(183,28,28,.12)"/>
+    <text x="428" y="86" font-size="11" fill="#333" font-family="sans-serif">面积 = μ</text>
+    <!-- mu > m annotation -->
+    <text x="366" y="126" font-size="13" fill="#8b2000" font-family="serif" font-style="italic">μ &gt; m</text>
+  </svg>
+  <figcaption>S(x) 严格凸：曲线位于任意切线之上。红色区域（S 曲线下面积）= μ，超过 median m。</figcaption>
+</div>
+
+<h3>4.2 完整证明</h3>
+
+<div class="box prf">
+
+<p><strong>Step 1：分解 $\mu - m$</strong></p>
+
+$$\mu - m = \int_0^\infty S(x)\,dx - m = \int_0^\infty S(x)\,dx - \int_0^m 1\,dx$$
+
+在 $m$ 处拆积分，并注意 $1 - S(x) = F(x)$：
+
+$$= \int_m^\infty S(x)\,dx - \int_0^m \bigl[1-S(x)\bigr]\,dx = \underbrace{\int_m^\infty S(x)\,dx}_{A} - \underbrace{\int_0^m F(x)\,dx}_{B}$$
+
+<p style="margin-top:18px"><strong>Step 2：由凸性得关键不等式</strong></p>
+
+$S(x)$ 严格凸 $\Rightarrow$ 对任意 $t>0$：
+
+$$S(m-t)+S(m+t) > 2S(m) = 1 \implies 1 - S(m-t) < S(m+t)$$
+
+即
+
+$$\boxed{F(m-t) < S(m+t) \quad \forall\, t > 0}$$
+
+<p style="margin-top:18px"><strong>Step 3：积分比较得 $A > B$</strong></p>
+
+令 $x = m - t$（换元，$t$ 从 $0$ 到 $m$）：
+
+$$B = \int_0^m F(x)\,dx = \int_0^m F(m-t)\,dt < \int_0^m S(m+t)\,dt \le \int_0^\infty S(m+t)\,dt = \int_m^\infty S(u)\,du = A$$
+
+（第二个不等号：$S \ge 0$，积分区间扩大只增不减。）
+
+因此 $\mu - m = A - B > 0$，即：
+
+$$\boxed{\mu = \mathbb{E}[X] > \operatorname{Median}(X) = m} \qquad \square$$
+
+</div>
+
+<div class="box thm">
+  <strong>定理：严格递减 pdf → Mean &gt; Median</strong><br><br>
+  若 $X \ge 0$ 的 pdf $f(x)$ 严格递减（$f'(x) < 0\; \forall x$），则
+  $$\mathbb{E}[X] > \operatorname{Median}(X)$$
+  严格不等号是因为凸性是<em>严格</em>凸。对称（等号）时 $f$ 不能严格递减，矛盾。
+</div>
+
+<h3>4.3 指数分布验证（笔记例子）</h3>
+<p>取 $f(x) = e^{-x}$（即 $X \sim \operatorname{Exp}(1)$），$x \ge 0$：</p>
+
+$$S(x) = e^{-x},\quad S''(x) = e^{-x} > 0 \checkmark$$
+
+$$\operatorname{Median}:\; S(m)=\tfrac{1}{2} \implies e^{-m}=\tfrac{1}{2} \implies m = \ln 2 \approx 0.693$$
+
+$$\operatorname{Mean}:\; \mu = \int_0^\infty e^{-x}\,dx = 1$$
+
+$$\mu = 1 > \ln 2 \approx 0.693 = m \qquad \checkmark$$
+</section>
+
+<hr>
+
+<!-- ══════════════ S5 ══════════════ -->
+<section id="s5">
+<h2><span class="sn">5</span>延伸：德国坦克问题</h2>
+<p>从 $\{1, 2, \ldots, N\}$ 中均匀无放回抽取 $k$ 个，观测到最大值 $M_k = m_k$，估计未知的 $N$。</p>
+
+<h3>PMF</h3>
+
+$$P(M_k = m_k) = \frac{\dbinom{m_k-1}{k-1}}{\dbinom{N}{k}}, \qquad k \le m_k \le N$$
+
+<h3>期望（笔记结论）</h3>
+
+$$\mathbb{E}[M_k] = \frac{k(N+1)}{k+1}$$
+
+<h3>无偏矩估计</h3>
+<p>令 $\mathbb{E}[M_k] = m_k$ 解出 $N$：</p>
+
+$$\hat{N} = m_k\cdot\frac{k+1}{k} - 1 = m_k + \frac{m_k}{k} - 1$$
+
+<div class="box key">
+  $\hat{N}$ 是 $N$ 的无偏估计（UMVUE）。直觉：$m_k$ 低估了 $N$；$\frac{m_k}{k}$ 是每两个相邻观测值的平均间距，作为对"$m_k$ 到 $N$"这段距离的补偿。
+</div>
+</section>
+
+<hr>
+
+<!-- ══════════════ S6 ══════════════ -->
+<section id="s6">
+<h2><span class="sn">6</span>延伸：HHH 连续三正面（Markov 链）</h2>
+<p>公平硬币，连续投掷直到连续出现 HHH，求期望投掷总次数。</p>
+
+<h3>四状态 Markov 链</h3>
+
+<table>
+  <thead><tr><th>状态</th><th>含义</th><th>H（概率 ½）</th><th>T（概率 ½）</th></tr></thead>
+  <tbody>
+    <tr><td>$S_0$</td><td>初始 / 上次非H</td><td>→ $S_1$</td><td>→ $S_0$</td></tr>
+    <tr><td>$S_1$</td><td>尾部恰好 H</td><td>→ $S_2$</td><td>→ $S_0$</td></tr>
+    <tr><td>$S_2$</td><td>尾部恰好 HH</td><td>→ $S_3$（完成）</td><td>→ $S_0$</td></tr>
+    <tr><td>$S_3$</td><td>HHH，吸收态</td><td colspan="2">——</td></tr>
+  </tbody>
+</table>
+
+<h3>期望方程组</h3>
+<p>设 $e_i$ 为从 $S_i$ 到 $S_3$ 的期望步数：</p>
+
+$$e_0 = 1 + \tfrac{1}{2}e_1 + \tfrac{1}{2}e_0$$
+
+$$e_1 = 1 + \tfrac{1}{2}e_2 + \tfrac{1}{2}e_0$$
+
+$$e_2 = 1 + \tfrac{1}{2}\cdot 0 + \tfrac{1}{2}e_0$$
+
+<div class="box prf">
+  由第三式：$e_2 = 1 + \tfrac{1}{2}e_0$<br><br>
+  由第一式：$\tfrac{1}{2}e_0 = 1 + \tfrac{1}{2}e_1 \implies e_0 = 2 + e_1$<br><br>
+  由第二式：$e_1 = 1 + \tfrac{1}{2}(1+\tfrac{1}{2}e_0) + \tfrac{1}{2}e_0 = \tfrac{3}{2} + \tfrac{3}{4}e_0$<br><br>
+  代入：$e_0 = 2 + \tfrac{3}{2} + \tfrac{3}{4}e_0 \implies \tfrac{1}{4}e_0 = \tfrac{7}{2}$
+  $$\boxed{e_0 = 14 \text{ 次}}$$
+  通用公式：连续 $k$ 个 H 的期望次数 $= 2(2^k - 1)$
+  $$k=1:\,2,\quad k=2:\,6,\quad k=3:\,14,\quad k=4:\,30$$
+</div>
+
+<div class="box key">
+  <strong>面试 Follow-up：游戏大概何时结束？</strong><br><br>
+  · 期望 $= 14$ 次<br>
+  · 中位数 $\approx \ln 2 \times 14 \approx 9.7$ 次（<em>中位数 &lt; 期望</em>，分布右偏）<br><br>
+  为什么中位数 $\approx \ln 2 \times$ 期望？这个分布近似指数型，而指数分布的 $\text{Median} = \ln 2 \times \text{Mean}$（正是题目二结论的直接应用！）<br><br>
+  标准回答：<em>"期望是 14，但有一半概率在约 10 次之前就结束——因为分布右偏，少数极长游戏拉高了期望。"</em>
+</div>
+</section>
+
+<hr>
+
+<!-- ══════════════ S7 ══════════════ -->
+<section id="s7">
+<h2><span class="sn">7</span>综合对比</h2>
+
+<table>
+  <thead>
+    <tr><th>统计量</th><th>PDF 几何含义</th><th>CDF 几何含义</th><th>对极端值敏感度</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Mode</strong></td>
+      <td>$f(x)$ 峰值，$f'=0$</td>
+      <td>$F(x)$ 斜率最大处</td>
+      <td>最低（仅看局部峰）</td>
+    </tr>
+    <tr>
+      <td><strong>Median</strong></td>
+      <td>PDF 面积等分竖线</td>
+      <td>$F(m)=\frac{1}{2}$ 对应点</td>
+      <td>鲁棒（只关心顺序）</td>
+    </tr>
+    <tr>
+      <td><strong>Mean</strong></td>
+      <td>质心 $\mu=\int x f\,dx$</td>
+      <td>$S(x)=1-F(x)$ 曲线下总面积</td>
+      <td>最高（远端值力矩大）</td>
+    </tr>
+  </tbody>
+</table>
+
+<table>
+  <thead>
+    <tr><th>分布类型</th><th>偏态</th><th>大小关系</th><th>本文例子</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>严格递减 pdf</td>
+      <td>右偏（右尾重）</td>
+      <td>$\text{Mo} < m < \mu$</td>
+      <td>$\operatorname{Exp}(\lambda)$，$\operatorname{Geom}(p)$，HHH 游戏</td>
+    </tr>
+    <tr>
+      <td>对称分布</td>
+      <td>无偏</td>
+      <td>$\text{Mo} = m = \mu$</td>
+      <td>正态，均匀</td>
+    </tr>
+    <tr>
+      <td>严格递增 pdf</td>
+      <td>左偏（左尾重）</td>
+      <td>$\mu < m < \text{Mo}$</td>
+      <td>$\operatorname{Beta}(a{>}1,\,1)$</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="box thm">
+  <strong>本文核心定理（完整版）</strong><br><br>
+  设 $X \ge 0$，pdf $f(x)$ 严格递减，则：
+  <ol style="padding-left:20px;margin-top:10px;line-height:2.1">
+    <li>$S(x) = 1 - F(x)$ 严格凸（$S'' = -f' > 0$）</li>
+    <li>$\mu = \displaystyle\int_0^\infty S(x)\,dx$（生存函数面积 = 均值）</li>
+    <li>凸性 $\Rightarrow F(m-t) < S(m+t) \;\forall t > 0$</li>
+    <li>积分得 $\displaystyle\int_m^\infty S\,dx > \int_0^m F\,dx \;\Rightarrow\; \mu - m > 0$</li>
+    <li>$$\therefore\quad \mathbb{E}[X] > \operatorname{Median}(X) \qquad \square$$</li>
+  </ol>
+</div>
+</section>
+
+<footer>
+  Princeton MFin · 统计笔记分析 · 几何分布 · 严格递减 pdf · 生存函数凸性 · Markov 链 · 德国坦克问题
+</footer>
+
+</div>
+</body>
+</html>

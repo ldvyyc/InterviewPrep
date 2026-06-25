@@ -1,0 +1,2647 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pandas & NumPy · 数据处理面试备考</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #05080f; font-family: 'Syne', sans-serif; color: #dde4f0; min-height: 100vh; }
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: #05080f; }
+::-webkit-scrollbar-thumb { background: #1e2d45; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #2a4060; }
+@keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+.fade-in { animation: fadeIn 0.25s ease forwards; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useMemo } = React;
+
+const CATS = [
+  { id: "numpy",       label: "NumPy 核心",        short: "NP",  color: "#f97316", desc: "数组操作 · 广播 · 向量化" },
+  { id: "selection",   label: "选择 & 过滤",        short: "SEL", color: "#22d3ee", desc: "loc / iloc / query / mask" },
+  { id: "reshape",     label: "变形 & 重塑",        short: "RSH", color: "#a78bfa", desc: "melt · pivot · stack · unstack" },
+  { id: "groupby",     label: "GroupBy & Agg",     short: "GRP", color: "#34d399", desc: "groupby · transform · agg · apply" },
+  { id: "multiindex",  label: "MultiIndex",        short: "MIX", color: "#fb7185", desc: "多级索引 · xs · swaplevel" },
+  { id: "merge",       label: "合并 & 连接",        short: "MRG", color: "#fbbf24", desc: "merge · concat · join · combine" },
+  { id: "timeseries",  label: "时间序列",           short: "TS",  color: "#60a5fa", desc: "resample · shift · rolling · dt" },
+  { id: "cleaning",    label: "数据清洗",           short: "CLN", color: "#4ade80", desc: "缺失值 · 去重 · 类型转换 · clip" },
+  { id: "advanced",    label: "高级技巧",           short: "ADV", color: "#e879f9", desc: "pipe · eval · assign · explode" },
+  { id: "datetime",    label: "时间处理",           short: "DTM", color: "#38bdf8", desc: "strptime · to_datetime · timedelta · tz" },
+];
+
+const TOPICS = {
+  numpy: [
+    {
+      title: "广播机制 (Broadcasting)",
+      tag: "必考", tagColor: "#ef4444",
+      keys: ["np.broadcast_to", "reshape", "newaxis", "广播规则"],
+      problem: `【题目】不用循环，利用广播完成以下操作：
+1. 给一个 (5,3) 矩阵，每行减去该行的均值（行标准化）
+2. 计算两组向量 A(100,) 和 B(80,) 之间的两两欧式距离矩阵
+3. 给一个 (4,4) 矩阵，对角线元素加10`,
+      theory: `广播规则（从右向左对齐维度）：
+  规则1: 维度数不同，左边补1
+  规则2: 某维度大小为1，可扩展到匹配大小
+  规则3: 维度大小不同且都不是1 → 报错
+
+欧氏距离技巧:
+  ||a-b||² = ||a||² + ||b||² - 2·aᵀb
+  → 利用矩阵乘法 O(n²d) 代替循环 O(n²d)`,
+      code: `import numpy as np
+
+# 1. 行标准化（每行减均值）
+M = np.random.randn(5, 3)
+# keepdims=True 保持维度，才能广播
+M_centered = M - M.mean(axis=1, keepdims=True)
+print("行均值（应全为0）:", M_centered.mean(axis=1).round(10))
+
+# 2. 两两欧式距离（广播技巧）
+A = np.random.randn(100, 10)  # 100个10维向量
+B = np.random.randn(80, 10)   # 80个10维向量
+
+# 方法一：纯广播，内存占用大
+# dist = np.sqrt(((A[:, np.newaxis, :] - B[np.newaxis, :, :])**2).sum(axis=2))
+
+# 方法二：||a-b||² = ||a||² + ||b||² - 2·a@b.T（推荐）
+sq_A = (A**2).sum(axis=1, keepdims=True)   # (100,1)
+sq_B = (B**2).sum(axis=1, keepdims=True).T  # (1,80)
+dist = np.sqrt(np.maximum(sq_A + sq_B - 2 * A @ B.T, 0))
+print("距离矩阵 shape:", dist.shape)  # (100, 80)
+
+# 3. 对角线加10（不用循环）
+M2 = np.zeros((4, 4))
+np.fill_diagonal(M2, 10)         # 直接修改对角线
+# 或者：M2 += np.eye(4) * 10     # 另一种写法
+# 或者：idx = np.arange(4); M2[idx, idx] += 10
+
+# 广播陷阱示例
+a = np.array([1, 2, 3])          # shape (3,)
+b = np.array([[1], [2], [3]])     # shape (3,1)
+print("广播结果 shape:", (a + b).shape)  # (3,3) ！注意`,
+      note: "面试Tip: 欧式距离的矩阵乘法优化是高频考点，记住 ||a-b||²=||a||²+||b||²-2aᵀb，面试时主动提复杂度对比。"
+    },
+    {
+      title: "向量化替代循环",
+      tag: "高频", tagColor: "#ef4444",
+      keys: ["np.vectorize", "np.where", "np.select", "fancy indexing"],
+      problem: `【题目】用向量化操作替代以下循环：
+1. 对数组每个元素：>0 返回 sqrt，<=0 返回 0
+2. 多条件分段函数：<-1→'low', -1到1→'mid', >1→'high'
+3. 给定索引数组 idx，将矩阵每行第 idx[i] 列置为1`,
+      theory: `向量化优先级：
+  np.where > np.select > np.vectorize > Python循环
+  
+np.where(condition, x, y)  → 元素级三目运算
+np.select(conditions, choices, default)  → 多条件分支
+fancy indexing: arr[row_idx, col_idx]  → 同时索引多维
+
+性能：纯numpy向量化通常比循环快 10~100x`,
+      code: `import numpy as np
+
+arr = np.random.randn(1_000_000)
+
+# 1. 条件变换：>0 → sqrt, <=0 → 0
+# ❌ 慢：result = [np.sqrt(x) if x > 0 else 0 for x in arr]
+# ✅ 快：
+result = np.where(arr > 0, np.sqrt(np.maximum(arr, 0)), 0)
+# 注意：np.sqrt对负数会warning，先用maximum保护
+
+# 2. 多条件分段（np.select）
+conditions = [arr < -1, (arr >= -1) & (arr <= 1), arr > 1]
+choices    = ['low',    'mid',                     'high']
+labels = np.select(conditions, choices, default='mid')
+print("标签分布:", dict(zip(*np.unique(labels, return_counts=True))))
+
+# 3. Fancy indexing：批量行列赋值
+n = 5
+M = np.zeros((n, n))
+row_idx = np.arange(n)           # [0,1,2,3,4]
+col_idx = np.array([2,0,4,1,3])  # 每行指定列
+M[row_idx, col_idx] = 1
+print("稀疏矩阵:\\n", M)
+
+# 进阶：用 np.where 实现 clip + scale
+def robust_scale(x, lo=-3, hi=3):
+    """clip后映射到[0,1]"""
+    clipped = np.clip(x, lo, hi)
+    return (clipped - lo) / (hi - lo)
+
+scaled = robust_scale(arr)
+print(f"scaled range: [{scaled.min():.3f}, {scaled.max():.3f}]")`,
+      note: "面试Tip: 当面试官给你一段含循环的代码让你优化时，第一步就是找能用 np.where / np.select 替换的条件判断。"
+    },
+    {
+      title: "矩阵操作 & 线性代数",
+      tag: "必考", tagColor: "#ef4444",
+      keys: ["np.linalg", "einsum", "np.cov", "SVD", "矩阵分解"],
+      problem: `【题目】
+1. 不用循环，用 einsum 计算批量矩阵乘法（batch matmul）
+2. 手工实现 PCA：标准化 → 协方差矩阵 → 特征分解 → 投影
+3. 用 SVD 计算矩阵的伪逆（Moore-Penrose）`,
+      theory: `einsum 下标规则：
+  'ij,jk->ik'  矩阵乘法
+  'bij,bjk->bik'  批量矩阵乘法
+  'ii->'  迹(trace)
+  'ij->i'  行求和
+
+PCA步骤：
+  1. 中心化 X_c = X - mean
+  2. 协方差 C = X_c.T @ X_c / (n-1)
+  3. 特征分解 C = V Λ Vᵀ（按特征值降序）
+  4. 投影 Z = X_c @ V[:, :k]`,
+      code: `import numpy as np
+
+# 1. einsum 批量矩阵乘法
+batch = 32
+A = np.random.randn(batch, 4, 6)
+B = np.random.randn(batch, 6, 5)
+
+# 方法一：einsum
+C1 = np.einsum('bij,bjk->bik', A, B)
+# 方法二：matmul（推荐，更快）
+C2 = A @ B  # numpy>=1.16 支持批量
+print("结果一致:", np.allclose(C1, C2))
+print("输出 shape:", C1.shape)  # (32,4,5)
+
+# 常用 einsum 模式
+x = np.random.randn(10, 5)
+print("行点积(Gram矩阵):", np.einsum('ik,jk->ij', x, x).shape)  # (10,10)
+print("迹:", np.einsum('ii->', x.T @ x))  # 标量
+
+# 2. 手工 PCA
+np.random.seed(42)
+X = np.random.randn(200, 10)
+X[:, 0] = X[:, 1] * 2 + np.random.randn(200) * 0.1  # 构造相关性
+
+# 标准化
+X_c = X - X.mean(axis=0)
+
+# 协方差矩阵（两种等价写法）
+C = X_c.T @ X_c / (len(X) - 1)
+# C = np.cov(X_c.T)  # 等价
+
+# 特征分解（eigh专用于对称矩阵，更稳定）
+eigenvalues, eigenvectors = np.linalg.eigh(C)
+# eigh 返回升序，反转为降序
+idx = np.argsort(eigenvalues)[::-1]
+eigenvalues = eigenvalues[idx]
+eigenvectors = eigenvectors[:, idx]
+
+explained = eigenvalues / eigenvalues.sum()
+print(f"前2主成分解释方差: {explained[:2].sum():.2%}")
+
+Z = X_c @ eigenvectors[:, :2]  # 投影到2D
+print("PCA结果 shape:", Z.shape)  # (200,2)
+
+# 3. 伪逆（SVD方法）
+M = np.random.randn(6, 4)  # 非方阵
+U, s, Vt = np.linalg.svd(M, full_matrices=False)
+tol = 1e-10
+s_inv = np.where(s > tol, 1/s, 0)
+M_pinv = Vt.T @ np.diag(s_inv) @ U.T
+print("伪逆验证 M@M+@M≈M:", np.allclose(M @ M_pinv @ M, M))
+# 对比：np.linalg.pinv(M)`,
+      note: "面试Tip: 在QR面试中，PCA手写是超高频题。记住用 eigh 而不是 eig 处理对称矩阵（数值更稳定），以及 SVD 的截断技巧。"
+    },
+    {
+      title: "性能优化 & 内存",
+      tag: "进阶", tagColor: "#8b5cf6",
+      keys: ["stride_tricks", "memmap", "contiguous", "copy vs view"],
+      problem: `【题目】
+1. 区分 view 和 copy，说明什么情况产生 copy
+2. 用 as_strided 实现滑动窗口（不复制数据）
+3. 用 np.frompyfunc 向量化一个复杂的纯Python函数`,
+      theory: `View vs Copy：
+  切片/reshape → View（共享内存）
+  fancy indexing/布尔索引 → Copy
+  arr.flags['OWNDATA'] 检查是否拥有数据
+
+as_strided 原理：
+  通过控制 strides（步长）"欺骗"numpy
+  内存不变，只改变访问模式 → 零拷贝滑动窗口
+  ⚠️ 危险：越界访问不报错`,
+      code: `import numpy as np
+from numpy.lib.stride_tricks import as_strided, sliding_window_view
+
+# 1. View vs Copy 辨析
+arr = np.arange(12).reshape(3, 4)
+
+# View（修改会影响原数组）
+v1 = arr[1:3, :]        # 切片 → view
+v2 = arr.reshape(-1)    # reshape → view（连续内存时）
+v3 = arr.T              # 转置 → view
+
+# Copy（安全，独立）
+c1 = arr[[0, 2], :]     # fancy indexing → copy
+c2 = arr[arr > 5]       # 布尔索引 → copy
+c3 = arr.copy()
+
+print("v1 is view:", not v1.flags['OWNDATA'])  # True
+print("c1 is copy:", c1.flags['OWNDATA'])       # True
+
+# 修改 view 影响原数组
+v1[0, 0] = 999
+print("原数组被修改:", arr[1, 0] == 999)  # True
+
+# 2. 零拷贝滑动窗口
+data = np.arange(100, dtype=float)
+window = 5
+
+# 方法一：sliding_window_view（numpy>=1.20，推荐）
+windows = sliding_window_view(data, window)
+rolling_mean = windows.mean(axis=1)
+print("滑动均值 shape:", rolling_mean.shape)  # (96,)
+
+# 方法二：as_strided（底层原理，面试常考）
+n = len(data) - window + 1
+strides = data.strides  # (8,) 每个float64占8字节
+windows_manual = as_strided(
+    data,
+    shape=(n, window),
+    strides=(strides[0], strides[0])  # 行步长=列步长=8
+)
+print("手动滑窗验证:", np.allclose(windows_manual.mean(axis=1), rolling_mean))
+
+# 3. np.frompyfunc 向量化
+def custom_func(x):
+    """模拟复杂逻辑（不能用纯numpy）"""
+    if x < -1: return x**3
+    elif x < 1: return np.sin(x * np.pi)
+    else: return np.log1p(x)
+
+# np.vectorize（方便但慢）
+vf1 = np.vectorize(custom_func)
+
+# np.frompyfunc（更快，返回object array）
+vf2 = np.frompyfunc(custom_func, 1, 1)
+
+x = np.linspace(-2, 2, 1_000_000)
+result = vf2(x).astype(float)  # 需要转换类型
+print("结果一致:", np.allclose(vf1(x), result))`,
+      note: "面试Tip: 务必记住 fancy indexing 产生 copy 这一点，是 bug 的常见来源。sliding_window_view 是 numpy 1.20+ 的推荐方式。"
+    },
+  ],
+
+  selection: [
+    {
+      title: "loc / iloc / at / iat",
+      tag: "基础必考", tagColor: "#ef4444",
+      keys: ["loc", "iloc", "at", "iat", "xs", "布尔索引"],
+      problem: `【题目】给定一个股票收益率 DataFrame（行=日期，列=股票代码），完成：
+1. 选取某日期范围内的某几只股票
+2. 用条件选择：找出某天所有收益>2%的股票
+3. 用 .at/.iat 高效修改单个值（对比.loc速度）
+4. 用链式布尔条件过滤行`,
+      theory: `选择器对比：
+  loc[行标签, 列标签]    → 基于标签，含端点
+  iloc[行整数, 列整数]   → 基于位置，不含端点
+  at[行标签, 列标签]     → 单个标量，比.loc快10x
+  iat[行整数, 列整数]    → 单个标量（整数位置）
+
+布尔索引：
+  & 与  | 或  ~ 非（注意括号！）
+  .query() 字符串形式，可读性更好`,
+      code: `import pandas as pd
+import numpy as np
+
+np.random.seed(42)
+dates = pd.date_range('2023-01-01', periods=100, freq='B')
+tickers = ['AAPL', 'GOOGL', 'MSFT', 'AMZN', 'META']
+df = pd.DataFrame(
+    np.random.randn(100, 5) * 0.01,
+    index=dates, columns=tickers
+)
+
+# 1. 日期范围 + 多列选择
+subset = df.loc['2023-01':'2023-03', ['AAPL', 'MSFT']]
+print("loc切片 shape:", subset.shape)
+
+# iloc：用位置索引（前10行，后3列）
+print("iloc:", df.iloc[:10, -3:].shape)
+
+# 2. 条件过滤：某天>2%的股票
+day = df.loc['2023-01-03']
+big_movers = day[day > 0.02]
+print("大涨股票:", big_movers.dropna().index.tolist())
+
+# 找所有日期中 AAPL>1% 的行
+mask = df['AAPL'] > 0.01
+print("AAPL涨>1%的天数:", mask.sum())
+
+# 3. at / iat 快速标量访问
+# 修改单个值
+df.at[dates[0], 'AAPL'] = 0.05     # 按标签
+df.iat[0, 0] = 0.05                  # 按位置（等价）
+
+# 4. 链式布尔条件
+result = df[
+    (df['AAPL'] > 0) &
+    (df['MSFT'] > 0) &
+    (df['GOOGL'] < 0)  # AAPL和MSFT涨，GOOGL跌
+]
+print("同涨异跌天数:", len(result))
+
+# .query() 等价写法（更易读）
+result2 = df.query("AAPL > 0 and MSFT > 0 and GOOGL < 0")
+print("query等价验证:", len(result) == len(result2))
+
+# 进阶：isin + ~（取反）
+selected = df[df.index.month.isin([1, 3])]  # 只要1月和3月
+excluded = df[~df.index.month.isin([2])]    # 排除2月`,
+      note: "面试Tip: 记住 .at/.iat 比 .loc/.iloc 快约10倍（单值读写时）。链式布尔索引必须加括号，& 不是 and。"
+    },
+    {
+      title: "where / mask / clip / between",
+      tag: "中频", tagColor: "#f97316",
+      keys: ["where", "mask", "clip", "between", "np.where对比"],
+      problem: `【题目】
+1. 用 .where() 将所有负收益替换为0（保留正收益）
+2. 用 .mask() 将超过3σ的极值替换为 NaN
+3. 用 .clip() 截断收益率到 [-5%, +5%]
+4. 用 .between() 过滤出收益在某区间的行`,
+      theory: `where vs mask（互为反操作）：
+  df.where(cond)  → cond为True保留，False变NaN
+  df.mask(cond)   → cond为True变NaN，False保留
+  
+  记忆技巧：where = "在这里的保留"
+           mask  = "被遮住的变NaN"
+
+clip：
+  df.clip(lower, upper)  上下界截断
+  按列指定不同上下界：clip(lower=series, upper=series)`,
+      code: `import pandas as pd
+import numpy as np
+
+np.random.seed(0)
+df = pd.DataFrame({
+    'ret': np.random.randn(200) * 0.02,
+    'vol': np.random.rand(200) * 0.05 + 0.01
+})
+
+# 1. where：保留正收益，负的置0
+positive_only = df['ret'].where(df['ret'] > 0, other=0)
+print("负值变0后最小值:", positive_only.min())  # 0.0
+
+# 带 inplace 效果的写法
+df2 = df.copy()
+df2['ret'] = df2['ret'].where(df2['ret'] > 0, 0)
+
+# 2. mask：超过3σ的极值变NaN
+mean, std = df['ret'].mean(), df['ret'].std()
+outlier_mask = (df['ret'] - mean).abs() > 3 * std
+cleaned = df['ret'].mask(outlier_mask)
+print(f"极值数量: {outlier_mask.sum()}, 处理后NaN: {cleaned.isna().sum()}")
+
+# 3. clip：截断到[-5%, 5%]
+clipped = df['ret'].clip(lower=-0.05, upper=0.05)
+print(f"clip后: min={clipped.min():.4f}, max={clipped.max():.4f}")
+
+# 按列不同阈值clip（高级用法）
+lower_bounds = pd.Series({'ret': -0.03, 'vol': 0.0})
+upper_bounds = pd.Series({'ret':  0.03, 'vol': 0.1})
+df_clipped = df.clip(lower=lower_bounds, upper=upper_bounds, axis=1)
+
+# 4. between：区间过滤
+in_range = df[df['ret'].between(-0.01, 0.01)]
+print(f"收益在[-1%,1%]之间的行数: {len(in_range)}")
+
+# between 等价但更简洁：
+# df[(df['ret'] >= -0.01) & (df['ret'] <= 0.01)]
+
+# 综合应用：Winsorize（缩尾处理）
+def winsorize(series, q=0.01):
+    lo, hi = series.quantile(q), series.quantile(1-q)
+    return series.clip(lo, hi)
+
+winsorized = winsorize(df['ret'])
+print(f"缩尾后范围: [{winsorized.min():.5f}, {winsorized.max():.5f}]")`,
+      note: "面试Tip: where/mask 是互反操作这一点经常考。Winsorize（缩尾）在金融数据预处理中极为常用，用 clip+quantile 实现。"
+    },
+  ],
+
+  reshape: [
+    {
+      title: "melt & pivot & pivot_table",
+      tag: "必考", tagColor: "#ef4444",
+      keys: ["melt", "pivot", "pivot_table", "宽格式", "长格式"],
+      problem: `【题目】股票数据以宽格式存储（行=日期，列=股票），要求：
+1. 用 melt 转为长格式（每行=一个观测）
+2. 用 pivot 从长格式恢复宽格式
+3. 用 pivot_table 计算每月各股票的平均收益
+4. 解释 melt 和 stack 的区别`,
+      theory: `宽格式 (Wide) vs 长格式 (Long/Tidy):
+  宽格式：列是变量，每行是一个实体
+  长格式：每行是一个观测 (entity, variable, value)
+  
+melt(id_vars, value_vars, var_name, value_name)
+  → 宽变长（融化）
+
+pivot(index, columns, values)
+  → 长变宽（数据透视）
+  
+pivot vs pivot_table：
+  pivot: 不能处理重复(index,columns)组合
+  pivot_table: 支持聚合函数处理重复值`,
+      code: `import pandas as pd
+import numpy as np
+
+np.random.seed(42)
+dates = pd.date_range('2023-01-01', periods=20, freq='B')
+wide_df = pd.DataFrame(
+    np.random.randn(20, 3).round(4),
+    index=dates,
+    columns=['AAPL', 'MSFT', 'GOOGL']
+)
+wide_df.index.name = 'date'
+print("宽格式:\\n", wide_df.head(3))
+
+# 1. melt：宽 → 长
+long_df = wide_df.reset_index().melt(
+    id_vars='date',           # 保留不动的列
+    value_vars=['AAPL', 'MSFT', 'GOOGL'],  # 要融化的列
+    var_name='ticker',        # 新列名（原列名）
+    value_name='return'       # 新列名（值）
+)
+print(f"\\n长格式 shape: {long_df.shape}")  # (60, 3)
+print(long_df.head(6))
+
+# 2. pivot：长 → 宽（恢复原格式）
+restored = long_df.pivot(
+    index='date',
+    columns='ticker',
+    values='return'
+)
+restored.columns.name = None  # 去掉列名的名字
+print("\\n恢复验证:", np.allclose(wide_df.values, restored.values))
+
+# 3. pivot_table：按月统计平均收益
+long_df['month'] = long_df['date'].dt.to_period('M')
+monthly = long_df.pivot_table(
+    index='month',
+    columns='ticker',
+    values='return',
+    aggfunc='mean'          # 可以是 ['mean','std'] 等列表
+)
+print("\\n月度均值:\\n", monthly)
+
+# aggfunc 多个统计量
+monthly_stats = long_df.pivot_table(
+    index='month', columns='ticker', values='return',
+    aggfunc=['mean', 'std']
+)
+print("\\n多统计量 columns:", monthly_stats.columns.tolist()[:4])
+
+# 4. melt vs stack 对比
+stacked = wide_df.stack().reset_index()
+stacked.columns = ['date', 'ticker', 'return']
+print("\\nstack等价于melt:", stacked.shape == long_df[['date','ticker','return']].shape)
+# 区别：stack处理MultiIndex更自然；melt可以只融化部分列`,
+      note: "面试Tip: melt/pivot 是数据清洗的核心。记住 'id_vars 是不动的锚，value_vars 是要融化的列'。pivot_table 就是带 groupby 的 pivot。"
+    },
+    {
+      title: "stack & unstack & crosstab",
+      tag: "高频", tagColor: "#ef4444",
+      keys: ["stack", "unstack", "crosstab", "level参数"],
+      problem: `【题目】
+1. 将多列收益率 stack 成长格式，再 unstack 恢复
+2. 对 MultiIndex DataFrame 指定 level 进行 unstack
+3. 用 crosstab 分析股票涨跌与市值分组的列联表`,
+      theory: `stack/unstack 是 pivot/melt 的 MultiIndex 版：
+  stack(level=-1)   → 将列级别"折叠"到行
+  unstack(level=-1) → 将行级别"展开"到列
+  
+  level 参数：指定哪一级别操作（默认最内层）
+
+crosstab：
+  交叉频率表，等价于 pivot_table + count
+  可计算条件概率/列联表`,
+      code: `import pandas as pd
+import numpy as np
+
+np.random.seed(0)
+# 多列数据
+df = pd.DataFrame(
+    np.random.randn(5, 3).round(3),
+    index=pd.date_range('2023-01', periods=5, freq='ME'),
+    columns=pd.Index(['AAPL', 'MSFT', 'GOOGL'], name='ticker')
+)
+df.index.name = 'date'
+
+# 1. stack / unstack 基础
+stacked = df.stack()  # → MultiIndex Series (date, ticker)
+print("stack结果:\\n", stacked.head(6))
+print("类型:", type(stacked))  # Series
+
+restored = stacked.unstack()   # 恢复原 DataFrame
+print("\\nunstack恢复:\\n", restored)
+
+# unstack 指定 level
+restored_alt = stacked.unstack(level='date')  # 日期变列
+print("\\n日期变列 shape:", restored_alt.shape)  # (3,5)
+
+# 2. MultiIndex DataFrame 的 stack/unstack
+arrays = [['Q1','Q1','Q2','Q2'], ['ret','vol','ret','vol']]
+cols = pd.MultiIndex.from_arrays(arrays, names=['quarter','metric'])
+df_multi = pd.DataFrame(np.random.randn(4, 4).round(3),
+                         index=['AAPL','MSFT','GOOGL','AMZN'],
+                         columns=cols)
+print("\\nMultiIndex DataFrame:\\n", df_multi)
+
+# unstack level=0（行索引变外层列）
+unstacked = df_multi.stack(level='quarter')
+print("\\nstack quarter:\\n", unstacked)
+
+# 3. crosstab：涨跌 vs 市值分组
+np.random.seed(42)
+n = 200
+returns = np.random.randn(n) * 0.02
+cap_group = np.random.choice(['Small','Mid','Large'], n)
+direction = np.where(returns > 0, 'Up', 'Down')
+
+ct = pd.crosstab(
+    cap_group, direction,
+    margins=True,       # 加总行/列
+    normalize='index'   # 行归一化（条件概率）
+)
+print("\\n涨跌条件概率:\\n", ct.round(3))`,
+      note: "面试Tip: stack/unstack 与 pivot/melt 等价，但更适合已有 MultiIndex 的数据。crosstab 在因子分析中常用于计算分组胜率。"
+    },
+    {
+      title: "wide_to_long & explode & get_dummies",
+      tag: "进阶", tagColor: "#8b5cf6",
+      keys: ["wide_to_long", "explode", "get_dummies", "str.get_dummies"],
+      problem: `【题目】
+1. 用 wide_to_long 处理带后缀的宽格式数据（如 ret_2021, ret_2022）
+2. 用 explode 展开列表型单元格
+3. 用 get_dummies 对分类变量 one-hot 编码，并处理多标签情况`,
+      theory: `wide_to_long：
+  专门处理列名带时间后缀的宽格式
+  如 AAPL_2021, AAPL_2022, MSFT_2021, MSFT_2022
+
+explode：
+  将列表类型的单元格展开为多行
+  适合处理 JSON/嵌套数据
+
+get_dummies vs OrdinalEncoder：
+  get_dummies：pandas 内置，适合探索性
+  pd.get_dummies(drop_first=True) 避免多重共线性`,
+      code: `import pandas as pd
+import numpy as np
+
+# 1. wide_to_long：带年份后缀的宽格式
+df_wide = pd.DataFrame({
+    'id':        ['AAPL', 'MSFT', 'GOOGL'],
+    'ret_2021':  [0.33,  0.52,  0.65],
+    'ret_2022':  [-0.27, -0.28, -0.39],
+    'vol_2021':  [0.25,  0.28,  0.31],
+    'vol_2022':  [0.32,  0.30,  0.38],
+})
+long = pd.wide_to_long(
+    df_wide,
+    stubnames=['ret', 'vol'],  # 前缀（stub）
+    i='id',                    # 主键
+    j='year',                  # 新的后缀列名
+    sep='_'                    # 分隔符
+).reset_index()
+print("wide_to_long结果:\\n", long)
+
+# 2. explode：展开列表单元格
+df_tags = pd.DataFrame({
+    'stock':  ['AAPL', 'MSFT', 'GOOGL'],
+    'sectors': [['Tech','Consumer'], ['Tech','Cloud'], ['Tech','Ads']],
+    'returns': [0.1, 0.2, 0.15]
+})
+exploded = df_tags.explode('sectors').reset_index(drop=True)
+print("\\nexplode结果:\\n", exploded)
+
+# 多列 explode（pandas >= 1.3）
+df_multi = pd.DataFrame({
+    'id': [1, 2],
+    'a': [[1, 2], [3, 4]],
+    'b': [['x', 'y'], ['p', 'q']]
+})
+print("\\n多列explode:\\n", df_multi.explode(['a', 'b']))
+
+# 3. get_dummies：one-hot编码
+df_cat = pd.DataFrame({
+    'sector': ['Tech','Finance','Tech','Health','Finance'],
+    'size':   ['Large','Small','Mid','Large','Mid']
+})
+dummies = pd.get_dummies(df_cat, drop_first=False, dtype=int)
+print("\\none-hot编码:\\n", dummies)
+
+# 多标签 str.get_dummies（分隔符方式）
+df_ml = pd.DataFrame({
+    'stock': ['AAPL', 'MSFT'],
+    'tags': ['growth|tech|large', 'value|tech|mid']
+})
+tag_dummies = df_ml['tags'].str.get_dummies(sep='|')
+print("\\n多标签编码:\\n", tag_dummies)`,
+      note: "面试Tip: explode 是处理爬虫/API返回 JSON 嵌套数据的利器。get_dummies 记得用 drop_first=True 避免虚拟变量陷阱。"
+    },
+  ],
+
+  groupby: [
+    {
+      title: "groupby + agg + transform",
+      tag: "必考", tagColor: "#ef4444",
+      keys: ["groupby", "agg", "transform", "named aggregation", "size vs count"],
+      problem: `【题目】给定股票交易数据（含 ticker, date, volume, return, sector），：
+1. 按 sector 计算多个统计量（mean/std/count）
+2. 用 transform 给每行加上其所在组的均值（组内标准化）
+3. 用 named aggregation 语法给聚合结果命名
+4. 区分 size() 和 count() 的区别`,
+      theory: `agg 三种语法：
+  1. 字符串: .agg('mean')
+  2. 列表:   .agg(['mean','std'])
+  3. 字典:   .agg({'ret':'mean', 'vol':'std'})
+  4. named:  .agg(avg_ret=('ret','mean'), ...)
+
+transform vs agg：
+  agg    → 结果行数 = 组数（缩减）
+  transform → 结果行数 = 原始行数（广播回去）
+  
+size(): 含NaN的行也计数
+count(): 每列非NaN的数量`,
+      code: `import pandas as pd
+import numpy as np
+
+np.random.seed(42)
+n = 200
+df = pd.DataFrame({
+    'ticker':  np.random.choice(['AAPL','MSFT','GOOGL','AMZN'], n),
+    'sector':  np.random.choice(['Tech','Finance','Health'], n),
+    'date':    pd.date_range('2023-01-01', periods=n, freq='B'),
+    'volume':  np.random.randint(1e6, 1e8, n),
+    'ret':     np.random.randn(n) * 0.02,
+    'mktcap':  np.random.uniform(100, 3000, n),
+})
+# 随机引入 NaN
+df.loc[np.random.choice(n, 10), 'ret'] = np.nan
+
+# 1. 多统计量 agg
+sector_stats = df.groupby('sector').agg(
+    avg_ret   = ('ret', 'mean'),
+    std_ret   = ('ret', 'std'),
+    total_vol = ('volume', 'sum'),
+    n_obs     = ('ret', 'count'),   # 非NaN计数
+    n_rows    = ('ret', 'size'),    # 含NaN计数（用lambda）
+).round(5)
+print("sector统计:\\n", sector_stats)
+
+# 2. transform：组内标准化（z-score）
+df['ret_zscore'] = df.groupby('sector')['ret'].transform(
+    lambda x: (x - x.mean()) / x.std()
+)
+print("\\n组内z-score（结果行数不变）:", df['ret_zscore'].shape)
+
+# transform 计算组内排名（百分位）
+df['ret_rank'] = df.groupby('sector')['ret'].transform(
+    lambda x: x.rank(pct=True)
+)
+
+# 3. 多列 groupby
+result = df.groupby(['sector', 'ticker']).agg(
+    mean_ret=('ret', 'mean'),
+    sharpe  =('ret', lambda x: x.mean() / x.std() * np.sqrt(252))
+).round(4)
+print("\\n多列groupby:\\n", result.head(6))
+
+# 4. size vs count
+g = df.groupby('sector')
+print("\\nsize (含NaN):\\n", g.size())
+print("\\ncount ret (非NaN):\\n", g['ret'].count())
+# size > count 说明该组有 NaN
+
+# 进阶：filter 过滤整组
+large_groups = df.groupby('sector').filter(lambda x: len(x) > 60)
+print("\\n大组行数:", len(large_groups))`,
+      note: "面试Tip: named aggregation 语法 (new_name=('col', 'func')) 是 pandas 0.25+ 的推荐写法，比字典形式更清晰。transform 是组内标准化的标准做法。"
+    },
+    {
+      title: "apply & pipe & 自定义聚合",
+      tag: "高频", tagColor: "#ef4444",
+      keys: ["apply", "pipe", "GroupBy.apply", "result_type"],
+      problem: `【题目】
+1. 用 groupby + apply 对每组计算自定义指标（如 Sharpe）
+2. 用 pipe 构建可读的数据处理链
+3. 用 apply(result_type='expand') 返回多列结果
+4. 对比 apply 和 agg 的性能差异及适用场景`,
+      theory: `apply 三种使用场景：
+  1. Series.apply(func)   → 元素级
+  2. DataFrame.apply(func, axis=0/1) → 列/行级
+  3. GroupBy.apply(func)  → 组级（最强大）
+
+pipe：
+  df.pipe(f1).pipe(f2).pipe(f3)
+  等价于 f3(f2(f1(df)))
+  优点：避免深层嵌套，可读性极佳
+
+apply 慢的原因：Python循环，无法向量化
+优化：能用 agg/transform 的别用 apply`,
+      code: `import pandas as pd
+import numpy as np
+
+np.random.seed(42)
+df = pd.DataFrame({
+    'ticker': np.repeat(['AAPL','MSFT','GOOGL'], 100),
+    'ret':    np.random.randn(300) * 0.02,
+    'vol':    np.random.uniform(0.01, 0.05, 300),
+    'mktcap': np.random.uniform(100, 3000, 300),
+})
+
+# 1. GroupBy.apply：自定义组级函数
+def group_stats(g):
+    """返回一个 Series，索引即列名"""
+    ret = g['ret'].dropna()
+    return pd.Series({
+        'sharpe':    ret.mean() / ret.std() * np.sqrt(252),
+        'max_dd':    (ret.cumsum() - ret.cumsum().cummax()).min(),
+        'win_rate':  (ret > 0).mean(),
+        'n':         len(ret)
+    })
+
+stats = df.groupby('ticker').apply(group_stats, include_groups=False)
+print("自定义组统计:\\n", stats.round(4))
+
+# 2. apply result_type='expand'：返回多列
+def quantiles(x):
+    return x['ret'].quantile([0.1, 0.5, 0.9]).values
+
+quantile_df = df.groupby('ticker').apply(
+    lambda g: pd.Series(
+        g['ret'].quantile([0.1, 0.5, 0.9]).values,
+        index=['p10', 'p50', 'p90']
+    ), include_groups=False
+)
+print("\\n分位数:\\n", quantile_df.round(4))
+
+# 3. pipe：构建可读数据处理链
+def add_log_mktcap(df):
+    return df.assign(log_mktcap=np.log(df['mktcap']))
+
+def normalize_vol(df):
+    return df.assign(vol_norm=(df['vol'] - df['vol'].mean()) / df['vol'].std())
+
+def flag_outliers(df, col='ret', threshold=2.5):
+    z = (df[col] - df[col].mean()) / df[col].std()
+    return df.assign(is_outlier=z.abs() > threshold)
+
+# 链式处理（vs 嵌套调用）
+processed = (df
+    .pipe(add_log_mktcap)
+    .pipe(normalize_vol)
+    .pipe(flag_outliers, col='ret', threshold=2.5)
+)
+print("\\npipe结果列:", processed.columns.tolist())
+print("异常值数:", processed['is_outlier'].sum())
+
+# 4. apply vs agg 性能对比（概念）
+# ✅ 能用 agg 就不用 apply
+# df.groupby('ticker')['ret'].apply(np.mean)  # 慢
+# df.groupby('ticker')['ret'].agg('mean')      # 快（C实现）`,
+      note: "面试Tip: pipe 是写生产级数据处理代码的最佳实践，面试中展示 pipe 用法会大幅提升印象分。apply 比 agg 慢约 10-50x，能避免就避免。"
+    },
+  ],
+
+  multiindex: [
+    {
+      title: "MultiIndex 创建 & 访问",
+      tag: "必考", tagColor: "#ef4444",
+      keys: ["from_tuples", "from_product", "xs", "loc with tuples", "IndexSlice"],
+      problem: `【题目】创建一个 MultiIndex DataFrame（行：(股票, 日期)，列：(指标, 频率)），完成：
+1. 用三种方式创建 MultiIndex
+2. 用 xs / loc / IndexSlice 选取特定层级的数据
+3. 对某一 level 进行 sort 和 reset
+4. 用 .loc 进行部分标签选择（partial indexing）`,
+      theory: `MultiIndex 三种创建方式：
+  from_tuples：手动指定
+  from_product：笛卡尔积（最常用）
+  from_arrays：多个数组组合
+
+访问方式（重要！）：
+  df.loc['AAPL']           → 外层标签，返回子DataFrame
+  df.loc[('AAPL','2023')]  → 精确元组定位
+  df.xs('2023', level=1)   → 跨层级选择（优雅）
+  idx = pd.IndexSlice
+  df.loc[idx['AAPL':'MSFT', '2023':], :]  → 切片`,
+      code: `import pandas as pd
+import numpy as np
+
+# 1. 三种创建方式
+# 方式一：from_tuples
+tuples = [('AAPL','2022'), ('AAPL','2023'), ('MSFT','2022'), ('MSFT','2023')]
+idx1 = pd.MultiIndex.from_tuples(tuples, names=['ticker','year'])
+
+# 方式二：from_product（最常用）
+tickers = ['AAPL', 'MSFT', 'GOOGL']
+dates = pd.date_range('2023-01-01', periods=5, freq='ME')
+idx2 = pd.MultiIndex.from_product([tickers, dates], names=['ticker','date'])
+
+# 方式三：from_arrays
+idx3 = pd.MultiIndex.from_arrays(
+    [['AAPL','AAPL','MSFT'], ['Q1','Q2','Q1']],
+    names=['ticker','quarter']
+)
+
+# 构建完整MultiIndex DataFrame
+np.random.seed(42)
+df = pd.DataFrame(
+    np.random.randn(len(idx2), 3).round(4),
+    index=idx2,
+    columns=pd.MultiIndex.from_product(
+        [['ret','vol'], ['daily','monthly']],
+        names=['metric','freq']
+    )
+)
+print("MultiIndex DataFrame:\\n", df.head(6))
+
+# 2. 多种访问方式
+# xs：跨层级选择（推荐）
+aapl_data = df.xs('AAPL', level='ticker')
+print("\\nxs选AAPL:\\n", aapl_data.shape)  # (5,4)
+
+# 选择列的特定层级
+daily_data = df.xs('daily', level='freq', axis=1)
+print("daily频率列:", daily_data.columns.tolist())  # ['ret','vol']
+
+# loc + 元组
+single = df.loc[('AAPL', dates[0]), :]
+print("\\n精确定位:", single.values)
+
+# IndexSlice：范围选择
+idx = pd.IndexSlice
+subset = df.loc[idx[['AAPL','MSFT'], dates[:3]], idx['ret', :]]
+print("\\nIndexSlice结果 shape:", subset.shape)
+
+# 3. sort_index 和 reset_index
+df_sorted = df.sort_index(level='date', ascending=False)
+df_flat = df.reset_index()  # MultiIndex → 普通列
+print("\\nreset后列名:", df_flat.columns[:4].tolist())
+
+# 4. 部分标签选择（partial indexing）
+# 只指定外层 ticker，获取所有日期
+msft_all = df.loc['MSFT']
+print("\\nMSFT所有日期:", msft_all.shape)  # (5,4)`,
+      note: "面试Tip: xs 是 MultiIndex 数据跨层级选择最优雅的方式。IndexSlice 则是范围切片的标准写法。生产代码中务必用 sort_index() 保证索引有序，否则 loc 可能报错。"
+    },
+    {
+      title: "swaplevel & droplevel & 聚合降级",
+      tag: "中频", tagColor: "#f97316",
+      keys: ["swaplevel", "droplevel", "get_level_values", "聚合", "groupby level"],
+      problem: `【题目】对 MultiIndex DataFrame：
+1. 交换两个 level 的位置（swaplevel）
+2. 删除某一层级（droplevel）
+3. 用 groupby(level=) 对某一层级聚合
+4. 用 get_level_values 提取某级别所有标签`,
+      theory: `MultiIndex 操作速查：
+  swaplevel(0,1)     → 交换两层
+  droplevel(0)       → 删除第0层
+  get_level_values(n) → 获取第n层所有值
+
+groupby + level：
+  df.groupby(level='ticker').mean()
+  等价于按 ticker 分组后对每组求均值
+  
+  注意：level 参数在新版 pandas 中需先 reset_index`,
+      code: `import pandas as pd
+import numpy as np
+
+np.random.seed(0)
+tickers = ['AAPL', 'MSFT']
+quarters = ['Q1', 'Q2', 'Q3', 'Q4']
+idx = pd.MultiIndex.from_product([tickers, quarters],
+                                   names=['ticker', 'quarter'])
+df = pd.DataFrame({
+    'ret': np.random.randn(8).round(4),
+    'vol': np.abs(np.random.randn(8)).round(4),
+}, index=idx)
+print("原始:\\n", df)
+
+# 1. swaplevel：交换层级顺序
+df_swapped = df.swaplevel('ticker', 'quarter')
+df_swapped = df_swapped.sort_index()
+print("\\nswaplevel（quarter在外）:\\n", df_swapped)
+
+# 2. droplevel：删除某层
+df_no_ticker = df.droplevel('ticker')  # 只剩quarter索引
+print("\\ndroplevel ticker:\\n", df_no_ticker)
+
+# 列的 MultiIndex droplevel
+cols = pd.MultiIndex.from_tuples([('group_A','ret'),('group_A','vol')])
+df_col_multi = pd.DataFrame(np.random.randn(4,2).round(3), columns=cols)
+df_col_flat = df_col_multi.droplevel(0, axis=1)
+print("\\n列droplevel:\\n", df_col_flat.columns.tolist())
+
+# 3. groupby level 聚合
+# 按 ticker 层级求均值
+by_ticker = df.groupby(level='ticker').mean()
+print("\\n按ticker聚合:\\n", by_ticker)
+
+# 按 quarter 层级求和
+by_quarter = df.groupby(level='quarter').sum()
+print("\\n按quarter聚合:\\n", by_quarter)
+
+# 4. get_level_values
+tickers_all = df.index.get_level_values('ticker')
+print("\\n所有ticker值:", tickers_all.tolist())
+print("唯一ticker:", tickers_all.unique().tolist())
+
+# 实际使用：根据level过滤
+mask = df.index.get_level_values('quarter').isin(['Q1', 'Q3'])
+df_h1h3 = df[mask]
+print("\\nQ1和Q3数据:\\n", df_h1h3)`,
+      note: "面试Tip: 在Quant面试中，MultiIndex 常见于面板数据（panel data）。groupby(level=) 是按层级聚合的标准写法，比手动 xs + loop 快很多。"
+    },
+  ],
+
+  merge: [
+    {
+      title: "merge / join / concat 全解",
+      tag: "必考", tagColor: "#ef4444",
+      keys: ["merge", "join", "concat", "how参数", "indicator", "suffixes"],
+      problem: `【题目】
+1. 四种 merge 方式（inner/left/right/outer）的区别与应用
+2. 多键 merge + indicator 参数诊断匹配情况
+3. 用 concat 合并不同时期的数据，处理列不对齐
+4. merge_asof：时间序列的近似匹配（如合并财报日期）`,
+      theory: `merge 参数速查：
+  how:        inner/left/right/outer
+  on:         共同列名
+  left_on/right_on: 列名不同时
+  suffixes:   重名列后缀，默认('_x','_y')
+  indicator:  新增_merge列，显示匹配来源
+  validate:   '1:1'/'1:m'/'m:1' 验证唯一性
+
+merge_asof（特殊！）：
+  按最近键值合并（不要求精确匹配）
+  适合：财报日期←→交易日期`,
+      code: `import pandas as pd
+import numpy as np
+
+# 基础数据
+prices = pd.DataFrame({
+    'ticker': ['AAPL','MSFT','GOOGL','AMZN'],
+    'price':  [150, 300, 140, 130],
+    'sector': ['Tech','Tech','Tech','Consumer']
+})
+fundamentals = pd.DataFrame({
+    'ticker': ['AAPL','MSFT','META','TSLA'],
+    'pe_ratio': [28, 32, 22, 55],
+    'revenue':  [380, 200, 117, 81]
+})
+
+# 1. 四种 merge
+inner = pd.merge(prices, fundamentals, on='ticker', how='inner')
+left  = pd.merge(prices, fundamentals, on='ticker', how='left')
+outer = pd.merge(prices, fundamentals, on='ticker', how='outer')
+print(f"inner:{len(inner)} left:{len(left)} outer:{len(outer)}")
+
+# 2. indicator 诊断匹配
+merged = pd.merge(prices, fundamentals, on='ticker', how='outer',
+                  indicator=True)
+print("\\n匹配情况:\\n", merged[['ticker','_merge']])
+# _merge: 'left_only' / 'right_only' / 'both'
+
+# validate：确保1对1合并（否则报错）
+try:
+    pd.merge(prices, fundamentals, on='ticker', how='inner',
+             validate='1:1')
+    print("\\n1:1验证通过")
+except pd.errors.MergeError as e:
+    print("合并错误:", e)
+
+# 3. concat：合并不同时期（列可能不对齐）
+df_2022 = pd.DataFrame({'AAPL':[0.1,0.2], 'MSFT':[0.3,0.4]})
+df_2023 = pd.DataFrame({'AAPL':[0.5,0.6], 'GOOGL':[0.7,0.8]})
+
+# axis=0 纵向堆叠，自动对齐列（不存在的填NaN）
+combined = pd.concat([df_2022, df_2023], axis=0,
+                     keys=['2022','2023'],  # 创建MultiIndex
+                     ignore_index=False)
+print("\\nconcat纵向:\\n", combined)
+
+# axis=1 横向合并（类似 join）
+side_by_side = pd.concat([df_2022, df_2023], axis=1)
+
+# 4. merge_asof：近似时间匹配
+trades = pd.DataFrame({
+    'time':   pd.to_datetime(['2023-01-10','2023-02-15','2023-04-01']),
+    'ticker': ['AAPL','AAPL','AAPL'],
+    'price':  [150, 155, 162]
+})
+earnings = pd.DataFrame({
+    'report_date': pd.to_datetime(['2023-01-05','2023-04-07']),
+    'eps': [1.88, 1.52]
+})
+# 用最近的财报匹配每次交易
+matched = pd.merge_asof(
+    trades.sort_values('time'),
+    earnings.sort_values('report_date'),
+    left_on='time', right_on='report_date',
+    direction='backward'  # 用最近的过去时间
+)
+print("\\nmerge_asof结果:\\n", matched)`,
+      note: "面试Tip: merge_asof 在量化中极为重要——财报数据、评级变更等都需要 point-in-time 匹配（用最近过去的值，防止未来数据泄露）。"
+    },
+  ],
+
+  timeseries: [
+    {
+      title: "resample & rolling & shift",
+      tag: "必考", tagColor: "#ef4444",
+      keys: ["resample", "rolling", "shift", "expanding", "ewm", "freq别名"],
+      problem: `【题目】给定日频收益率数据：
+1. resample 聚合到周频/月频（注意 OHLCV 的聚合方式不同）
+2. rolling 计算 60 日滚动 Sharpe，与 expanding 对比
+3. shift 实现滞后特征，避免数据泄露
+4. ewm 指数加权均值与 rolling 均值对比`,
+      theory: `resample 频率别名：
+  'B' 工作日, 'W' 周, 'ME' 月末, 'QE' 季末
+  'h' 小时, 'min' 分钟, 's' 秒
+
+  OHLC：open=first, high=max, low=min, close=last
+  volume：sum；return：compound（不能直接mean）
+
+rolling vs expanding：
+  rolling(n)：固定窗口（最近n期）
+  expanding()：从第一期到当前，越来越大
+
+shift(n) > 0：滞后（历史数据）
+shift(n) < 0：超前（未来数据，注意泄露！）`,
+      code: `import pandas as pd
+import numpy as np
+
+np.random.seed(42)
+dates = pd.date_range('2020-01-01', periods=756, freq='B')
+df = pd.DataFrame({
+    'close':  100 * np.exp(np.cumsum(np.random.randn(756) * 0.01)),
+    'volume': np.random.randint(1e6, 1e8, 756),
+    'ret':    np.random.randn(756) * 0.01
+}, index=dates)
+
+# 1. resample 聚合
+# OHLCV 月度聚合
+monthly_ohlcv = df['close'].resample('ME').agg({
+    'open':  'first',
+    'high':  'max',
+    'low':   'min',
+    'close': 'last',
+})
+# 注意：收益率月度化要用复利，不能用mean
+monthly_ret = (1 + df['ret']).resample('ME').prod() - 1
+print("月度复利收益（前3月）:", monthly_ret.head(3).round(4).values)
+
+# 2. rolling vs expanding Sharpe
+def rolling_sharpe(rets, window):
+    r = rets.rolling(window)
+    return (r.mean() / r.std() * np.sqrt(252)).rename(f'rolling_{window}d')
+
+def expanding_sharpe(rets):
+    e = rets.expanding()
+    return (e.mean() / e.std() * np.sqrt(252)).rename('expanding')
+
+rs_60  = rolling_sharpe(df['ret'], 60)
+rs_252 = rolling_sharpe(df['ret'], 252)
+es     = expanding_sharpe(df['ret'])
+sharpe_df = pd.concat([rs_60, rs_252, es], axis=1)
+print("\\nSharpe对比（最新）:", sharpe_df.iloc[-1].round(3).values)
+
+# 3. shift：构建滞后特征（防数据泄露）
+df['ret_lag1'] = df['ret'].shift(1)   # 昨天收益
+df['ret_lag5'] = df['ret'].shift(5)   # 5天前收益
+df['ret_fwd1'] = df['ret'].shift(-1)  # ⚠️ 明天收益（泄露！）
+
+# 实际使用：确保特征用shift(1)，标签不shift
+feature_cols = ['ret_lag1', 'ret_lag5']
+target_col = 'ret'  # 当天收益作为预测目标
+train_df = df[feature_cols + [target_col]].dropna()
+print(f"\\n训练集（去NaN后）: {len(train_df)} 行")
+
+# 4. ewm：指数加权
+ema_26 = df['close'].ewm(span=26, adjust=False).mean()
+ema_12 = df['close'].ewm(span=12, adjust=False).mean()
+macd = ema_12 - ema_26  # MACD指标
+
+# com/span/halflife 关系：
+# span s → com = (s-1)/2
+# halflife h → decay = 1 - exp(-ln2/h)
+ewm_vol = df['ret'].ewm(halflife=20).std() * np.sqrt(252)
+print(f"\\nEWM年化波动率（最新）: {ewm_vol.iloc[-1]:.2%}")`,
+      note: "面试Tip: shift(1) 是防止数据泄露的标准操作——特征必须用过去的数据。resample 中收益率用 prod() 复利，不能用 mean()，这是常见错误。"
+    },
+    {
+      title: "DatetimeIndex & dt访问器",
+      tag: "高频", tagColor: "#ef4444",
+      keys: ["dt.accessor", "to_period", "between_time", "tz_localize", "calendar"],
+      problem: `【题目】
+1. 用 dt 访问器提取年/月/日/周几/季度等特征
+2. 按时间段过滤：只要工作时间内的高频数据
+3. 时区处理：UTC 转换为 US/Eastern
+4. 用 to_period 做按月统计，再转回 Timestamp`,
+      theory: `dt 访问器常用属性：
+  .year .month .day .hour .minute
+  .dayofweek (0=周一)  .dayofyear
+  .quarter  .is_month_end  .is_business_day
+  .week (已废弃→ isocalendar().week)
+
+时区注意：
+  tz_localize('UTC')   → 添加时区
+  tz_convert('US/Eastern') → 转换时区
+  
+to_period('M')：转为Period（月度统计更准确）`,
+      code: `import pandas as pd
+import numpy as np
+
+# 1. dt 访问器提取特征
+dates = pd.date_range('2023-01-01', periods=365, freq='D')
+df = pd.DataFrame({'date': dates, 'value': np.random.randn(365)})
+df = df.set_index('date')
+
+# 提取时间特征
+df['year']        = df.index.year
+df['month']       = df.index.month
+df['dayofweek']   = df.index.dayofweek  # 0=Monday
+df['quarter']     = df.index.quarter
+df['week']        = df.index.isocalendar().week.values
+df['is_month_end'] = df.index.is_month_end
+
+print("时间特征样例:\\n", df.head(3)[['year','month','dayofweek','quarter']])
+
+# 只取工作日（排除周末）
+biz_days = df[df.index.dayofweek < 5]
+print(f"\\n工作日数: {len(biz_days)}/365")
+
+# 2. 高频数据：between_time 过滤交易时间
+hf_index = pd.date_range('2023-01-03 08:00', periods=1000, freq='1min')
+hf_df = pd.DataFrame({'price': np.random.randn(1000).cumsum() + 100},
+                      index=hf_index)
+
+# 只保留9:30-16:00的交易时段
+market_hours = hf_df.between_time('09:30', '16:00')
+print(f"\\n交易时段数据: {len(market_hours)} 分钟")
+
+# 3. 时区处理
+ts_utc = pd.Timestamp('2023-01-03 14:30', tz='UTC')
+ts_et = ts_utc.tz_convert('US/Eastern')
+print(f"\\nUTC: {ts_utc}  →  ET: {ts_et}")
+
+# Series 时区转换
+idx_utc = pd.date_range('2023-01-03 14:00', periods=5,
+                          freq='h', tz='UTC')
+series_utc = pd.Series(range(5), index=idx_utc)
+series_et = series_utc.tz_convert('US/Eastern')
+print("\\nET时间:", series_et.index.tolist())
+
+# 4. to_period / period_range
+monthly = df['value'].resample('ME').mean()
+monthly.index = monthly.index.to_period('M')
+print("\\nPeriod索引:", monthly.head(3))
+
+# Period → Timestamp
+monthly_ts = monthly.copy()
+monthly_ts.index = monthly_ts.index.to_timestamp(how='end')
+print("Period转Timestamp:", monthly_ts.index[:3])`,
+      note: "面试Tip: dayofweek 返回 0-6（0=周一），注意是周一而不是周日！时区处理在跨市场数据中很重要，tz_localize 和 tz_convert 的区别要清楚。"
+    },
+  ],
+
+  cleaning: [
+    {
+      title: "缺失值处理全攻略",
+      tag: "必考", tagColor: "#ef4444",
+      keys: ["isna", "fillna", "dropna", "interpolate", "ffill", "bfill"],
+      problem: `【题目】给定含大量缺失值的金融数据（价格序列有随机缺口）：
+1. 统计并可视化缺失值模式
+2. 对价格序列：前向填充 vs 线性插值的区别
+3. dropna 的 subset / thresh / how 参数
+4. 用 fillna 按组填充（用组均值替换）`,
+      theory: `缺失值处理策略：
+  ffill(limit=n)    → 前向填充，最多填n个
+  bfill()           → 后向填充
+  interpolate(method='linear'/'time'/'spline')
+  fillna(df.mean()) → 均值填充
+
+dropna 参数：
+  how='any'   → 任意列有NaN就删
+  how='all'   → 全部列都NaN才删
+  subset=['a'] → 只看特定列
+  thresh=n    → 至少有n个非NaN才保留`,
+      code: `import pandas as pd
+import numpy as np
+
+np.random.seed(42)
+n = 100
+prices = 100 * np.exp(np.cumsum(np.random.randn(n) * 0.01))
+# 随机制造缺失
+mask = np.random.choice([True, False], n, p=[0.15, 0.85])
+prices_with_nan = pd.Series(prices.copy(), 
+                             index=pd.date_range('2023-01', periods=n, freq='B'))
+prices_with_nan[mask] = np.nan
+
+# 1. 缺失值诊断
+print(f"缺失数量: {prices_with_nan.isna().sum()}")
+print(f"缺失比例: {prices_with_nan.isna().mean():.1%}")
+
+# 连续缺失段
+def find_nan_gaps(s):
+    is_nan = s.isna()
+    groups = (is_nan != is_nan.shift()).cumsum()
+    gaps = s[is_nan].groupby(groups[is_nan]).size()
+    return gaps.value_counts().sort_index()
+
+print("\\n连续缺失段长度分布:\\n", find_nan_gaps(prices_with_nan))
+
+# 2. 填充方法对比
+p_ffill = prices_with_nan.ffill()             # 前向填充
+p_ffill_lim = prices_with_nan.ffill(limit=2)  # 最多填2个
+p_interp = prices_with_nan.interpolate(method='linear')  # 线性插值
+p_time = prices_with_nan.interpolate(method='time')      # 时间加权插值
+
+# 误差对比（与真实值）
+true_series = pd.Series(prices, index=prices_with_nan.index)
+nan_idx = prices_with_nan[prices_with_nan.isna()].index
+print("\\n填充误差（仅缺失位置）:")
+for name, filled in [('ffill', p_ffill), ('interpolate', p_interp)]:
+    err = (filled[nan_idx] - true_series[nan_idx]).abs().mean()
+    print(f"  {name}: MAE={err:.4f}")
+
+# 3. dropna 参数
+df = pd.DataFrame({
+    'a': [1, np.nan, 3, np.nan],
+    'b': [np.nan, 2, 3, np.nan],
+    'c': [1, 2, 3, 4]
+})
+print("\\ndropna(how='any'):", len(df.dropna(how='any')))    # 1行
+print("dropna(how='all'):", len(df.dropna(how='all')))      # 3行
+print("dropna(subset=['a']):", len(df.dropna(subset=['a'])))  # 2行
+print("dropna(thresh=2):", len(df.dropna(thresh=2)))         # 3行
+
+# 4. 按组填充（用组均值）
+df_group = pd.DataFrame({
+    'sector': ['Tech','Tech','Finance','Finance','Tech'],
+    'ret': [0.1, np.nan, 0.05, np.nan, 0.08]
+})
+# 用各 sector 的均值填充 NaN
+df_group['ret_filled'] = df_group.groupby('sector')['ret'].transform(
+    lambda x: x.fillna(x.mean())
+)
+print("\\n按组填充:\\n", df_group)`,
+      note: "面试Tip: 金融时序数据用 ffill（前向填充）最合理，因为最新已知价格就是最好估计。interpolate 适合要求平滑的场景（如基准曲线）。"
+    },
+    {
+      title: "类型转换 & 去重 & 字符串处理",
+      tag: "高频", tagColor: "#ef4444",
+      keys: ["astype", "Categorical", "duplicated", "str accessor", "pd.to_numeric"],
+      problem: `【题目】处理一份从数据库导出的原始数据（类型混乱、有重复、有字符串数字）：
+1. 批量类型转换：字符串数字→float，处理错误值
+2. 用 Categorical 节省内存（高基数 vs 低基数）
+3. duplicated + drop_duplicates 的 keep/subset 参数
+4. str 访问器：提取、替换、split、正则匹配`,
+      theory: `类型转换：
+  pd.to_numeric(errors='coerce') → 非法值变NaN
+  pd.to_datetime(errors='coerce')
+  astype('category') → 节省内存（适合低基数列）
+
+内存优化：
+  object → category  可节省 50-90% 内存
+  float64 → float32  减半
+
+str accessor：
+  .str.contains(pat, regex=True)
+  .str.extract(r'(\d+)')  → 提取捕获组
+  .str.split(expand=True) → 展开成多列`,
+      code: `import pandas as pd
+import numpy as np
+
+# 模拟"脏数据"
+raw = pd.DataFrame({
+    'ticker': ['AAPL', 'MSFT', 'GOOGL', 'AAPL', 'TSLA', 'tsla'],
+    'price':  ['150.5', '300.0', 'N/A', '151.0', '200', 'abc'],
+    'volume': ['1M', '2.5M', '800K', '1.1M', '500K', '600K'],
+    'sector': ['Tech', 'Tech', 'Tech', 'Tech', 'Auto', 'Auto'],
+    'date':   ['2023-01-01', '2023-01-01', '2023-01-01',
+                '2023-01-01', '2023-01-01', '2023-01-01']
+})
+print("原始数据:\\n", raw)
+print("\\n内存:", raw.memory_usage(deep=True).sum(), "bytes")
+
+# 1. 类型转换
+# 字符串→数字（非法→NaN）
+raw['price_num'] = pd.to_numeric(raw['price'], errors='coerce')
+print("\\n价格转换（非法→NaN）:", raw['price_num'].tolist())
+
+# 处理 volume 的单位后缀
+def parse_volume(v):
+    v = str(v).strip()
+    if v.endswith('M'): return float(v[:-1]) * 1e6
+    if v.endswith('K'): return float(v[:-1]) * 1e3
+    return float(v)
+raw['vol_num'] = raw['volume'].apply(parse_volume)
+
+# 日期转换
+raw['date_dt'] = pd.to_datetime(raw['date'], errors='coerce')
+
+# 2. Categorical：节省内存
+raw['sector_cat'] = raw['sector'].astype('category')
+mem_before = raw['sector'].memory_usage(deep=True)
+mem_after  = raw['sector_cat'].memory_usage(deep=True)
+print(f"\\nsector内存: {mem_before} → {mem_after} bytes")
+print("类别:", raw['sector_cat'].cat.categories.tolist())
+
+# 有序类别（如信用等级）
+grades = pd.Categorical(['BB','AAA','AA','B','AAA'],
+    categories=['B','BB','BBB','A','AA','AAA'], ordered=True)
+print("有序类别比较:", (grades > 'BB').tolist())
+
+# 3. 去重
+# duplicated 返回布尔 Series
+print("\\n重复行（ticker+date）:")
+dup_mask = raw.duplicated(subset=['ticker','date'], keep='first')
+print(raw[dup_mask][['ticker','date']])
+
+# 大小写不敏感去重
+raw['ticker_upper'] = raw['ticker'].str.upper()
+deduped = raw.drop_duplicates(subset=['ticker_upper','date'], keep='first')
+print("去重后行数:", len(deduped))
+
+# 4. str accessor
+tickers = pd.Series(['AAPL_US', 'MSFT_US', 'GOOGL_US', '0700_HK', '9988_HK'])
+# 提取市场后缀
+tickers.str.split('_').str[1]
+# 正则提取数字开头的港股代码
+hk_stocks = tickers[tickers.str.match(r'^\\d')]
+print("\\n港股代码:", hk_stocks.tolist())
+
+# str.extract 提取捕获组
+df_str = pd.DataFrame({'code': ['AAPL_Q1_2023', 'MSFT_Q2_2023']})
+extracted = df_str['code'].str.extract(r'(\\w+)_(Q\\d)_(\\d{4})')
+extracted.columns = ['ticker', 'quarter', 'year']
+print("\\nextract结果:\\n", extracted)`,
+      note: "面试Tip: pd.to_numeric(errors='coerce') 是处理混杂类型列的标准方法。Categorical 在 sector/country 等低基数列上可节省大量内存，对大规模面板数据非常重要。"
+    },
+  ],
+
+  advanced: [
+    {
+      title: "assign & eval & query 链式操作",
+      tag: "进阶", tagColor: "#8b5cf6",
+      keys: ["assign", "eval", "query", "pipe", "方法链"],
+      problem: `【题目】用链式 (method chaining) 风格重写以下数据处理流程：
+1. 加载数据 → 过滤 → 新增计算列 → 分组聚合 → 重命名
+2. 用 eval 加速大型 DataFrame 的表达式计算
+3. 用 query 写出可读的多条件过滤`,
+      theory: `方法链的核心：每步返回 DataFrame
+  .assign(new_col=lambda df: ...)  → 不修改原数据
+  .query("col > 0 and col2 < 1")   → 字符串过滤
+  .eval("new = a + b * c")         → 字符串表达式
+
+eval 优势：
+  对大 DataFrame（>10K行）比直接运算快
+  因为用 numexpr 引擎，避免中间变量
+
+变量引用：query/eval 中用 @ 引用外部变量`,
+      code: `import pandas as pd
+import numpy as np
+
+np.random.seed(42)
+n = 1000
+df = pd.DataFrame({
+    'ticker': np.random.choice(['AAPL','MSFT','GOOGL','AMZN','META'], n),
+    'date':   pd.date_range('2023-01', periods=n, freq='B'),
+    'ret':    np.random.randn(n) * 0.02,
+    'vol':    np.random.uniform(0.01, 0.05, n),
+    'mktcap': np.random.uniform(100, 3000, n),
+    'sector': np.random.choice(['Tech','Finance','Health'], n),
+})
+
+# 传统写法（不直观）
+df_copy = df.copy()
+df_copy = df_copy[df_copy['ret'].notna()]
+df_copy['log_mktcap'] = np.log(df_copy['mktcap'])
+df_copy['ret_vol_ratio'] = df_copy['ret'] / df_copy['vol']
+df_copy = df_copy[df_copy['sector'] == 'Tech']
+
+# ✅ 方法链写法（推荐）
+threshold = 0.0  # 外部变量，用@引用
+result = (df
+    .dropna(subset=['ret', 'vol'])
+    .assign(
+        log_mktcap     = lambda d: np.log(d['mktcap']),
+        ret_vol_ratio  = lambda d: d['ret'] / d['vol'],
+        is_large_cap   = lambda d: d['mktcap'] > d['mktcap'].quantile(0.75),
+    )
+    .query("sector == 'Tech' and ret > @threshold")
+    .groupby('ticker')
+    .agg(
+        avg_ret    = ('ret', 'mean'),
+        avg_rvr    = ('ret_vol_ratio', 'mean'),
+        large_cap_pct = ('is_large_cap', 'mean')
+    )
+    .round(4)
+    .sort_values('avg_ret', ascending=False)
+)
+print("方法链结果:\\n", result)
+
+# eval 表达式计算（大数据集加速）
+df_large = pd.DataFrame(np.random.randn(100_000, 4),
+                         columns=['a','b','c','d'])
+
+# eval：用字符串直接计算，速度更快
+df_large.eval('e = a * b + c / (d + 0.001)', inplace=True)
+print("\\neval新列:", df_large['e'].describe().round(3))
+
+# 多行 eval
+df_large.eval('''
+    f = a + b
+    g = f * c
+    h = g > 0
+''', inplace=True)
+print("eval多行列:", ['f','g','h'])
+
+# query 复杂条件（比布尔索引更可读）
+cols_of_interest = ['a', 'b']  # 外部变量列表
+filtered = df_large.query("a > 0 and b > 0 and c < 0 and abs(d) < 1")
+print(f"\\nquery结果: {len(filtered)} 行")`,
+      note: "面试Tip: 方法链是现代 pandas 代码的最佳实践，assign 中用 lambda 引用同一步骤中刚创建的列（不用中间变量）。eval 对 100K+ 行的数值计算有显著加速。"
+    },
+    {
+      title: "explode & json_normalize & cut/qcut",
+      tag: "中频", tagColor: "#f97316",
+      keys: ["cut", "qcut", "json_normalize", "explode", "apply(pd.Series)"],
+      problem: `【题目】
+1. 用 cut/qcut 将连续收益率分成5组，分析各组特征
+2. 用 json_normalize 展平嵌套 JSON 数据
+3. apply(pd.Series) vs explode 处理列表列的对比
+4. 用 pd.Interval 进行自定义分箱`,
+      theory: `cut vs qcut：
+  cut(bins=[...])   → 等宽分箱（区间固定）
+  qcut(q=5)         → 等频分箱（每组数量相同）
+  
+  都返回 Categorical 类型
+  labels=False → 返回整数代码
+  retbins=True  → 返回 bin 边界
+
+json_normalize：
+  处理 API 返回的嵌套 JSON
+  record_path: 指定嵌套列表路径
+  meta: 要提升的父级字段`,
+      code: `import pandas as pd
+import numpy as np
+
+np.random.seed(42)
+n = 500
+returns = np.random.randn(n) * 0.02
+s = pd.Series(returns, name='ret')
+
+# 1. cut / qcut 分箱
+# cut：等宽分箱
+bins_custom = [-0.1, -0.02, -0.005, 0.005, 0.02, 0.1]
+labels_custom = ['大跌','小跌','平盘','小涨','大涨']
+cut_result = pd.cut(s, bins=bins_custom, labels=labels_custom)
+print("等宽分箱分布:\\n", cut_result.value_counts().sort_index())
+
+# qcut：等频分箱（5分位）
+qcut_result = pd.qcut(s, q=5, labels=['Q1','Q2','Q3','Q4','Q5'])
+print("\\n等频分箱分布:\\n", qcut_result.value_counts().sort_index())
+
+# retbins 获取边界值
+_, bin_edges = pd.qcut(s, q=5, retbins=True)
+print("\\n分位点边界:", bin_edges.round(4))
+
+# 分析各组特征
+df_bins = pd.DataFrame({'ret': s, 'group': qcut_result})
+group_stats = df_bins.groupby('group', observed=True)['ret'].agg(['mean','std','count'])
+print("\\n各组统计:\\n", group_stats.round(5))
+
+# 2. json_normalize：展平嵌套JSON
+data = [
+    {'ticker': 'AAPL', 'price': 150,
+     'fundamentals': {'pe': 28, 'pb': 8.5},
+     'analysts': [{'name': 'Bob', 'rating': 'Buy'},
+                  {'name': 'Alice', 'rating': 'Hold'}]},
+    {'ticker': 'MSFT', 'price': 300,
+     'fundamentals': {'pe': 32, 'pb': 11.2},
+     'analysts': [{'name': 'Charlie', 'rating': 'Buy'}]},
+]
+
+# 展平 fundamentals（嵌套dict）
+flat = pd.json_normalize(data, sep='_',
+                          meta=['ticker', 'price'],
+                          record_path='analysts',
+                          errors='ignore')
+print("\\njson_normalize结果:\\n", flat)
+
+# 3. apply(pd.Series) vs explode
+df_list = pd.DataFrame({
+    'ticker': ['AAPL', 'MSFT'],
+    'signals': [[0.1, -0.2, 0.3], [0.5, 0.1]]
+})
+
+# 方法一：apply(pd.Series)→列式展开
+expanded_cols = df_list['signals'].apply(pd.Series)
+print("\\napply(pd.Series):\\n", expanded_cols)
+
+# 方法二：explode→行式展开（通常更好）
+exploded = df_list.explode('signals').reset_index(drop=True)
+print("\\nexplode:\\n", exploded)`,
+      note: "面试Tip: cut vs qcut 的选择取决于需求——研究分析用 qcut（等频，每组可比），业务规则用 cut（边界有意义）。json_normalize 是处理 API 数据的必备工具。"
+    },
+    {
+      title: "内存优化 & 大数据处理",
+      tag: "进阶", tagColor: "#8b5cf6",
+      keys: ["dtype优化", "chunksize", "category", "稀疏DataFrame", "to_parquet"],
+      problem: `【题目】你有一个 5GB 的 CSV 文件（股票日频数据，10年×5000支股票），要在 8GB 内存的机器上处理：
+1. 用 dtype 优化减少内存
+2. 用 chunksize 分块读取并流式处理
+3. 用 Sparse 表示稀疏数据（如因子暴露矩阵）
+4. 选择合适的文件格式存储`,
+      theory: `内存优化策略：
+  1. float64→float32: 减半（损失精度小）
+  2. int64→int32/int16: 根据数值范围
+  3. object→category: 低基数列省 90%
+  4. 只读取需要的列: usecols参数
+
+文件格式对比：
+  CSV:     通用但慢，无类型信息
+  Parquet: 列式存储，压缩好，保留类型 ✅
+  Feather: 极快读写，适合临时存储
+  HDF5:    适合数值矩阵，支持查询`,
+      code: `import pandas as pd
+import numpy as np
+
+# 1. dtype 优化（模拟大数据）
+np.random.seed(42)
+n = 100_000
+df = pd.DataFrame({
+    'ticker': np.random.choice([f'STK{i:04d}' for i in range(500)], n),
+    'date':   pd.date_range('2020-01-01', periods=n, freq='h'),
+    'ret':    np.random.randn(n) * 0.01,
+    'vol':    np.random.uniform(0.01, 0.05, n),
+    'volume': np.random.randint(1000, 1_000_000, n),
+    'flag':   np.random.choice([0, 1], n),
+})
+
+mem_before = df.memory_usage(deep=True).sum() / 1024**2
+print(f"优化前内存: {mem_before:.1f} MB")
+print("各列类型:\\n", df.dtypes)
+
+# 优化类型
+df_opt = df.copy()
+df_opt['ticker'] = df_opt['ticker'].astype('category')       # object→category
+df_opt['ret']    = df_opt['ret'].astype('float32')           # float64→float32
+df_opt['vol']    = df_opt['vol'].astype('float32')
+df_opt['volume'] = pd.to_numeric(df_opt['volume'], downcast='unsigned')
+df_opt['flag']   = df_opt['flag'].astype('int8')             # int64→int8
+
+mem_after = df_opt.memory_usage(deep=True).sum() / 1024**2
+print(f"\\n优化后内存: {mem_after:.1f} MB  (节省 {1-mem_after/mem_before:.1%})")
+
+# 2. chunksize 分块处理
+import io
+
+# 模拟 CSV 内容（实际用 read_csv('big_file.csv', chunksize=10000)）
+csv_content = df.to_csv(index=False)
+chunks = pd.read_csv(io.StringIO(csv_content), chunksize=10_000)
+
+# 流式计算每个 ticker 的统计量
+results = []
+for chunk in chunks:
+    chunk_stats = chunk.groupby('ticker')['ret'].agg(['sum','count','var'])
+    results.append(chunk_stats)
+
+# 合并分块结果
+combined = pd.concat(results).groupby(level=0).agg({
+    'sum': 'sum', 'count': 'sum', 'var': 'mean'  # 简化合并
+})
+combined['mean'] = combined['sum'] / combined['count']
+print(f"\\n分块处理完成，共 {len(combined)} 只股票")
+
+# 3. 稀疏数据（如因子暴露矩阵，大部分为0）
+dense = pd.DataFrame(
+    np.random.choice([0, 0, 0, 1], size=(1000, 200)),  # 约25%非零
+    dtype='float64'
+)
+sparse = dense.astype(pd.SparseDtype('float64', fill_value=0))
+print(f"\\n密集矩阵: {dense.memory_usage(deep=True).sum()/1024:.1f} KB")
+print(f"稀疏矩阵: {sparse.memory_usage(deep=True).sum()/1024:.1f} KB")
+print(f"稀疏密度: {sparse.sparse.density:.2%}")
+
+# 4. 文件格式对比（概念代码）
+# df.to_parquet('data.parquet', compression='snappy')  # 推荐
+# df.to_feather('data.feather')                         # 最快读写
+# df.read_parquet('data.parquet', columns=['ticker','ret'])  # 列式读取
+print("\\n推荐格式: Parquet (列式存储+压缩+类型保留)")`,
+      note: "面试Tip: 内存优化在处理大规模面板数据时至关重要。category + float32 通常可以将内存减少 60-70%。Parquet 是量化生产环境中存储结构化数据的首选格式。"
+    },
+  ],
+
+  datetime: [
+    {
+      title: "Timestamp & to_datetime 全解",
+      tag: "必考", tagColor: "#ef4444",
+      keys: ["pd.Timestamp", "to_datetime", "date_range", "format参数"],
+      problem: `【题目】从各种来源的日期字符串创建时间对象：
+1. 将混乱格式的字符串列表批量转换为 DatetimeIndex
+2. 用 format= 指定格式加速解析（避免自动推断）
+3. 处理转换失败的情况（errors='coerce' vs 'raise'）
+4. 用 pd.Timestamp 创建单个时间点并访问各属性`,
+      theory: `pd.Timestamp 是 pandas 的原子时间单位（基于 numpy.datetime64）：
+  pd.Timestamp('2023-01-15')
+  pd.Timestamp(year=2023, month=1, day=15, hour=9, minute=30)
+  pd.Timestamp(1673740800, unit='s')   # 从 Unix 时间戳
+
+pd.to_datetime 参数速查：
+  format=       → 格式字符串，跳过自动推断，速度快10x
+  errors=       → 'raise'(默认) / 'coerce'(→NaT) / 'ignore'
+  unit=         → 'ms'/'s'/'ns'，处理数值型时间戳
+  utc=True      → 强制加 UTC 时区
+  dayfirst=     → 处理 DD/MM/YYYY 格式
+  infer_datetime_format= → (旧版)自动加速，新版已废弃
+
+常用 strftime 格式码：
+  %Y 四位年  %y 两位年  %m 月  %d 日
+  %H 小时(24)  %I 小时(12)  %M 分  %S 秒
+  %f 微秒  %Z 时区名  %z ±UTC偏移
+  %A 星期全名  %a 缩写  %j 一年中的第几天`,
+      code: `import pandas as pd
+import numpy as np
+
+# ── 1. pd.Timestamp 基础 ──
+ts = pd.Timestamp('2023-06-15 09:30:00')
+print(ts.year, ts.month, ts.day)          # 2023 6 15
+print(ts.hour, ts.minute, ts.second)      # 9 30 0
+print(ts.dayofweek)   # 3 (0=周一，3=周四)
+print(ts.day_name())  # Thursday
+print(ts.is_month_end)  # False
+print(ts.timestamp())   # Unix 时间戳（秒）
+
+# ── 2. to_datetime 批量解析 ──
+# 标准格式（自动推断）
+s = pd.to_datetime(['2023-01-15', '2023/02/28', '20230315'])
+print(s)
+
+# 指定 format（最快，生产推荐）
+s2 = pd.to_datetime(['15/06/2023', '28/07/2023'],
+                     format='%d/%m/%Y')
+
+# 多种格式混杂（逐行推断，慢但灵活）
+mixed = ['2023-01-15', 'Jan 15, 2023', '15-Jan-2023']
+s3 = pd.to_datetime(mixed, format='mixed')
+print(s3)
+
+# ── 3. 错误处理 ──
+messy = ['2023-01-15', 'not a date', '2023-13-99', '2023-06-01']
+# errors='coerce': 转换失败→NaT，不报错
+s4 = pd.to_datetime(messy, errors='coerce')
+print(s4)               # NaT 代替无效值
+print(s4.isna().sum())  # 2 个 NaT
+
+# errors='raise': 遇到错误立即报错（默认）
+# errors='ignore': 原样返回（不推荐，难排查）
+
+# ── 4. 数值型时间戳 ──
+# 毫秒级 Unix 时间戳（常见于数据库导出）
+ms_stamps = pd.Series([1673740800000, 1673827200000])
+dt_from_ms = pd.to_datetime(ms_stamps, unit='ms')
+print(dt_from_ms)
+
+# 纳秒级（numpy 默认精度）
+ns_stamp = pd.Timestamp('2023-01-15').value  # → int ns
+print(pd.Timestamp(ns_stamp))  # 还原
+
+# ── 5. date_range 生成序列 ──
+# 常用 freq 别名
+idx_b   = pd.date_range('2023-01-01', periods=5, freq='B')    # 工作日
+idx_me  = pd.date_range('2023-01-01', '2023-12-31', freq='ME') # 月末
+idx_h   = pd.date_range('2023-01-01 09:30', periods=8, freq='h')
+idx_min = pd.date_range('2023-01-03 09:30', periods=390, freq='min')  # 分钟
+
+print(f"工作日: {len(idx_b)} 天")
+print(f"月末:   {len(idx_me)} 月")`,
+      note: "面试Tip: 生产代码中务必指定 format= 参数，自动推断对大数据集慢约10倍。errors='coerce' 是处理脏数据的标准方式，结合 isna() 检查转换失败的行。"
+    },
+    {
+      title: "strptime / strftime — 格式字符串",
+      tag: "高频", tagColor: "#ef4444",
+      keys: ["strptime", "strftime", "格式码", "Python datetime"],
+      problem: `【题目】
+1. 用 Python 原生 strptime 解析各种日期格式，与 pd.to_datetime 对比
+2. 用 strftime 将时间戳格式化为指定字符串
+3. 构建一个能处理多种输入格式的鲁棒解析函数
+4. 理解 strptime vs strftime 的方向（parse vs format）`,
+      theory: `strptime vs strftime（记忆技巧）：
+  strp-time  = "string parse time"   → 字符串 → datetime
+  strf-time  = "string format time"  → datetime → 字符串
+
+Python 原生（from datetime import datetime）：
+  datetime.strptime(string, format)   → datetime 对象
+  datetime_obj.strftime(format)       → str
+
+pandas 封装（更快，支持向量化）：
+  pd.to_datetime(s, format=...)       → DatetimeIndex
+  series.dt.strftime(format)          → str Series
+
+常用格式码完整版：
+  日期：%Y(年4位) %y(年2位) %m(月) %d(日)
+  时间：%H(时24) %I(时12) %p(AM/PM) %M(分) %S(秒) %f(微秒)
+  周：  %A(星期全) %a(星期缩) %u(周几1-7) %w(周几0-6)
+  特殊：%j(年第几天) %W(年第几周) %Z(时区名) %z(±偏移)
+        %X(本地时间) %x(本地日期) %c(本地完整)
+  字面%：%%`,
+      code: `import pandas as pd
+from datetime import datetime
+
+# ── 1. Python 原生 strptime ──
+# 从字符串→datetime（单个）
+dt1 = datetime.strptime('2023-06-15 09:30:45', '%Y-%m-%d %H:%M:%S')
+dt2 = datetime.strptime('15/Jun/2023', '%d/%b/%Y')
+dt3 = datetime.strptime('06-15-23 09:30 AM', '%m-%d-%y %I:%M %p')
+print(dt1, dt2, dt3)
+
+# ── 2. strftime：datetime → 字符串 ──
+ts = pd.Timestamp('2023-06-15 09:30:00')
+
+# 各种输出格式
+print(ts.strftime('%Y-%m-%d'))              # 2023-06-15
+print(ts.strftime('%d/%m/%Y %H:%M'))        # 15/06/2023 09:30
+print(ts.strftime('%B %d, %Y'))             # June 15, 2023
+print(ts.strftime('%Y年%m月%d日 %H:%M'))    # 2023年06月15日 09:30
+print(ts.strftime('%A, %B %d'))             # Thursday, June 15
+print(ts.strftime('Q%q %Y'))                # ⚠️ %q 不是标准，用 quarter 属性
+
+# ── 3. pandas 向量化 strftime（Series）──
+dates = pd.date_range('2023-01-01', periods=6, freq='ME')
+s = pd.Series(dates)
+
+# 批量格式化（比循环快）
+formatted = s.dt.strftime('%Y-%m')
+print(formatted.tolist())  # ['2023-01', '2023-02', ...]
+
+# 提取为不同格式字符串
+df = pd.DataFrame({
+    'date': pd.date_range('2023-01-01', periods=100, freq='B')
+})
+df['label']    = df['date'].dt.strftime('%b %d')   # 'Jan 02'
+df['quarter']  = df['date'].dt.to_period('Q').astype(str)  # '2023Q1'
+df['iso_week'] = df['date'].dt.strftime('%G-W%V')  # ISO 周标准
+
+# ── 4. 鲁棒解析函数（多格式兼容）──
+def robust_parse(series):
+    """处理多种日期格式混杂的 Series"""
+    # 先尝试最常见格式（快速路径）
+    formats = [
+        '%Y-%m-%d', '%Y/%m/%d', '%d/%m/%Y',
+        '%m/%d/%Y', '%d-%m-%Y', '%Y%m%d',
+        '%Y-%m-%d %H:%M:%S', '%d/%m/%Y %H:%M',
+    ]
+    result = pd.Series([pd.NaT] * len(series), dtype='datetime64[ns]')
+    remaining = series.copy()
+    
+    for fmt in formats:
+        mask = result.isna() & remaining.notna()
+        if not mask.any(): break
+        parsed = pd.to_datetime(remaining[mask], format=fmt, errors='coerce')
+        result[mask] = parsed
+        remaining[mask & result.notna()] = None
+    
+    # 剩余无法识别的用 mixed 模式兜底
+    still_na = result.isna() & series.notna()
+    if still_na.any():
+        result[still_na] = pd.to_datetime(series[still_na],
+                                            format='mixed', errors='coerce')
+    return result
+
+test = pd.Series(['2023-01-15', '15/06/2023', '20230715',
+                   'invalid', None, '2023-12-31 23:59:00'])
+parsed = robust_parse(test)
+print(parsed)`,
+      note: "面试Tip: strptime（p=parse，解析）vs strftime（f=format，格式化）。pandas 的 dt.strftime 是向量化的，速度远超 apply(lambda x: x.strftime(...))。%B 是月份全名，%b 是缩写（英文locale）。"
+    },
+    {
+      title: "Timedelta — 时间差计算",
+      tag: "必考", tagColor: "#ef4444",
+      keys: ["Timedelta", "timedelta_range", "to_timedelta", "日期运算"],
+      problem: `【题目】
+1. 计算两个日期列之间的间隔（天数、小时数、业务天数）
+2. 给日期列加减固定时间偏移（DateOffset vs Timedelta 的区别）
+3. 用 timedelta_range 生成时间差序列
+4. 处理年月级别的偏移（MonthEnd, QuarterEnd 等）`,
+      theory: `Timedelta vs DateOffset：
+  Timedelta：固定时长（86400秒=1天，精确但不考虑日历）
+  DateOffset：日历感知偏移（考虑月末、闰年、夏令时）
+  
+  1天 Timedelta → 始终是 86400 秒
+  1个月 DateOffset → 考虑月份长短（28~31天）
+
+时间差组件访问：
+  td.days          → 天数部分（int）
+  td.seconds       → 秒数（当天内，<86400）
+  td.total_seconds() → 总秒数（精确）
+  td.components    → 展开成 days,hours,minutes,seconds...
+
+pd.tseries.offsets（日历偏移）：
+  BusinessDay(n)   → n个工作日
+  MonthEnd(n)      → n个月末
+  QuarterEnd(n)    → n个季末
+  YearEnd(n)       → n个年末
+  BMonthEnd(n)     → 工作日月末`,
+      code: `import pandas as pd
+import numpy as np
+
+# ── 1. Timedelta 基础 ──
+td = pd.Timedelta(days=5, hours=3, minutes=30)
+print(td)                   # 5 days 03:30:00
+print(td.total_seconds())   # 48600.0
+print(td.days)              # 5
+print(td.seconds)           # 12600（当天内的秒数，不含整天）
+
+# 从字符串创建
+td2 = pd.Timedelta('2 days 4 hours')
+td3 = pd.Timedelta('00:30:00')   # 30分钟
+
+# ── 2. 日期列差值计算 ──
+df = pd.DataFrame({
+    'start':  pd.to_datetime(['2023-01-01', '2023-03-15', '2023-06-01']),
+    'end':    pd.to_datetime(['2023-03-31', '2023-07-22', '2023-08-15']),
+})
+
+df['delta']       = df['end'] - df['start']           # Timedelta Series
+df['days']        = df['delta'].dt.days                # 天数（整数）
+df['total_hours'] = df['delta'].dt.total_seconds() / 3600
+df['weeks']       = df['delta'].dt.days // 7
+
+# 业务天数（工作日差）—— 用 numpy busday_count
+df['bdays'] = np.busday_count(
+    df['start'].values.astype('datetime64[D]'),
+    df['end'].values.astype('datetime64[D]')
+)
+print(df[['start','end','days','bdays']])
+
+# ── 3. 日期加减 Timedelta ──
+dates = pd.date_range('2023-01-01', periods=5, freq='ME')
+print("月末日期:", dates.tolist())
+
+# 固定时间偏移（精确）
+print("加7天:", (dates + pd.Timedelta(days=7)).tolist())
+
+# 日历感知偏移（DateOffset）
+from pandas.tseries.offsets import (MonthEnd, MonthBegin, 
+                                      BusinessDay, QuarterEnd,
+                                      YearEnd, BMonthEnd)
+
+ts = pd.Timestamp('2023-01-15')
+print("下一个月末:", ts + MonthEnd(1))         # 2023-01-31
+print("下一个季末:", ts + QuarterEnd(1))        # 2023-03-31
+print("加2个工作日:", ts + BusinessDay(2))      # 2023-01-18 (周三)
+print("加1个月:", ts + pd.DateOffset(months=1)) # 2023-02-15（保留日期）
+
+# ── 4. Timedelta vs DateOffset 差异 ──
+# 月末边界的陷阱
+ts_jan31 = pd.Timestamp('2023-01-31')
+print("Timedelta +30天:", ts_jan31 + pd.Timedelta(days=30))  # 2023-03-02
+print("DateOffset +1月:", ts_jan31 + pd.DateOffset(months=1)) # 2023-02-28（月末自动调整）
+print("MonthEnd +1:",     ts_jan31 + MonthEnd(1))             # 2023-02-28
+
+# ── 5. timedelta_range ──
+tdr = pd.timedelta_range(start='0 days', periods=5, freq='6h')
+print(tdr)  # TimedeltaIndex(['0 days 00:00:00', '0 days 06:00:00', ...])
+
+# 实际应用：交易时间偏移
+market_open = pd.Timestamp('2023-01-03 09:30')
+intervals   = pd.timedelta_range(start='0 min', periods=390, freq='min')
+intraday_times = market_open + intervals
+print(f"交易时间: {intraday_times[0]} → {intraday_times[-1]}")
+
+# ── 6. to_timedelta 批量转换 ──
+# 从字符串 Series
+td_series = pd.to_timedelta(['1 days', '2:30:00', '00:45:30'])
+# 从数值（需指定单位）
+td_from_num = pd.to_timedelta([1, 2, 3], unit='D')  # 1天,2天,3天
+print(td_series)`,
+      note: "面试Tip: Timedelta.days 返回天数部分（只含整天），.total_seconds() 才是总精确时长。月级别偏移必须用 DateOffset/MonthEnd 而不是 Timedelta(days=30)，否则月末边界会出错。"
+    },
+    {
+      title: "dt 访问器完全指南",
+      tag: "必考", tagColor: "#ef4444",
+      keys: ["dt.accessor", "dt.year", "dt.floor", "dt.normalize", "period"],
+      problem: `【题目】给定一个 DatetimeIndex（股票高频数据），用 dt 访问器完成：
+1. 提取年/月/日/时/分/周/季度等所有时间分量
+2. 用 dt.floor/ceil/round 做时间截断（如截断到5分钟）
+3. 用 dt.normalize 归零时间部分（只保留日期）
+4. 判断是否为月末/年末/工作日等布尔属性`,
+      theory: `dt 访问器分类速查：
+
+【提取分量】（返回整数 Series）
+  .year .month .day .hour .minute .second .microsecond
+  .dayofweek (0=Mon)  .dayofyear  .quarter
+  .days_in_month（本月总天数）
+  .isocalendar() → year/week/day 三列 DataFrame
+
+【布尔属性】（返回 bool Series）
+  .is_month_start  .is_month_end
+  .is_quarter_start .is_quarter_end
+  .is_year_start    .is_year_end
+  .is_leap_year
+
+【舍入操作】
+  .floor(freq)     → 向下取整（截断到整点、整5分等）
+  .ceil(freq)      → 向上取整
+  .round(freq)     → 四舍五入
+  .normalize()     → 时间归零（等价于 floor('D')）
+
+【转换操作】
+  .to_period(freq) → 转为 Period
+  .to_pydatetime() → 转为 Python datetime 列表
+  .tz_localize(tz) → 添加时区
+  .tz_convert(tz)  → 转换时区`,
+      code: `import pandas as pd
+import numpy as np
+
+# 构造高频数据
+rng = pd.date_range('2023-01-03 09:30', periods=500, freq='3min')
+s = pd.Series(np.random.randn(500), index=rng)
+df = s.reset_index()
+df.columns = ['timestamp', 'price']
+
+# ── 1. 全量分量提取 ──
+df['year']         = df['timestamp'].dt.year
+df['month']        = df['timestamp'].dt.month
+df['day']          = df['timestamp'].dt.day
+df['hour']         = df['timestamp'].dt.hour
+df['minute']       = df['timestamp'].dt.minute
+df['weekday']      = df['timestamp'].dt.dayofweek    # 0=Mon
+df['weekday_name'] = df['timestamp'].dt.day_name()
+df['quarter']      = df['timestamp'].dt.quarter
+df['dayofyear']    = df['timestamp'].dt.dayofyear
+df['days_in_month']= df['timestamp'].dt.days_in_month
+df['week_of_year'] = df['timestamp'].dt.isocalendar().week.values
+
+print(df[['timestamp','year','quarter','weekday','week_of_year']].head(3))
+
+# ── 2. floor/ceil/round ──
+ts_series = df['timestamp']
+
+# 截断到5分钟（K线常用）
+df['bar_5min'] = ts_series.dt.floor('5min')
+# 截断到小时
+df['bar_1h']   = ts_series.dt.floor('h')
+# 四舍五入到最近15分钟
+df['bar_15r']  = ts_series.dt.round('15min')
+# 向上取整到下一整点
+df['next_hour']= ts_series.dt.ceil('h')
+
+print("\\n5分钟K线归组（前5行）:")
+print(df[['timestamp','bar_5min']].head())
+
+# ── 3. normalize：时间归零 ──
+df['date_only'] = df['timestamp'].dt.normalize()
+# 等价于 .floor('D')
+assert (df['date_only'] == df['timestamp'].dt.floor('D')).all()
+
+# 计算当天已过的分钟数
+df['minutes_since_open'] = (
+    (df['timestamp'] - df['date_only']).dt.total_seconds() / 60
+    - 9*60 - 30  # 减去开盘前时间
+)
+
+# ── 4. 布尔属性 ──
+dates = pd.date_range('2023-01-01', '2023-12-31', freq='B')
+ds = pd.Series(dates)
+
+month_end_mask   = ds.dt.is_month_end
+quarter_end_mask = ds.dt.is_quarter_end
+year_end_mask    = ds.dt.is_year_end
+
+print(f"\\n月末工作日数: {month_end_mask.sum()}")
+print(f"季末工作日数: {quarter_end_mask.sum()}")
+print(f"年末工作日数: {year_end_mask.sum()}")
+
+# 过滤月末再平衡日
+rebalance_dates = ds[month_end_mask]
+print(f"月末再平衡日（前3个）: {rebalance_dates.head(3).tolist()}")
+
+# ── 5. 进阶：Period 与 dt.to_period ──
+# to_period 更适合做月度统计分析
+df['month_period'] = df['timestamp'].dt.to_period('M')
+df['quarter_period'] = df['timestamp'].dt.to_period('Q')
+
+# 用 period 做分组统计（比 resample 更直观）
+monthly_avg = df.groupby(df['timestamp'].dt.to_period('M'))['price'].mean()
+print("\\n月度均值（Period 索引）:", monthly_avg)`,
+      note: "面试Tip: dt.floor('5min') 是高频数据归组到K线的标准操作。is_month_end 等布尔属性在构建再平衡信号时极为常用。isocalendar().week 是 ISO 8601 周标准，与 dt.week（已废弃）不同。"
+    },
+    {
+      title: "时区处理 (Timezone)",
+      tag: "高频", tagColor: "#ef4444",
+      keys: ["tz_localize", "tz_convert", "pytz", "UTC", "夏令时"],
+      problem: `【题目】处理跨时区的金融数据：
+1. 给 naive datetime（无时区）添加时区
+2. 在不同时区之间转换（UTC ↔ US/Eastern ↔ Asia/Shanghai）
+3. 处理夏令时（DST）导致的时间跳变问题
+4. 合并来自不同时区的数据源`,
+      theory: `Naive vs Aware datetime：
+  Naive:  无时区信息（ambiguous！）
+  Aware:  带时区信息（推荐）
+
+tz_localize vs tz_convert（关键区分！）：
+  tz_localize(tz)   → 给 naive 加时区标注（不改变时刻）
+  tz_convert(tz)    → 将 aware 转换到另一时区（改变表示，不变时刻）
+
+常用时区字符串：
+  'UTC'              → 世界协调时
+  'US/Eastern'       → 美东 (UTC-5/UTC-4 夏令时)
+  'US/Pacific'       → 美西 (UTC-8/UTC-7)
+  'Asia/Shanghai'    → 北京时间 (UTC+8, 无夏令时)
+  'Europe/London'    → 伦敦 (UTC+0/UTC+1)
+  'Asia/Tokyo'       → 东京 (UTC+9)
+
+夏令时注意：
+  spring forward (3月): 凌晨2点→3点，少1小时
+  fall back (11月): 凌晨2点→1点，多1小时
+  ambiguous='NaT'/'raise'/'infer' 处理重叠时间`,
+      code: `import pandas as pd
+import numpy as np
+
+# ── 1. tz_localize：给 naive 加时区 ──
+naive_ts = pd.Timestamp('2023-06-15 09:30:00')
+print("naive:", naive_ts, naive_ts.tz)  # None
+
+# 添加时区（不改变时刻，只是标注）
+aware_et  = naive_ts.tz_localize('US/Eastern')
+aware_utc = naive_ts.tz_localize('UTC')
+print("ET:", aware_et)
+print("UTC:", aware_utc)
+
+# ── 2. tz_convert：时区转换 ──
+# 美东市场时间 → UTC → 北京时间
+ny_open = pd.Timestamp('2023-06-15 09:30:00', tz='US/Eastern')
+utc_time = ny_open.tz_convert('UTC')
+beijing_time = ny_open.tz_convert('Asia/Shanghai')
+
+print(f"\\nNY市场开盘:  {ny_open}")
+print(f"UTC 时间:    {utc_time}")
+print(f"北京时间:    {beijing_time}")  # 21:30
+
+# ── 3. Series/DataFrame 时区处理 ──
+idx = pd.date_range('2023-01-03 14:30', periods=5, freq='h', tz='UTC')
+s_utc = pd.Series(np.random.randn(5), index=idx)
+
+# UTC → 美东（自动处理夏令时！）
+s_et = s_utc.tz_convert('US/Eastern')
+print("\\nUTC vs ET:")
+print(pd.DataFrame({'UTC': s_utc.index, 'ET': s_et.index}).to_string())
+
+# ── 4. 去除时区（→ naive）──
+s_naive = s_et.dt.tz_localize(None)   # 直接去除（保留表示时间）
+s_utc2  = s_et.dt.tz_convert('UTC').dt.tz_localize(None)  # 先转UTC再去除
+
+# ── 5. 夏令时处理 ──
+# 2023-03-12: 美东从 2:00 跳到 3:00（缺少 2:30）
+# 2023-11-05: 美东从 2:00 回到 1:00（1:30 出现两次）
+
+# 夏令时切换日
+spring = pd.date_range('2023-03-12 01:00', periods=6, freq='30min')
+try:
+    spring_et = spring.tz_localize('US/Eastern')
+except Exception as e:
+    print(f"夏令时冲突: {e}")
+
+# 安全处理方式
+spring_et = spring.tz_localize('US/Eastern',
+                                 nonexistent='shift_forward',  # 不存在的时间向前移
+                                 ambiguous='NaT')              # 模糊时间→NaT
+
+# ── 6. 合并多时区数据 ──
+# 原则：统一转换为 UTC 再合并，然后按需转换输出
+ny_prices = pd.Series(
+    [100, 101, 102],
+    index=pd.date_range('2023-01-03 09:30', periods=3, freq='h', tz='US/Eastern')
+)
+london_prices = pd.Series(
+    [200, 201, 202],
+    index=pd.date_range('2023-01-03 14:30', periods=3, freq='h', tz='Europe/London')
+)
+
+# 都转成 UTC 再合并
+ny_utc = ny_prices.tz_convert('UTC')
+london_utc = london_prices.tz_convert('UTC')
+combined = pd.concat([ny_utc, london_utc]).sort_index()
+print("\\n合并后（UTC）:", combined.index.tolist())
+
+# ── 7. 检查 & 去重时区 ──
+df = pd.DataFrame({'price': np.random.randn(5)},
+                   index=pd.date_range('2023-01-01', periods=5, freq='D',
+                                        tz='Asia/Shanghai'))
+print(f"\\n时区: {df.index.tz}")
+print(f"UTC offset: {df.index[0].utcoffset()}")  # +08:00`,
+      note: "面试Tip: tz_localize 和 tz_convert 是最容易混淆的一对。记住：localize=贴标签（给 naive），convert=换算（在 aware 之间转换）。跨市场数据处理的黄金法则：一律先转换为 UTC 再合并。"
+    },
+    {
+      title: "resample & Period 进阶",
+      tag: "高频", tagColor: "#ef4444",
+      keys: ["resample", "Period", "PeriodIndex", "OHLCV", "closed/label"],
+      problem: `【题目】
+1. 将分钟级数据 resample 成 5分钟/日/周/月 K线，注意 OHLCV 各字段不同聚合
+2. resample 的 closed 和 label 参数如何影响区间归属
+3. 用 Period / PeriodIndex 做月度/季度统计（与 resample 对比）
+4. 处理不连续时间序列的 reindex + asfreq`,
+      theory: `resample 参数详解：
+  freq:    目标频率（'5min','D','W','ME','QE','YE'）
+  closed:  区间哪侧闭合（'left'/'right'）
+           → 日以上默认 left，分钟以下默认 left
+  label:   用区间哪端作为标签（'left'/'right'）
+           → 日以上默认 left，分钟以下默认 left
+  origin:  区间起点锚定（'start','epoch','start_day',Timestamp）
+
+OHLCV 聚合方式：
+  open   → first()
+  high   → max()
+  low    → min()
+  close  → last()
+  volume → sum()
+  return → (1+r).prod()-1  ← 复利！
+
+Period vs resample：
+  Period：表示"一段时间"（月/季/年），更适合日历统计
+  resample：表示窗口切分，更适合连续信号重采样
+  
+asfreq vs resample：
+  asfreq：仅重新标记频率，不做聚合（快，无填充默认NaN）
+  resample：做聚合计算`,
+      code: `import pandas as pd
+import numpy as np
+
+rng = np.random.default_rng(42)
+n = 1000
+idx = pd.date_range('2023-01-03 09:30', periods=n, freq='min')
+df = pd.DataFrame({
+    'open':   100 + rng.standard_normal(n).cumsum() * 0.1,
+    'high':   0.0, 'low': 0.0,  # 后面填充
+    'close':  0.0,
+    'volume': rng.integers(1000, 100000, n),
+    'ret':    rng.standard_normal(n) * 0.001,
+}, index=idx)
+df['close'] = df['open'] + rng.standard_normal(n) * 0.05
+df['high']  = df[['open','close']].max(axis=1) + abs(rng.standard_normal(n) * 0.02)
+df['low']   = df[['open','close']].min(axis=1) - abs(rng.standard_normal(n) * 0.02)
+
+# ── 1. OHLCV 标准 K 线合成 ──
+def resample_ohlcv(df, freq):
+    return df.resample(freq).agg({
+        'open':   'first',
+        'high':   'max',
+        'low':    'min',
+        'close':  'last',
+        'volume': 'sum',
+        'ret':    lambda x: (1 + x).prod() - 1,  # 复利收益率！
+    }).dropna()
+
+bar_5m  = resample_ohlcv(df, '5min')
+bar_1h  = resample_ohlcv(df, 'h')
+bar_1d  = resample_ohlcv(df, 'B')    # 工作日
+print(f"1min→5min: {len(df)} → {len(bar_5m)} 根 K 线")
+print(f"1min→1h:   {len(df)} → {len(bar_1h)} 根 K 线")
+
+# ── 2. closed & label 参数详解 ──
+s = pd.Series(range(10),
+              index=pd.date_range('2023-01-01 00:00', periods=10, freq='min'))
+print("\\n原始数据:", s.values.tolist())
+
+# closed='left': [00:00, 00:03), [00:03, 00:06), ...
+# label='left':  用左端（00:00）作为标签
+r_ll = s.resample('3min', closed='left', label='left').sum()
+print("closed=left, label=left:", r_ll.values.tolist())
+
+# closed='right': (00:00, 00:03], (00:03, 00:06], ...
+# label='right':  用右端作为标签
+r_rr = s.resample('3min', closed='right', label='right').sum()
+print("closed=right, label=right:", r_rr.values.tolist())
+
+# ── 3. Period / PeriodIndex ──
+dates = pd.date_range('2023-01-01', '2023-12-31', freq='B')
+daily_ret = pd.Series(rng.standard_normal(len(dates)) * 0.01, index=dates)
+
+# 转为 Period 索引做月度统计
+monthly = daily_ret.groupby(daily_ret.index.to_period('M')).agg(
+    mean_ret  = 'mean',
+    std_ret   = 'std',
+    n_days    = 'count',
+    cum_ret   = lambda x: (1+x).prod()-1,
+)
+print("\\n月度统计（Period 索引）:")
+print(monthly.head(3).round(4))
+
+# Period 算术
+p = pd.Period('2023-06', 'M')
+print(f"\\n{p} + 3个月 = {p + 3}")  # 2023-09
+print(f"2023Q2 的第一天: {pd.Period('2023Q2').to_timestamp('D','S')}")
+print(f"2023Q2 的最后一天: {pd.Period('2023Q2').to_timestamp('D','E')}")
+
+# PeriodIndex 转 DatetimeIndex
+pi = pd.period_range('2023-01', periods=6, freq='M')
+dt_start = pi.to_timestamp(how='start')  # 每月第一天
+dt_end   = pi.to_timestamp(how='end')    # 每月最后一天
+print("\\n月初:", dt_start.tolist())
+
+# ── 4. asfreq vs resample ──
+# asfreq：改变频率标签，不聚合（用于规整化索引）
+monthly_price = daily_ret.resample('ME').last()        # 月末价格（聚合）
+monthly_freq  = daily_ret.asfreq('ME', method='ffill') # 改频率+前向填充
+print(f"\\nresample: {len(monthly_price)} 行")
+print(f"asfreq:   {len(monthly_freq)} 行")`,
+      note: "面试Tip: OHLCV 的 ret 必须用复利 (1+r).prod()-1 而不是 sum()！closed/label 参数在分钟K线中极易出错，默认都是 left（区间含左不含右，标签用左端）。Period 索引更适合报表/日历分析，resample 更适合信号处理。"
+    },
+    {
+      title: "时间序列实战 — 缺口/对齐/滞后",
+      tag: "进阶", tagColor: "#8b5cf6",
+      keys: ["reindex", "align", "shift", "date_range vs bdate_range", "holiday"],
+      problem: `【题目】处理真实金融数据中的时间序列问题：
+1. 两个不同频率/对齐的时间序列如何对齐合并
+2. 处理非交易日缺口（reindex + forward fill）
+3. 用 shift/diff 构建滞后特征和日收益率
+4. 用自定义交易日历过滤节假日`,
+      theory: `时间序列对齐核心方法：
+  reindex(new_index, method='ffill'/'bfill')
+    → 将 Series 扩展/缩减到新索引，缺失值按方法填充
+
+  align(other, join='inner'/'outer'/'left'/'right')
+    → 同时对齐两个 Series/DataFrame
+
+  merge_asof(left, right, direction='backward')
+    → 时间上最近匹配（point-in-time）
+
+shift vs diff：
+  s.shift(1)        → 昨天的值（滞后1期）
+  s.shift(-1)       → 明天的值（超前1期）
+  s.diff(1)         → s - s.shift(1)（一阶差分）
+  s.pct_change(1)   → (s/s.shift(1)) - 1（收益率）
+
+自定义交易日历：
+  pd.offsets.CustomBusinessDay(holidays=[...])
+  pandas_market_calendars 第三方库（推荐）`,
+      code: `import pandas as pd
+import numpy as np
+
+rng = np.random.default_rng(42)
+
+# ── 1. 两个时间序列对齐 ──
+# 日频价格
+daily_idx = pd.date_range('2023-01-01', '2023-06-30', freq='B')
+prices    = pd.Series(100 + rng.standard_normal(len(daily_idx)).cumsum(),
+                       index=daily_idx, name='price')
+
+# 月频基本面数据
+monthly_idx = pd.date_range('2023-01-31', '2023-06-30', freq='ME')
+eps         = pd.Series(rng.uniform(1, 3, len(monthly_idx)),
+                         index=monthly_idx, name='eps')
+
+# reindex：将月频扩展到日频（前向填充）
+eps_daily = eps.reindex(daily_idx, method='ffill')
+print(f"eps: {len(eps)} → {eps_daily.notna().sum()} 有效行（日频）")
+
+# align：双向对齐
+p_aligned, e_aligned = prices.align(eps, join='inner')
+print(f"inner对齐后: {len(p_aligned)} 行（仅月末有数据）")
+
+# 更实用：外连接 + 前填充
+combined = pd.concat([prices, eps_daily], axis=1)
+print(f"\\n合并后 shape: {combined.shape}, NaN比例: {combined.isna().mean().to_dict()}")
+
+# ── 2. 处理非交易日缺口 ──
+# 模拟含周末和节假日缺口的数据
+all_days = pd.date_range('2023-01-01', '2023-03-31', freq='D')
+biz_days = pd.date_range('2023-01-01', '2023-03-31', freq='B')
+
+# 价格只有工作日
+biz_prices = pd.Series(100 + rng.standard_normal(len(biz_days)).cumsum(),
+                         index=biz_days)
+
+# 扩展到全日历（非交易日前向填充）
+full_prices = biz_prices.reindex(all_days, method='ffill')
+print(f"\\n工作日价格: {len(biz_prices)} → 日历日: {len(full_prices)}")
+
+# ── 3. shift / diff / pct_change ──
+prices_s = biz_prices.copy()
+
+# 收益率（多种计算方式）
+log_ret   = np.log(prices_s / prices_s.shift(1))  # 对数收益率
+simp_ret  = prices_s.pct_change(1)                 # 简单收益率
+# 等价：(prices_s - prices_s.shift(1)) / prices_s.shift(1)
+
+# 多期滞后特征
+feat = pd.DataFrame({
+    'price':    prices_s,
+    'ret_1d':   simp_ret,
+    'ret_5d':   prices_s.pct_change(5),
+    'ret_20d':  prices_s.pct_change(20),
+    'lag1':     prices_s.shift(1),
+    'lag5':     prices_s.shift(5),
+    'ma5':      prices_s.rolling(5).mean(),
+    'ma20':     prices_s.rolling(20).mean(),
+    'vol20':    simp_ret.rolling(20).std() * np.sqrt(252),
+}).dropna()
+print(f"\\n特征矩阵 shape: {feat.shape}")
+
+# ── 4. 自定义交易日历 ──
+# 方式一：CustomBusinessDay（简单节假日列表）
+us_holidays_2023 = pd.to_datetime([
+    '2023-01-02',  # New Year observed
+    '2023-01-16',  # MLK Day
+    '2023-02-20',  # Presidents Day
+    '2023-05-29',  # Memorial Day
+    '2023-07-04',  # Independence Day
+    '2023-09-04',  # Labor Day
+    '2023-11-23',  # Thanksgiving
+    '2023-12-25',  # Christmas
+])
+us_bd = pd.offsets.CustomBusinessDay(holidays=us_holidays_2023)
+trading_days = pd.date_range('2023-01-01', '2023-12-31', freq=us_bd)
+print(f"\\n2023年美国交易日数: {len(trading_days)} 天")
+
+# 验证：元旦后第一个交易日
+first_trade = trading_days[0]
+print(f"2023年第一个交易日: {first_trade.date()}")  # 应为 1月3日
+
+# np.busday_count 配合自定义节假日
+holidays_arr = us_holidays_2023.values.astype('datetime64[D]')
+n_bdays = np.busday_count('2023-01-01', '2023-12-31',
+                            holidays=holidays_arr)
+print(f"美国市场交易日（busday_count）: {n_bdays} 天")`,
+      note: "面试Tip: reindex(method='ffill') 是将低频数据广播到高频的标准做法。构建特征时 shift(1) 是防数据泄露的关键操作——所有特征必须用过去的数据。CustomBusinessDay 适合简单需求，复杂的交易日历推荐用 pandas_market_calendars 库。"
+    },
+  ],
+};
+
+// ===================== UI Components =====================
+
+function Tag({ text, color }) {
+  return (
+    <span style={{
+      background: color + '20', color, border: `1px solid ${color}40`,
+      borderRadius: 4, padding: '2px 9px',
+      fontSize: 11, fontFamily: "'JetBrains Mono', monospace",
+      fontWeight: 700, letterSpacing: 1, whiteSpace: 'nowrap'
+    }}>{text}</span>
+  );
+}
+
+function KeyBadge({ text }) {
+  return (
+    <span style={{
+      background: '#0f1c2e', color: '#7dd3fc',
+      border: '1px solid #1e3a5f', borderRadius: 3,
+      padding: '1px 7px', fontSize: 11,
+      fontFamily: "'JetBrains Mono', monospace", whiteSpace: 'nowrap'
+    }}>{text}</span>
+  );
+}
+
+function CodeBlock({ code }) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <div style={{ position: 'relative', marginTop: 10 }}>
+      <button onClick={() => {
+        navigator.clipboard.writeText(code);
+        setCopied(true); setTimeout(() => setCopied(false), 2000);
+      }} style={{
+        position: 'absolute', top: 10, right: 10, zIndex: 2,
+        background: copied ? '#16543a' : '#0f1c2e',
+        color: copied ? '#4ade80' : '#4d6a8a',
+        border: `1px solid ${copied ? '#4ade8040' : '#1e3a5f'}`,
+        borderRadius: 4, padding: '2px 12px',
+        fontSize: 11, cursor: 'pointer', fontFamily: "'JetBrains Mono', monospace"
+      }}>{copied ? '✓ copied' : 'copy'}</button>
+      <pre style={{
+        background: '#020810', border: '1px solid #0f1c2e',
+        borderRadius: 8, padding: '14px 16px', overflowX: 'auto',
+        fontSize: 12, lineHeight: 1.75, color: '#b8cfe8',
+        fontFamily: "'JetBrains Mono', 'Fira Code', monospace", margin: 0
+      }}>{code}</pre>
+    </div>
+  );
+}
+
+function TopicCard({ topic }) {
+  const [open, setOpen] = useState(false);
+  const [tab, setTab] = useState('problem');
+  const tabs = [
+    { id: 'problem', label: '📋 题目' },
+    { id: 'theory',  label: '📐 理论' },
+    { id: 'code',    label: '💻 代码' },
+  ];
+  return (
+    <div style={{
+      background: '#07111d', border: `1px solid ${open ? '#1e3a5f' : '#0f1c2e'}`,
+      borderRadius: 10, marginBottom: 10, overflow: 'hidden',
+      transition: 'border-color 0.2s, box-shadow 0.2s',
+      boxShadow: open ? '0 0 0 1px #1e3a5f20' : 'none'
+    }}>
+      <div onClick={() => setOpen(!open)} style={{
+        padding: '13px 18px', cursor: 'pointer',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        gap: 12
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+          <Tag text={topic.tag} color={topic.tagColor} />
+          <span style={{ color: '#c8ddf5', fontWeight: 600, fontSize: 14 }}>{topic.title}</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+          <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
+            {topic.keys.slice(0,3).map(k => <KeyBadge key={k} text={k} />)}
+          </div>
+          <span style={{ color: '#4d6a8a', fontSize: 16, marginLeft: 4 }}>{open ? '▲' : '▼'}</span>
+        </div>
+      </div>
+      {open && (
+        <div style={{ borderTop: '1px solid #0f1c2e' }} className="fade-in">
+          <div style={{ display: 'flex', borderBottom: '1px solid #0f1c2e' }}>
+            {tabs.map(t => (
+              <button key={t.id} onClick={() => setTab(t.id)} style={{
+                padding: '9px 18px', background: tab === t.id ? '#0c1a2b' : 'transparent',
+                color: tab === t.id ? '#60a5fa' : '#4d6a8a',
+                border: 'none', borderBottom: tab === t.id ? '2px solid #60a5fa' : '2px solid transparent',
+                cursor: 'pointer', fontSize: 12, fontWeight: 600, letterSpacing: 0.5
+              }}>{t.label}</button>
+            ))}
+          </div>
+          <div style={{ padding: '18px 20px' }}>
+            {tab === 'problem' && (
+              <pre style={{
+                color: '#94b8d9', fontSize: 13, lineHeight: 1.9,
+                whiteSpace: 'pre-wrap', margin: 0, fontFamily: "'Syne', sans-serif"
+              }}>{topic.problem}</pre>
+            )}
+            {tab === 'theory' && (
+              <pre style={{
+                color: '#7dd3fc', fontSize: 12.5, lineHeight: 1.9,
+                whiteSpace: 'pre-wrap', margin: 0, background: '#020810',
+                padding: 16, borderRadius: 8, border: '1px solid #0f1c2e',
+                fontFamily: "'JetBrains Mono', monospace"
+              }}>{topic.theory}</pre>
+            )}
+            {tab === 'code' && <CodeBlock code={topic.code} />}
+            <div style={{
+              marginTop: 14, background: '#0c1a0c',
+              border: '1px solid #1a3a1a', borderLeft: '3px solid #4ade80',
+              borderRadius: 6, padding: '10px 14px'
+            }}>
+              <span style={{ color: '#86efac', fontSize: 11, fontWeight: 700 }}>💡 </span>
+              <span style={{ color: '#94b8a0', fontSize: 12, lineHeight: 1.7 }}>{topic.note}</span>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function App() {
+  const [activeCat, setActiveCat] = useState('numpy');
+  const cat = CATS.find(c => c.id === activeCat);
+  const topics = TOPICS[activeCat] || [];
+  const totalTopics = Object.values(TOPICS).flat().length;
+
+  return (
+    <div style={{ minHeight: '100vh', background: '#05080f' }}>
+      {/* Header */}
+      <div style={{
+        background: 'linear-gradient(180deg, #070d1a 0%, #05080f 100%)',
+        borderBottom: '1px solid #0f1c2e', padding: '20px 28px 0'
+      }}>
+        <div style={{ maxWidth: 980, margin: '0 auto' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 20 }}>
+            <div style={{
+              width: 42, height: 42, borderRadius: 10, flexShrink: 0,
+              background: 'linear-gradient(135deg, #f97316, #fb923c)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontFamily: "'JetBrains Mono', monospace", fontWeight: 900, fontSize: 18, color: '#05080f'
+            }}>df</div>
+            <div>
+              <div style={{ fontSize: 17, fontWeight: 800, letterSpacing: -0.3, color: '#e2eefa' }}>
+                Pandas & NumPy · 数据处理面试备考
+              </div>
+              <div style={{ fontSize: 11.5, color: '#2e4a6a', marginTop: 2, fontFamily: "'JetBrains Mono', monospace" }}>
+                {CATS.length} 模块 · {totalTopics} 道题 · 含高频 + 进阶指令
+              </div>
+            </div>
+          </div>
+          {/* Tab nav */}
+          <div style={{ display: 'flex', gap: 2, overflowX: 'auto', paddingBottom: 0 }}>
+            {CATS.map(c => (
+              <button key={c.id} onClick={() => setActiveCat(c.id)} style={{
+                padding: '9px 14px', background: 'transparent', border: 'none',
+                borderBottom: activeCat === c.id ? `2px solid ${c.color}` : '2px solid transparent',
+                color: activeCat === c.id ? c.color : '#2e4a6a',
+                cursor: 'pointer', fontSize: 12, fontWeight: 700,
+                whiteSpace: 'nowrap', transition: 'color 0.15s',
+                fontFamily: "'JetBrains Mono', monospace"
+              }}>
+                <span style={{
+                  background: activeCat === c.id ? c.color + '25' : 'transparent',
+                  border: activeCat === c.id ? `1px solid ${c.color}40` : '1px solid transparent',
+                  borderRadius: 3, padding: '1px 6px', marginRight: 6,
+                  fontSize: 10
+                }}>{c.short}</span>
+                {c.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Content */}
+      <div style={{ maxWidth: 980, margin: '0 auto', padding: '24px 28px' }}>
+        {/* Section header */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 20 }}>
+          <div style={{
+            width: 46, height: 46, borderRadius: 10,
+            background: cat.color + '18', border: `1px solid ${cat.color}35`,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontFamily: "'JetBrains Mono', monospace", fontSize: 12,
+            fontWeight: 900, color: cat.color
+          }}>{cat.short}</div>
+          <div>
+            <div style={{ fontSize: 18, fontWeight: 800, color: '#dde4f0' }}>{cat.label}</div>
+            <div style={{ fontSize: 11.5, color: '#2e4a6a', marginTop: 1, fontFamily: "'JetBrains Mono', monospace" }}>
+              {cat.desc} · {topics.length} 题
+            </div>
+          </div>
+        </div>
+
+        {topics.map((t, i) => <TopicCard key={i} topic={t} />)}
+
+        {/* Cheatsheet footer */}
+        <div style={{
+          marginTop: 28, background: '#07111d',
+          border: '1px solid #0f1c2e', borderRadius: 12, padding: 22
+        }}>
+          <div style={{ fontSize: 12, fontWeight: 800, color: '#f97316', marginBottom: 16, letterSpacing: 1 }}>
+            ⚡ 快速参考 — 高频指令速查
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 8 }}>
+            {[
+              ["df.loc[行标签, 列标签]",     "标签索引（含端点）"],
+              ["df.iloc[行位置, 列位置]",     "位置索引（不含端点）"],
+              ["df.query('a>0 and b<1')",     "字符串条件过滤"],
+              ["df.assign(c=lambda d: ...)",  "不可变地添加新列"],
+              ["df.pipe(func, **kwargs)",      "方法链调用"],
+              ["df.melt(id_vars, value_vars)", "宽→长格式"],
+              ["df.pivot(index,columns,val)", "长→宽格式"],
+              ["df.stack() / .unstack()",     "MultiIndex级别折叠/展开"],
+              ["df.groupby().transform(f)",   "组内操作，保持行数"],
+              ["df.merge_asof(left, right)",  "时序近似匹配合并"],
+              ["s.resample('ME').agg(...)",    "时序重采样"],
+              ["s.shift(n) n>0滞后 n<0超前",  "时序位移（注意泄露）"],
+              ["s.rolling(w).mean()",          "滑动窗口统计"],
+              ["s.ewm(span=26).mean()",        "指数加权移动平均"],
+              ["df.where(cond) / .mask(cond)", "条件替换（互为反操作）"],
+              ["pd.cut / pd.qcut",             "等宽/等频分箱"],
+              ["s.str.extract(r'pattern')",    "正则提取捕获组"],
+              ["df.astype('category')",        "低基数列节省内存"],
+              ["np.where(cond, x, y)",         "向量化三目运算"],
+              ["np.einsum('ij,jk->ik', A, B)", "Einstein求和"],
+              ["pd.to_datetime(s, format=...)", "字符串→datetime（指定格式最快）"],
+              ["s.dt.strftime('%Y-%m-%d')",    "datetime→格式化字符串（向量化）"],
+              ["pd.Timedelta(days=5, hours=3)","固定时间差对象"],
+              ["pd.DateOffset(months=1)",      "日历感知偏移（处理月末）"],
+              ["s.dt.floor('5min')",           "时间截断到5分钟（K线归组）"],
+              ["s.dt.tz_localize('UTC')",      "给naive datetime加时区"],
+              ["s.dt.tz_convert('US/Eastern')","aware datetime时区转换"],
+              ["s.resample('ME').agg(dict)",   "OHLCV K线合成（注意复利ret）"],
+              ["s.dt.to_period('M')",          "转为Period（月度统计）"],
+              ["s.reindex(idx, method='ffill')","扩展索引+前向填充"],
+              ["np.busday_count(start,end)",   "计算工作日数（支持自定义节假日）"],
+            ].map(([cmd, desc], i) => (
+              <div key={i} style={{
+                display: 'flex', gap: 10, alignItems: 'flex-start',
+                background: '#020810', borderRadius: 6, padding: '8px 11px',
+                border: '1px solid #0f1c2e'
+              }}>
+                <code style={{
+                  color: '#60a5fa', fontSize: 11,
+                  fontFamily: "'JetBrains Mono', monospace", flexShrink: 0,
+                  lineHeight: 1.5, maxWidth: 180
+                }}>{cmd}</code>
+                <span style={{ color: '#2e4a6a', fontSize: 11, lineHeight: 1.5 }}>→ {desc}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>

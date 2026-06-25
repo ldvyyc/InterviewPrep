@@ -24,6 +24,7 @@ export interface CardData {
   accent: AccentColor
   href: string
   emoji?: string | null  // 来自 Notion 的页面 emoji,作为图标兜底
+  external?: boolean     // true = 本地 HTML 资料,新标签打开
 }
 
 export default function SectionGrid({ cards }: { cards: CardData[] }) {
@@ -31,22 +32,36 @@ export default function SectionGrid({ cards }: { cards: CardData[] }) {
     <main className="grid">
       {cards.map((s) => {
         const c = accentHex[s.accent]
+        const inner = (
+          <div className="card">
+            <div className="card-bar" style={{ background: c.bar }} />
+            <div className="card-icon" style={{ background: c.iconBg }}>
+              {s.icon
+                ? <i className={`ti ti-${s.icon}`} style={{ color: c.iconFg }} />
+                : <span className="card-emoji">{s.emoji || '📄'}</span>}
+            </div>
+            <div className="card-title">
+              {s.title}
+              {s.external && <i className="ti ti-external-link card-ext-icon" />}
+            </div>
+            {s.description && <div className="card-desc">{s.description}</div>}
+            <div className="card-footer">
+              <span className="card-count">{s.external ? 'View' : 'Open'}</span>
+              <i className={`ti ti-arrow-${s.external ? 'up-right' : 'right'} card-arrow`} style={{ color: c.bar }} />
+            </div>
+          </div>
+        )
+
+        if (s.external) {
+          return (
+            <a key={s.href} href={s.href} target="_blank" rel="noopener noreferrer" className="card-link">
+              {inner}
+            </a>
+          )
+        }
         return (
           <Link key={s.href} href={s.href} className="card-link">
-            <div className="card">
-              <div className="card-bar" style={{ background: c.bar }} />
-              <div className="card-icon" style={{ background: c.iconBg }}>
-                {s.icon
-                  ? <i className={`ti ti-${s.icon}`} style={{ color: c.iconFg }} />
-                  : <span className="card-emoji">{s.emoji || '📄'}</span>}
-              </div>
-              <div className="card-title">{s.title}</div>
-              {s.description && <div className="card-desc">{s.description}</div>}
-              <div className="card-footer">
-                <span className="card-count">Open</span>
-                <i className="ti ti-arrow-right card-arrow" style={{ color: c.bar }} />
-              </div>
-            </div>
+            {inner}
           </Link>
         )
       })}

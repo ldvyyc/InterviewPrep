@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quant Researcher · Live Coding Prep</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #010409; font-family: 'IBM Plex Sans', 'Segoe UI', sans-serif; color: #e6edf3; }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: #0d1117; }
+  ::-webkit-scrollbar-thumb { background: #30363d; border-radius: 3px; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState } = React;
+
+const data = {
+  sections: [
+    {
+      id: "stats",
+      title: "统计 / 概率",
+      subtitle: "Statistics & Probability",
+      color: "#00d4aa",
+      icon: "∑",
+      topics: [
+        {
+          title: "随机游走 & 布朗运动",
+          difficulty: "高频",
+          diffColor: "#ff4d4d",
+          problem: `【题目】模拟一个1D随机游走，走N步，每步+1或-1概率相等。\n计算：\n1. 最终位置的期望和方差\n2. 首次到达位置K的期望步数\n3. 可视化多条路径`,
+          theory: `期望 E[X_N] = 0（对称随机游走）
+方差 Var(X_N) = N（每步方差为1）
+首达时间 E[T_k] = k²（对称游走）
+
+关键：这是BM离散近似，面试官在测试你对金融随机过程的理解`,
+          code: `import numpy as np
+import pandas as pd
+
+def simulate_random_walk(n_steps: int, n_paths: int = 1000, seed: int = 42):
+    """模拟对称随机游走"""
+    rng = np.random.default_rng(seed)
+    # 每步 +1 或 -1
+    steps = rng.choice([-1, 1], size=(n_paths, n_steps))
+    paths = np.cumsum(steps, axis=1)  # shape: (n_paths, n_steps)
+    
+    final_positions = paths[:, -1]
+    print(f"E[X_N]   = {final_positions.mean():.4f}  (理论: 0)")
+    print(f"Var(X_N) = {final_positions.var():.4f}  (理论: {n_steps})")
+    return paths
+
+def first_passage_time(target_k: int, n_simulations: int = 100000):
+    """蒙特卡洛估计首达时间"""
+    rng = np.random.default_rng(42)
+    times = []
+    for _ in range(n_simulations):
+        pos, t = 0, 0
+        while abs(pos) < target_k:
+            pos += rng.choice([-1, 1])
+            t += 1
+            if t > 100000: break  # 防止无限循环
+        times.append(t)
+    print(f"E[T_{target_k}] ≈ {np.mean(times):.1f}  (理论: {target_k**2})")
+
+simulate_random_walk(n_steps=252)
+first_passage_time(target_k=5)`,
+          note: "面试Tip: 先说理论，再写代码。提到这与股价GBM的关系会加分。"
+        },
+        {
+          title: "Bootstrap 置信区间",
+          difficulty: "中频",
+          diffColor: "#ffaa00",
+          problem: `【题目】给你一组收益率数据，用Bootstrap方法计算Sharpe Ratio的95%置信区间。要求不使用scipy。`,
+          theory: `Bootstrap原理：
+有放回重采样 B 次 → 计算每次的统计量 → 取分位数
+
+Sharpe = mean(r) / std(r) * sqrt(252)
+注意：std用 ddof=1（样本标准差）`,
+          code: `import numpy as np
+
+def sharpe_ratio(returns: np.ndarray, annualize: bool = True) -> float:
+    """计算Sharpe Ratio"""
+    sr = returns.mean() / returns.std(ddof=1)
+    return sr * np.sqrt(252) if annualize else sr
+
+def bootstrap_ci(returns: np.ndarray, 
+                 stat_fn, 
+                 n_bootstrap: int = 10000, 
+                 alpha: float = 0.05,
+                 seed: int = 42) -> tuple:
+    """Bootstrap置信区间（通用）"""
+    rng = np.random.default_rng(seed)
+    n = len(returns)
+    
+    boot_stats = np.array([
+        stat_fn(rng.choice(returns, size=n, replace=True))
+        for _ in range(n_bootstrap)
+    ])
+    
+    lower = np.percentile(boot_stats, 100 * alpha / 2)
+    upper = np.percentile(boot_stats, 100 * (1 - alpha / 2))
+    return lower, upper, boot_stats
+
+# 模拟数据
+np.random.seed(0)
+daily_returns = np.random.normal(0.0005, 0.01, 252)  # 一年数据
+
+point_est = sharpe_ratio(daily_returns)
+lo, hi, boot_dist = bootstrap_ci(daily_returns, sharpe_ratio)
+
+print(f"Sharpe (点估计) : {point_est:.3f}")
+print(f"95% CI          : [{lo:.3f}, {hi:.3f}]")
+print(f"Bootstrap std   : {boot_dist.std():.4f}")`,
+          note: "面试Tip: 主动提出 Bias-corrected accelerated (BCa) bootstrap 是进阶加分点。"
+        },
+        {
+          title: "多重检验 & p-value 调整",
+          difficulty: "高频",
+          diffColor: "#ff4d4d",
+          problem: `【题目】你测试了500个alpha因子，其中30个p<0.05。你会如何判断哪些是真实信号？实现Bonferroni和BH校正。`,
+          theory: `多重检验问题：
+- 随机期望有 500×0.05=25个"假显著"
+- Bonferroni: α_adj = α/m（控制FWER，非常保守）
+- BH (Benjamini-Hochberg): 控制FDR，更适合量化研究
+
+BH步骤：
+1. 对p值排序 p_(1) ≤ ... ≤ p_(m)
+2. 找最大的k使得 p_(k) ≤ k/m × α
+3. 拒绝所有 H_(1)...H_(k)`,
+          code: `import numpy as np
+
+def bonferroni_correction(p_values: np.ndarray, alpha: float = 0.05):
+    """Bonferroni校正"""
+    m = len(p_values)
+    adjusted = np.minimum(p_values * m, 1.0)
+    reject = adjusted < alpha
+    return reject, adjusted
+
+def bh_correction(p_values: np.ndarray, alpha: float = 0.05):
+    """Benjamini-Hochberg FDR校正"""
+    m = len(p_values)
+    order = np.argsort(p_values)
+    sorted_p = p_values[order]
+    
+    # BH threshold: p_(k) <= k/m * alpha
+    thresholds = (np.arange(1, m+1) / m) * alpha
+    below = sorted_p <= thresholds
+    
+    if not np.any(below):
+        reject_sorted = np.zeros(m, dtype=bool)
+    else:
+        max_k = np.max(np.where(below)[0])
+        reject_sorted = np.arange(m) <= max_k
+    
+    reject = np.zeros(m, dtype=bool)
+    reject[order] = reject_sorted
+    
+    adj_p = np.zeros(m)
+    adj_p[order] = np.minimum.accumulate(
+        (m / np.arange(1, m+1)) * sorted_p[::-1]
+    )[::-1]
+    adj_p = np.minimum(adj_p, 1.0)
+    
+    return reject, adj_p
+
+# 模拟500个因子测试
+np.random.seed(42)
+p_values = np.random.uniform(0, 1, 500)
+p_values[:10] = np.random.uniform(0, 0.001, 10)  # 10个真实信号
+
+raw_sig = np.sum(p_values < 0.05)
+bf_reject, _ = bonferroni_correction(p_values)
+bh_reject, _ = bh_correction(p_values)
+
+print(f"原始显著(p<0.05): {raw_sig}")
+print(f"Bonferroni显著  : {bf_reject.sum()}")
+print(f"BH (FDR) 显著   : {bh_reject.sum()}")`,
+          note: "面试Tip: HF非常关注这个问题——过拟合和数据挖掘偏差。主动讨论Out-of-sample验证策略。"
+        }
+      ]
+    },
+    {
+      id: "timeseries",
+      title: "时间序列",
+      subtitle: "Time Series & Financial Data",
+      color: "#4d9fff",
+      icon: "~",
+      topics: [
+        {
+          title: "金融收益率特征分析",
+          difficulty: "必考",
+          diffColor: "#ff4d4d",
+          problem: `【题目】给你一段股票价格数据，计算并分析其统计特征：偏度、峰度、自相关、波动率聚类。判断是否符合正态分布假设。`,
+          theory: `金融收益率的典型特征 (Stylized Facts):
+1. 厚尾 (Fat tails): 峰度 > 3
+2. 负偏 (Negative skew): 大跌多于大涨  
+3. 波动率聚类: ARCH效应，|r_t| 有正自相关
+4. 收益率本身无自相关（否则可套利）
+5. 非正态：Jarque-Bera检验拒绝正态`,
+          code: `import numpy as np
+import pandas as pd
+from scipy import stats
+
+def analyze_returns(prices: np.ndarray, name: str = "Asset"):
+    """金融收益率完整统计分析"""
+    returns = np.diff(np.log(prices))  # log returns
+    
+    n = len(returns)
+    mean = returns.mean()
+    std = returns.std(ddof=1)
+    skew = stats.skew(returns)
+    kurt = stats.kurtosis(returns)  # excess kurtosis (normal=0)
+    
+    print(f"=== {name} Returns Analysis ===")
+    print(f"N         : {n}")
+    print(f"Mean      : {mean:.6f}  ({mean*252:.2%} annualized)")
+    print(f"Std       : {std:.6f}  ({std*np.sqrt(252):.2%} annualized vol)")
+    print(f"Skewness  : {skew:.4f}  {'⚠️ 负偏' if skew < -0.5 else ''}")
+    print(f"Ex.Kurt   : {kurt:.4f}  {'⚠️ 厚尾' if kurt > 1 else ''}")
+    print(f"Sharpe    : {mean/std*np.sqrt(252):.3f}")
+    print(f"Max DD    : {max_drawdown(prices):.2%}")
+    
+    jb_stat, jb_p = stats.jarque_bera(returns)
+    print(f"\\nJarque-Bera: stat={jb_stat:.2f}, p={jb_p:.2e}")
+    print(f"正态假设: {'❌ 拒绝' if jb_p < 0.05 else '✓ 不拒绝'}")
+    
+    sq_returns = returns ** 2
+    autocorr_sq = pd.Series(sq_returns).autocorr(lag=1)
+    print(f"\\n|r|² 一阶自相关: {autocorr_sq:.4f}")
+    print(f"ARCH效应: {'✓ 存在波动率聚类' if autocorr_sq > 0.1 else '弱'}")
+    
+    return returns
+
+def max_drawdown(prices: np.ndarray) -> float:
+    peak = np.maximum.accumulate(prices)
+    drawdown = (prices - peak) / peak
+    return drawdown.min()
+
+# 模拟GARCH(1,1)股价数据
+np.random.seed(42)
+n = 1000
+omega, alpha, beta = 0.00001, 0.1, 0.85
+h = np.zeros(n)
+h[0] = omega / (1 - alpha - beta)
+eps = np.random.normal(0, 1, n)
+r = np.zeros(n)
+for t in range(1, n):
+    h[t] = omega + alpha * r[t-1]**2 + beta * h[t-1]
+    r[t] = np.sqrt(h[t]) * eps[t]
+prices = 100 * np.exp(np.cumsum(r))
+
+analyze_returns(prices, "Simulated Stock")`,
+          note: "面试Tip: 主动提到GARCH模型捕捉波动率聚类，以及VaR/CVaR用厚尾分布（如t分布）更准确。"
+        },
+        {
+          title: "移动窗口 & 滚动统计",
+          difficulty: "高频",
+          diffColor: "#ff4d4d",
+          problem: `【题目】实现以下rolling统计（不用pandas rolling）：\n1. Exponentially Weighted Moving Average (EWMA)\n2. Rolling Sharpe Ratio\n3. Rolling Beta对benchmark`,
+          theory: `EWMA: 近期数据权重更大
+  λ=decay factor (通常0.94 for daily)
+  σ²_t = λ·σ²_{t-1} + (1-λ)·r²_t
+  
+Rolling Beta:
+  β = Cov(r_asset, r_bench) / Var(r_bench)
+  用rolling窗口捕捉时变beta`,
+          code: `import numpy as np
+import pandas as pd
+
+def ewma_volatility(returns: np.ndarray, lam: float = 0.94) -> np.ndarray:
+    """EWMA波动率（RiskMetrics方法）"""
+    var = np.zeros(len(returns))
+    var[0] = returns[0] ** 2
+    for t in range(1, len(returns)):
+        var[t] = lam * var[t-1] + (1 - lam) * returns[t]**2
+    return np.sqrt(var)
+
+def rolling_sharpe(returns: np.ndarray, 
+                   window: int = 63,
+                   annualize: float = 252) -> np.ndarray:
+    """滚动Sharpe Ratio"""
+    n = len(returns)
+    sharpe = np.full(n, np.nan)
+    for i in range(window, n):
+        r = returns[i-window:i]
+        mu = r.mean()
+        sigma = r.std(ddof=1)
+        if sigma > 1e-10:
+            sharpe[i] = mu / sigma * np.sqrt(annualize)
+    return sharpe
+
+def rolling_beta(asset_ret: np.ndarray, 
+                 bench_ret: np.ndarray, 
+                 window: int = 63) -> np.ndarray:
+    """滚动Beta"""
+    n = len(asset_ret)
+    beta = np.full(n, np.nan)
+    for i in range(window, n):
+        a = asset_ret[i-window:i]
+        b = bench_ret[i-window:i]
+        cov_matrix = np.cov(a, b, ddof=1)
+        beta[i] = cov_matrix[0, 1] / cov_matrix[1, 1]
+    return beta
+
+# 注意：面试时可以用pandas做快速验证
+# pd.Series(returns).ewm(com=1/(1-lam)-1).std()  <- 对比检验
+
+np.random.seed(42)
+n = 500
+bench_ret = np.random.normal(0.0004, 0.01, n)
+asset_ret = 1.2 * bench_ret + np.random.normal(0, 0.005, n)
+
+ewma_vol = ewma_volatility(asset_ret)
+roll_sr = rolling_sharpe(asset_ret)
+roll_b = rolling_beta(asset_ret, bench_ret)
+
+print(f"EWMA Vol (last): {ewma_vol[-1]*np.sqrt(252):.2%}")
+print(f"Roll Sharpe (last): {roll_sr[-1]:.3f}")
+print(f"Roll Beta (last): {roll_b[-1]:.3f}")`,
+          note: "面试Tip: 先用numpy手写，再用pandas验证答案是否一致，展示你的严谨性。"
+        },
+        {
+          title: "均值回归策略 & 统计套利",
+          difficulty: "高频",
+          diffColor: "#ff4d4d",
+          problem: `【题目】给你两只相关股票的价格序列，检验协整关系，构建价差序列，并实现一个简单的均值回归信号。`,
+          theory: `协整 (Cointegration):
+  两个I(1)序列存在线性组合是I(0)
+  spread = log(P1) - β·log(P2)
+  
+Engle-Granger两步法:
+  1. OLS估计hedge ratio β
+  2. 对残差做ADF检验（检验平稳性）
+  
+Z-score信号:
+  z = (spread - μ) / σ
+  做空 if z > threshold
+  做多 if z < -threshold`,
+          code: `import numpy as np
+from scipy import stats
+
+def adf_test_manual(series: np.ndarray, lags: int = 1) -> dict:
+    """简化ADF检验（面试够用版）"""
+    y = np.diff(series)
+    x_lagged = series[:-1]
+    
+    n = len(y) - lags
+    Y = y[lags:]
+    X = np.column_stack([
+        x_lagged[lags:],
+        *[y[lags-i:-i] for i in range(1, lags+1)],
+        np.ones(n)
+    ])
+    
+    beta = np.linalg.lstsq(X, Y, rcond=None)[0]
+    resid = Y - X @ beta
+    se = np.sqrt(np.sum(resid**2) / (n - X.shape[1]) * 
+                 np.linalg.inv(X.T @ X)[0, 0])
+    t_stat = beta[0] / se
+    
+    return {"t_statistic": t_stat, 
+            "critical_5pct": -2.86,
+            "is_stationary": t_stat < -2.86}
+
+def pairs_trading_signal(price1, price2, window=60, entry_z=2.0, exit_z=0.5):
+    """配对交易信号生成"""
+    log1, log2 = np.log(price1), np.log(price2)
+    
+    beta = np.polyfit(log2, log1, 1)[0]
+    spread = log1 - beta * log2
+    
+    n = len(spread)
+    zscore = np.full(n, np.nan)
+    for i in range(window, n):
+        s = spread[i-window:i]
+        zscore[i] = (spread[i] - s.mean()) / (s.std() + 1e-10)
+    
+    signal = np.zeros(n)
+    signal[zscore > entry_z] = -1
+    signal[zscore < -entry_z] = 1
+    signal[np.abs(zscore) < exit_z] = 0
+    
+    adf = adf_test_manual(spread)
+    print(f"Hedge ratio β : {beta:.4f}")
+    print(f"ADF t-stat    : {adf['t_statistic']:.4f}")
+    print(f"协整关系      : {'✓ 通过(5%)' if adf['is_stationary'] else '❌ 不通过'}")
+    print(f"做多信号次数  : {(signal==1).sum()}")
+    print(f"做空信号次数  : {(signal==-1).sum()}")
+    
+    return signal, spread, zscore
+
+# 生成协整数据对
+np.random.seed(42)
+n = 500
+common = np.cumsum(np.random.normal(0, 0.01, n))
+p1 = np.exp(common + np.random.normal(0, 0.005, n))
+p2 = np.exp(0.8 * common + np.random.normal(0, 0.005, n))
+p1 = 100 * p1 / p1[0]
+p2 = 100 * p2 / p2[0]
+
+signal, spread, zscore = pairs_trading_signal(p1, p2)`,
+          note: "面试Tip: 提到Johansen检验处理多变量协整，以及实际交易中的交易成本、滑点对均值回归策略的影响。"
+        },
+        {
+          title: "高效Pandas操作 & IC计算",
+          difficulty: "必考",
+          diffColor: "#ff4d4d",
+          problem: `【题目】给你一个包含多只股票日收益率的DataFrame（宽格式），快速完成：\n1. 计算截面排名\n2. 构建多空组合\n3. 计算IC (Information Coefficient)`,
+          theory: `IC = Spearman相关系数(预测因子排名, 未来收益排名)
+  IC > 0.05 通常被认为有预测力
+  ICIR = mean(IC) / std(IC)  → 信息比率的因子版
+
+向量化操作 >> 循环操作（HF非常在意性能）`,
+          code: `import numpy as np
+import pandas as pd
+from scipy.stats import spearmanr
+
+np.random.seed(42)
+n_stocks, n_days = 100, 252
+dates = pd.date_range('2023-01-01', periods=n_days, freq='B')
+tickers = [f'STK{i:03d}' for i in range(n_stocks)]
+
+factor = pd.DataFrame(
+    np.random.randn(n_days, n_stocks), 
+    index=dates, columns=tickers
+)
+future_ret = pd.DataFrame(
+    0.3 * factor.values + np.random.randn(n_days, n_stocks) * 0.9,
+    index=dates, columns=tickers
+)
+
+# ======= 截面排名（向量化）=======
+factor_rank = factor.rank(axis=1, pct=True)
+
+# ======= 构建多空组合 =======
+def long_short_portfolio(factor_df, ret_df, q=0.2):
+    """多空组合收益: 做多top q，做空bottom q"""
+    long_mask = factor_df.rank(axis=1, pct=True) > (1 - q)
+    short_mask = factor_df.rank(axis=1, pct=True) < q
+    long_ret = ret_df[long_mask].mean(axis=1)
+    short_ret = ret_df[short_mask].mean(axis=1)
+    return (long_ret - short_ret).rename('LS_Portfolio')
+
+# ======= IC计算 =======
+def compute_ic(factor_df, ret_df):
+    ic_series = {}
+    for date in factor_df.index:
+        f = factor_df.loc[date].dropna()
+        r = ret_df.loc[date].reindex(f.index).dropna()
+        common = f.index.intersection(r.index)
+        if len(common) > 10:
+            ic, _ = spearmanr(f[common], r[common])
+            ic_series[date] = ic
+    return pd.Series(ic_series, name='IC')
+
+ls_ret = long_short_portfolio(factor, future_ret)
+ic = compute_ic(factor, future_ret.shift(-1))
+
+print(f"多空组合年化收益: {ls_ret.mean()*252:.2%}")
+print(f"多空组合年化波动: {ls_ret.std()*np.sqrt(252):.2%}")
+print(f"Sharpe Ratio    : {ls_ret.mean()/ls_ret.std()*np.sqrt(252):.3f}")
+print(f"\\nIC均值  : {ic.mean():.4f}")
+print(f"IC标准差: {ic.std():.4f}")
+print(f"ICIR    : {ic.mean()/ic.std():.3f}")`,
+          note: "面试Tip: 向量化是关键。提到Numba/Cython/C++加速大规模截面计算会大幅加分，正好配合你的C++背景。"
+        }
+      ]
+    }
+  ]
+};
+
+function DiffBadge({ text, color }) {
+  return (
+    <span style={{
+      background: color + "22", color: color,
+      border: `1px solid ${color}44`,
+      borderRadius: "4px", padding: "2px 8px",
+      fontSize: "11px", fontFamily: "monospace",
+      fontWeight: "700", letterSpacing: "0.5px"
+    }}>{text}</span>
+  );
+}
+
+function CodeBlock({ code }) {
+  const [copied, setCopied] = useState(false);
+  const copy = () => {
+    navigator.clipboard.writeText(code);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+  return (
+    <div style={{ position: "relative", marginTop: "8px" }}>
+      <button onClick={copy} style={{
+        position: "absolute", top: "10px", right: "10px",
+        background: copied ? "#00d4aa22" : "#ffffff11",
+        color: copied ? "#00d4aa" : "#888",
+        border: "1px solid #ffffff22",
+        borderRadius: "4px", padding: "3px 10px",
+        fontSize: "11px", cursor: "pointer", zIndex: 1
+      }}>{copied ? "✓ Copied" : "Copy"}</button>
+      <pre style={{
+        background: "#0a0e1a", border: "1px solid #1e2a3a",
+        borderRadius: "8px", padding: "16px",
+        overflowX: "auto", fontSize: "12px", lineHeight: "1.7",
+        color: "#c9d1d9", fontFamily: "'JetBrains Mono', 'Fira Code', monospace", margin: 0
+      }}><code>{code}</code></pre>
+    </div>
+  );
+}
+
+function TopicCard({ topic }) {
+  const [expanded, setExpanded] = useState(false);
+  const [tab, setTab] = useState("problem");
+
+  return (
+    <div style={{
+      background: "#0d1117", border: "1px solid #1e2a3a",
+      borderRadius: "10px", marginBottom: "12px", overflow: "hidden"
+    }}>
+      <div onClick={() => setExpanded(!expanded)} style={{
+        padding: "16px 20px", cursor: "pointer",
+        display: "flex", justifyContent: "space-between", alignItems: "center"
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <DiffBadge text={topic.difficulty} color={topic.diffColor} />
+          <span style={{ color: "#e6edf3", fontWeight: "600", fontSize: "14px" }}>
+            {topic.title}
+          </span>
+        </div>
+        <span style={{ color: "#4d9fff", fontSize: "18px" }}>{expanded ? "−" : "+"}</span>
+      </div>
+
+      {expanded && (
+        <div style={{ borderTop: "1px solid #1e2a3a" }}>
+          <div style={{ display: "flex", borderBottom: "1px solid #1e2a3a" }}>
+            {["problem", "theory", "code"].map(t => (
+              <button key={t} onClick={() => setTab(t)} style={{
+                padding: "10px 20px",
+                background: tab === t ? "#161b22" : "transparent",
+                color: tab === t ? "#4d9fff" : "#666",
+                border: "none",
+                borderBottom: tab === t ? "2px solid #4d9fff" : "2px solid transparent",
+                cursor: "pointer", fontSize: "12px", fontWeight: "600",
+                textTransform: "uppercase", letterSpacing: "1px"
+              }}>{t === "problem" ? "题目" : t === "theory" ? "理论" : "代码"}</button>
+            ))}
+          </div>
+          <div style={{ padding: "20px" }}>
+            {tab === "problem" && (
+              <pre style={{
+                color: "#c9d1d9", fontSize: "13px", lineHeight: "1.8",
+                whiteSpace: "pre-wrap", margin: 0, fontFamily: "inherit"
+              }}>{topic.problem}</pre>
+            )}
+            {tab === "theory" && (
+              <pre style={{
+                color: "#79c0ff", fontSize: "13px", lineHeight: "1.8",
+                whiteSpace: "pre-wrap", margin: 0, background: "#0a0e1a",
+                padding: "16px", borderRadius: "8px", border: "1px solid #1e2a3a",
+                fontFamily: "'JetBrains Mono', monospace"
+              }}>{topic.theory}</pre>
+            )}
+            {tab === "code" && <CodeBlock code={topic.code} />}
+            <div style={{
+              marginTop: "16px", background: "#161b22",
+              border: "1px solid #ffaa0033", borderLeft: "3px solid #ffaa00",
+              borderRadius: "6px", padding: "12px 16px"
+            }}>
+              <span style={{ color: "#ffaa00", fontSize: "11px", fontWeight: "700" }}>💡 </span>
+              <span style={{ color: "#ccc", fontSize: "12px" }}>{topic.note}</span>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function App() {
+  const [activeSection, setActiveSection] = useState("stats");
+  const section = data.sections.find(s => s.id === activeSection);
+
+  return (
+    <div style={{ minHeight: "100vh", background: "#010409" }}>
+      {/* Header */}
+      <div style={{
+        background: "linear-gradient(135deg, #0d1117 0%, #161b22 100%)",
+        borderBottom: "1px solid #1e2a3a", padding: "24px 32px"
+      }}>
+        <div style={{ maxWidth: "900px", margin: "0 auto" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <div style={{
+              width: "36px", height: "36px",
+              background: "linear-gradient(135deg, #00d4aa, #4d9fff)",
+              borderRadius: "8px", display: "flex", alignItems: "center",
+              justifyContent: "center", fontSize: "18px", fontWeight: "900", color: "#010409"
+            }}>Q</div>
+            <div>
+              <div style={{ fontSize: "18px", fontWeight: "700", letterSpacing: "-0.3px" }}>
+                Quant Researcher · Live Coding Prep
+              </div>
+              <div style={{ fontSize: "12px", color: "#555", marginTop: "2px" }}>
+                HF面试 · Python · 统计/概率 + 时间序列
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Nav */}
+      <div style={{ background: "#0d1117", borderBottom: "1px solid #1e2a3a", padding: "0 32px" }}>
+        <div style={{ maxWidth: "900px", margin: "0 auto", display: "flex", gap: "4px" }}>
+          {data.sections.map(s => (
+            <button key={s.id} onClick={() => setActiveSection(s.id)} style={{
+              padding: "14px 20px", background: "transparent", border: "none",
+              borderBottom: activeSection === s.id ? `2px solid ${s.color}` : "2px solid transparent",
+              color: activeSection === s.id ? s.color : "#555",
+              cursor: "pointer", fontSize: "13px", fontWeight: "600",
+              display: "flex", alignItems: "center", gap: "8px"
+            }}>
+              <span style={{ fontSize: "16px" }}>{s.icon}</span>
+              <div style={{ textAlign: "left" }}>
+                <div>{s.title}</div>
+                <div style={{ fontSize: "10px", opacity: 0.7, fontWeight: "400" }}>{s.subtitle}</div>
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Content */}
+      <div style={{ maxWidth: "900px", margin: "0 auto", padding: "32px" }}>
+        <div style={{ marginBottom: "24px", display: "flex", alignItems: "center", gap: "12px" }}>
+          <span style={{
+            fontSize: "24px", width: "44px", height: "44px",
+            background: section.color + "22", border: `1px solid ${section.color}44`,
+            borderRadius: "10px", display: "flex", alignItems: "center",
+            justifyContent: "center", color: section.color
+          }}>{section.icon}</span>
+          <div>
+            <div style={{ fontSize: "20px", fontWeight: "700" }}>{section.title}</div>
+            <div style={{ fontSize: "12px", color: "#555" }}>{section.topics.length} 道高频题</div>
+          </div>
+        </div>
+
+        {section.topics.map((topic, i) => (
+          <TopicCard key={i} topic={topic} />
+        ))}
+
+        {/* Tips */}
+        <div style={{
+          marginTop: "32px", background: "#0d1117",
+          border: "1px solid #1e2a3a", borderRadius: "12px", padding: "24px"
+        }}>
+          <div style={{ fontSize: "13px", fontWeight: "700", color: "#4d9fff", marginBottom: "16px" }}>
+            🎯 HF Live Coding 通用策略
+          </div>
+          {[
+            ["先讲思路", "写代码前用30秒说清楚算法思路，面试官在评估你的思维过程，不只是代码"],
+            ["边写边说", "解释每个关键步骤：'这里我用EWMA而不是简单移动平均，因为...'"],
+            ["主动测试", "写完主动说'让我验证一下边界情况'，体现工程严谨性"],
+            ["性能意识", "主动提出向量化优化，提及C++加速关键路径，展示你的C++背景价值"],
+            ["金融直觉", "将数学结果连接到金融直觉：'这个结果说明该因子在市场...时失效'"],
+          ].map(([k, v], i) => (
+            <div key={i} style={{
+              display: "flex", gap: "12px", marginBottom: "10px",
+              padding: "10px", background: "#161b22", borderRadius: "6px"
+            }}>
+              <span style={{ color: "#00d4aa", fontWeight: "700", fontSize: "12px", minWidth: "60px" }}>{k}</span>
+              <span style={{ color: "#8b949e", fontSize: "12px", lineHeight: "1.6" }}>{v}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>

@@ -258,3 +258,13 @@ a { color: inherit; text-decoration: none; }
 @media (max-width: 860px) {
   .hero-sub-page { padding: 20px 14px 0; }
 }
+
+/* ===== HTML 外部资料卡的小图标 ===== */
+.card-ext-icon {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-left: 6px;
+  vertical-align: baseline;
+  opacity: 0.6;
+}
+.card-link:hover .card-ext-icon { opacity: 1; }

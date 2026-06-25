@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Python Stats Packages — Quick Reference</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script>
+
+<style>
+:root {
+  --bg: #0a0c10;
+  --bg2: #0f1218;
+  --bg3: #161b24;
+  --border: #1e2530;
+  --accent1: #00e5ff;   /* cyan — scipy */
+  --accent2: #a78bfa;   /* violet — statsmodels */
+  --accent3: #34d399;   /* emerald — sklearn */
+  --accent4: #fb923c;   /* orange — matplotlib */
+  --accent5: #f472b6;   /* pink — seaborn */
+  --accent6: #facc15;   /* yellow — numpy */
+  --text: #e2e8f0;
+  --muted: #64748b;
+  --code-bg: #0d1117;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Syne', sans-serif;
+  display: flex;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── Sidebar ── */
+nav {
+  width: 220px;
+  min-width: 220px;
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  padding: 28px 0;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.nav-logo {
+  padding: 0 20px 20px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  color: var(--muted);
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 12px;
+}
+
+nav a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 20px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  text-decoration: none;
+  transition: all 0.15s;
+  border-left: 2px solid transparent;
+}
+
+nav a:hover { color: var(--text); background: var(--bg3); }
+nav a.active { color: var(--text); border-left-color: var(--accent1); background: var(--bg3); }
+
+.nav-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ── Main ── */
+main {
+  flex: 1;
+  padding: 48px 56px;
+  max-width: 1100px;
+}
+
+h1 {
+  font-size: 38px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  margin-bottom: 8px;
+  background: linear-gradient(135deg, var(--accent1), var(--accent2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.subtitle {
+  color: var(--muted);
+  font-size: 14px;
+  margin-bottom: 56px;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* ── Package Sections ── */
+.pkg-section {
+  margin-bottom: 64px;
+}
+
+.pkg-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 28px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.pkg-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 4px;
+  letter-spacing: 0.05em;
+}
+
+.pkg-title {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.pkg-tagline {
+  font-size: 13px;
+  color: var(--muted);
+  margin-left: auto;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* ── Cards ── */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(460px, 1fr));
+  gap: 16px;
+}
+
+.card {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px 22px;
+  transition: border-color 0.2s;
+}
+
+.card:hover { border-color: var(--muted); }
+
+.card-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.card-desc {
+  font-size: 13px;
+  color: #94a3b8;
+  margin-bottom: 14px;
+  line-height: 1.6;
+}
+
+/* ── Code blocks ── */
+pre {
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 14px 16px;
+  overflow-x: auto;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.kw   { color: #c792ea; }
+.fn   { color: #82aaff; }
+.st   { color: #c3e88d; }
+.cm   { color: #546e7a; font-style: italic; }
+.num  { color: #f78c6c; }
+.cls  { color: #ffcb6b; }
+.op   { color: var(--muted); }
+
+/* ── Formula box ── */
+.formula-box {
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 12px 16px;
+  margin-top: 10px;
+  font-size: 13px;
+  text-align: center;
+  overflow-x: auto;
+}
+
+/* ── Comparison table ── */
+.cmp-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin-top: 8px;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.cmp-table th {
+  background: var(--bg2);
+  color: var(--muted);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 11px;
+  padding: 10px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+.cmp-table td {
+  padding: 9px 14px;
+  border-bottom: 1px solid var(--border);
+  color: #cbd5e1;
+  vertical-align: top;
+}
+
+.cmp-table tr:last-child td { border-bottom: none; }
+.cmp-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+.tag {
+  display: inline-block;
+  font-size: 10px;
+  padding: 2px 7px;
+  border-radius: 3px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  margin: 1px;
+}
+
+/* ── Divider ── */
+hr { border: none; border-top: 1px solid var(--border); margin: 48px 0; }
+
+/* ── Section anchor ── */
+.section-anchor { scroll-margin-top: 32px; }
+</style>
+</head>
+
+<body>
+
+<!-- ══ SIDEBAR ══ -->
+<nav id="sidebar">
+  <div class="nav-logo">Python Stats</div>
+  <a href="#scipy"        class="active"><span class="nav-dot" style="background:#00e5ff"></span>SciPy</a>
+  <a href="#statsmodels"         ><span class="nav-dot" style="background:#a78bfa"></span>statsmodels</a>
+  <a href="#sklearn"             ><span class="nav-dot" style="background:#34d399"></span>scikit-learn</a>
+  <a href="#matplotlib"          ><span class="nav-dot" style="background:#fb923c"></span>Matplotlib</a>
+  <a href="#seaborn"             ><span class="nav-dot" style="background:#f472b6"></span>Seaborn</a>
+  <a href="#numpy"               ><span class="nav-dot" style="background:#facc15"></span>NumPy (stats)</a>
+  <a href="#cheatsheet"          ><span class="nav-dot" style="background:#94a3b8"></span>对比总览</a>
+</nav>
+
+<!-- ══ MAIN ══ -->
+<main>
+  <h1>Python Stats Packages</h1>
+  <p class="subtitle">// quick reference for quant research &amp; interview prep</p>
+
+  <!-- ══════════════════════ SCIPY ══════════════════════ -->
+  <section id="scipy" class="pkg-section section-anchor">
+    <div class="pkg-header">
+      <span class="pkg-badge" style="background:#00e5ff22;color:#00e5ff">scipy.stats</span>
+      <span class="pkg-title" style="color:#00e5ff">SciPy</span>
+      <span class="pkg-tagline">底层统计分布 / 假设检验</span>
+    </div>
+
+    <div class="card-grid">
+
+      <div class="card">
+        <div class="card-label" style="color:#00e5ff">分布对象（rv_continuous / rv_discrete）</div>
+        <div class="card-desc">每个分布都是一个对象，支持 <code>pdf/pmf, cdf, ppf, rvs, fit, stats</code> 等方法。</div>
+<pre><span class="kw">from</span> scipy <span class="kw">import</span> stats
+
+<span class="cm"># 正态分布</span>
+d = stats.<span class="fn">norm</span>(loc=<span class="num">0</span>, scale=<span class="num">1</span>)
+d.<span class="fn">pdf</span>(<span class="num">1.96</span>)        <span class="cm"># f(x)</span>
+d.<span class="fn">cdf</span>(<span class="num">1.96</span>)        <span class="cm"># F(x) ≈ 0.975</span>
+d.<span class="fn">ppf</span>(<span class="num">0.975</span>)       <span class="cm"># 分位数 ≈ 1.96</span>
+d.<span class="fn">rvs</span>(size=<span class="num">1000</span>)   <span class="cm"># 随机采样</span>
+
+<span class="cm"># 拟合：MLE</span>
+mu, sigma = stats.<span class="fn">norm.fit</span>(data)
+
+<span class="cm"># 常用分布</span>
+stats.<span class="fn">t</span>(df=<span class="num">30</span>)           <span class="cm"># t 分布</span>
+stats.<span class="fn">chi2</span>(df=<span class="num">5</span>)         <span class="cm"># χ² 分布</span>
+stats.<span class="fn">f</span>(dfn=<span class="num">2</span>, dfd=<span class="num">20</span>)  <span class="cm"># F 分布</span>
+stats.<span class="fn">poisson</span>(mu=<span class="num">3</span>)     <span class="cm"># Poisson</span>
+stats.<span class="fn">binom</span>(n=<span class="num">10</span>, p=<span class="num">.3</span>) <span class="cm"># Binomial</span></pre>
+      </div>
+
+      <div class="card">
+        <div class="card-label" style="color:#00e5ff">假设检验</div>
+        <div class="card-desc">返回 <code>(statistic, pvalue)</code>，部分返回完整 result 对象（含 CI）。</div>
+<pre><span class="cm"># 单样本 t 检验</span>
+stats.<span class="fn">ttest_1samp</span>(x, popmean=<span class="num">0</span>)
+
+<span class="cm"># 双样本 t 检验</span>
+stats.<span class="fn">ttest_ind</span>(x, y, equal_var=<span class="kw">False</span>)  <span class="cm"># Welch</span>
+
+<span class="cm"># 配对 t 检验</span>
+stats.<span class="fn">ttest_rel</span>(x, y)
+
+<span class="cm"># 正态性检验</span>
+stats.<span class="fn">shapiro</span>(x)        <span class="cm"># n < 5000 推荐</span>
+stats.<span class="fn">kstest</span>(x, <span class="st">'norm'</span>) <span class="cm"># K-S 检验</span>
+stats.<span class="fn">jarque_bera</span>(x)    <span class="cm"># JB 检验</span>
+
+<span class="cm"># 相关性</span>
+stats.<span class="fn">pearsonr</span>(x, y)    <span class="cm"># Pearson + p-val</span>
+stats.<span class="fn">spearmanr</span>(x, y)   <span class="cm"># Spearman</span>
+stats.<span class="fn">kendalltau</span>(x, y)  <span class="cm"># Kendall τ</span>
+
+<span class="cm"># 非参数</span>
+stats.<span class="fn">mannwhitneyu</span>(x, y)
+stats.<span class="fn">kruskal</span>(x, y, z)</pre>
+      </div>
+
+      <div class="card">
+        <div class="card-label" style="color:#00e5ff">多元统计 / 其他</div>
+        <div class="card-desc">多元正态、Bootstrap、核密度估计。</div>
+<pre><span class="cm"># 多元正态</span>
+mvn = stats.<span class="fn">multivariate_normal</span>(mean=[<span class="num">0</span>,<span class="num">0</span>], cov=[[<span class="num">1</span>,<span class="num">.5</span>],[<span class="num">.5</span>,<span class="num">1</span>]])
+mvn.<span class="fn">pdf</span>([<span class="num">0</span>, <span class="num">0</span>])
+mvn.<span class="fn">rvs</span>(<span class="num">500</span>)
+
+<span class="cm"># KDE（核密度估计）</span>
+kde = stats.<span class="fn">gaussian_kde</span>(data)
+kde.<span class="fn">evaluate</span>(grid)
+
+<span class="cm"># Box-Cox 变换</span>
+xt, lam = stats.<span class="fn">boxcox</span>(x)
+
+<span class="cm"># Quantile / percentile</span>
+stats.<span class="fn">scoreatpercentile</span>(x, <span class="num">95</span>)
+stats.<span class="fn">percentileofscore</span>(x, val)</pre>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══════════════════════ STATSMODELS ══════════════════════ -->
+  <section id="statsmodels" class="pkg-section section-anchor">
+    <div class="pkg-header">
+      <span class="pkg-badge" style="background:#a78bfa22;color:#a78bfa">statsmodels</span>
+      <span class="pkg-title" style="color:#a78bfa">statsmodels</span>
+      <span class="pkg-tagline">回归 / 时间序列 / 推断统计</span>
+    </div>
+
+    <div class="card-grid">
+
+      <div class="card">
+        <div class="card-label" style="color:#a78bfa">OLS 线性回归</div>
+        <div class="card-desc">R 风格 formula 接口，<code>.summary()</code> 输出完整推断表。支持 HC/HAC 鲁棒标准误。</div>
+<pre><span class="kw">import</span> statsmodels.formula.api <span class="kw">as</span> smf
+<span class="kw">import</span> statsmodels.api <span class="kw">as</span> sm
+
+<span class="cm"># Formula 接口（推荐）</span>
+res = smf.<span class="fn">ols</span>(<span class="st">'y ~ x1 + x2 + C(sector)'</span>, data=df).<span class="fn">fit</span>()
+<span class="fn">print</span>(res.<span class="fn">summary</span>())
+res.params       <span class="cm"># 系数</span>
+res.bse          <span class="cm"># 标准误</span>
+res.rsquared     <span class="cm"># R²</span>
+res.fvalue       <span class="cm"># F 统计量</span>
+
+<span class="cm"># 鲁棒标准误</span>
+res_hc = res.<span class="fn">get_robustcov_results</span>(cov_type=<span class="st">'HC3'</span>)
+res_hac = res.<span class="fn">get_robustcov_results</span>(cov_type=<span class="st">'HAC'</span>, maxlags=<span class="num">5</span>)
+
+<span class="cm"># 矩阵接口</span>
+X = sm.<span class="fn">add_constant</span>(X_raw)
+res2 = sm.<span class="cls">OLS</span>(y, X).<span class="fn">fit</span>()</pre>
+        <div class="formula-box">$\hat{\beta} = (X^\top X)^{-1} X^\top y$，$\text{Var}(\hat\beta) = \sigma^2(X^\top X)^{-1}$</div>
+      </div>
+
+      <div class="card">
+        <div class="card-label" style="color:#a78bfa">GLM / Logit / Probit</div>
+        <div class="card-desc">广义线性模型框架，Logit/Probit 用于二分类，Poisson 用于计数。</div>
+<pre><span class="cm"># Logistic Regression</span>
+res = smf.<span class="fn">logit</span>(<span class="st">'y ~ x1 + x2'</span>, data=df).<span class="fn">fit</span>()
+res.<span class="fn">predict</span>(df)       <span class="cm"># P(Y=1|X)</span>
+res.<span class="fn">get_margeff</span>()     <span class="cm"># 边际效应</span>
+
+<span class="cm"># Probit</span>
+smf.<span class="fn">probit</span>(<span class="st">'y ~ x'</span>, data=df).<span class="fn">fit</span>()
+
+<span class="cm"># Poisson GLM</span>
+sm.<span class="cls">GLM</span>(y, X, family=sm.families.<span class="cls">Poisson</span>()).<span class="fn">fit</span>()
+
+<span class="cm"># Negative Binomial</span>
+smf.<span class="fn">negativebinomial</span>(<span class="st">'y ~ x'</span>, data=df).<span class="fn">fit</span>()</pre>
+      </div>
+
+      <div class="card">
+        <div class="card-label" style="color:#a78bfa">时间序列：ARIMA / GARCH</div>
+        <div class="card-desc">ARIMA、SARIMAX、状态空间模型；GARCH 需配合 <code>arch</code> 库。</div>
+<pre><span class="kw">from</span> statsmodels.tsa.arima.model <span class="kw">import</span> <span class="cls">ARIMA</span>
+<span class="kw">from</span> statsmodels.tsa.statespace.sarimax <span class="kw">import</span> <span class="cls">SARIMAX</span>
+
+<span class="cm"># ARIMA(p,d,q)</span>
+model = <span class="cls">ARIMA</span>(ts, order=(<span class="num">2</span>,<span class="num">1</span>,<span class="num">1</span>))
+res = model.<span class="fn">fit</span>()
+res.<span class="fn">forecast</span>(steps=<span class="num">10</span>)
+
+<span class="cm"># 平稳性检验</span>
+<span class="kw">from</span> statsmodels.tsa.stattools <span class="kw">import</span> adfuller, kpss
+adfuller(ts)   <span class="cm"># ADF 检验</span>
+kpss(ts)       <span class="cm"># KPSS 检验</span>
+
+<span class="cm"># ACF / PACF</span>
+<span class="kw">from</span> statsmodels.graphics.tsaplots <span class="kw">import</span> plot_acf, plot_pacf
+plot_acf(ts, lags=<span class="num">40</span>)
+
+<span class="cm"># VAR 向量自回归</span>
+<span class="kw">from</span> statsmodels.tsa.vector_ar.var_model <span class="kw">import</span> <span class="cls">VAR</span>
+<span class="cls">VAR</span>(df_multi).<span class="fn">fit</span>(maxlags=<span class="num">5</span>)</pre>
+      </div>
+
+      <div class="card">
+        <div class="card-label" style="color:#a78bfa">检验工具箱</div>
+        <div class="card-desc">异方差检验、自相关检验、多重检验校正等。</div>
+<pre><span class="kw">from</span> statsmodels.stats <span class="kw">import</span> diagnostic, stattools
+
+<span class="cm"># 异方差：White & Breusch-Pagan</span>
+diagnostic.<span class="fn">het_white</span>(res.resid, res.model.exog)
+diagnostic.<span class="fn">het_breuschpagan</span>(res.resid, res.model.exog)
+
+<span class="cm"># 自相关：Durbin-Watson / Ljung-Box</span>
+stattools.<span class="fn">durbin_watson</span>(res.resid)
+diagnostic.<span class="fn">acorr_ljungbox</span>(res.resid, lags=[<span class="num">10</span>])
+
+<span class="cm"># 多重检验校正</span>
+<span class="kw">from</span> statsmodels.stats.multitest <span class="kw">import</span> multipletests
+multipletests(pvals, method=<span class="st">'fdr_bh'</span>)  <span class="cm"># Benjamini-Hochberg</span>
+
+<span class="cm"># F 检验（线性约束）</span>
+res.<span class="fn">f_test</span>(<span class="st">'x1 = x2'</span>)</pre>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══════════════════════ SCIKIT-LEARN ══════════════════════ -->
+  <section id="sklearn" class="pkg-section section-anchor">
+    <div class="pkg-header">
+      <span class="pkg-badge" style="background:#34d39922;color:#34d399">sklearn</span>
+      <span class="pkg-title" style="color:#34d399">scikit-learn</span>
+      <span class="pkg-tagline">机器学习 / 特征工程 / 交叉验证</span>
+    </div>
+
+    <div class="card-grid">
+
+      <div class="card">
+        <div class="card-label" style="color:#34d399">统一 Estimator API</div>
+        <div class="card-desc">所有模型都遵循 <code>fit / predict / score / transform</code> 接口，方便 Pipeline 组合。</div>
+<pre><span class="kw">from</span> sklearn.linear_model <span class="kw">import</span> Ridge, Lasso, ElasticNet
+<span class="kw">from</span> sklearn.ensemble <span class="kw">import</span> RandomForestRegressor, GradientBoostingClassifier
+<span class="kw">from</span> sklearn.preprocessing <span class="kw">import</span> StandardScaler
+<span class="kw">from</span> sklearn.pipeline <span class="kw">import</span> Pipeline
+
+pipe = <span class="cls">Pipeline</span>([
+    (<span class="st">'scaler'</span>, <span class="cls">StandardScaler</span>()),
+    (<span class="st">'ridge'</span>,  <span class="cls">Ridge</span>(alpha=<span class="num">1.0</span>))
+])
+pipe.<span class="fn">fit</span>(X_train, y_train)
+pipe.<span class="fn">predict</span>(X_test)
+pipe.<span class="fn">score</span>(X_test, y_test)   <span class="cm"># R² / accuracy</span></pre>
+        <div class="formula-box">Ridge: $\min_\beta \|y - X\beta\|^2 + \alpha\|\beta\|^2$，Lasso: $+ \alpha\|\beta\|_1$</div>
+      </div>
+
+      <div class="card">
+        <div class="card-label" style="color:#34d399">交叉验证 &amp; 超参数调优</div>
+        <div class="card-desc"><code>cross_val_score</code> 快速评估；<code>GridSearchCV / RandomizedSearchCV</code> 搜索最优超参。</div>
+<pre><span class="kw">from</span> sklearn.model_selection <span class="kw">import</span> (
+    cross_val_score, KFold, TimeSeriesSplit,
+    GridSearchCV, RandomizedSearchCV
+)
+
+<span class="cm"># 时序 CV（金融中常用）</span>
+tscv = <span class="cls">TimeSeriesSplit</span>(n_splits=<span class="num">5</span>)
+scores = <span class="fn">cross_val_score</span>(model, X, y, cv=tscv, scoring=<span class="st">'neg_mean_squared_error'</span>)
+
+<span class="cm"># Grid Search</span>
+gs = <span class="cls">GridSearchCV</span>(
+    <span class="cls">Ridge</span>(), {<span class="st">'alpha'</span>: [<span class="num">0.01</span>, <span class="num">0.1</span>, <span class="num">1</span>, <span class="num">10</span>]},
+    cv=tscv, scoring=<span class="st">'r2'</span>
+)
+gs.<span class="fn">fit</span>(X, y)
+gs.best_params_   <span class="cm"># {'alpha': 0.1}</span></pre>
+      </div>
+
+      <div class="card">
+        <div class="card-label" style="color:#34d399">评估指标</div>
+        <div class="card-desc">回归、分类、排序指标一应俱全。</div>
+<pre><span class="kw">from</span> sklearn <span class="kw">import</span> metrics
+
+<span class="cm"># 回归</span>
+metrics.<span class="fn">mean_squared_error</span>(y, yhat)
+metrics.<span class="fn">mean_absolute_error</span>(y, yhat)
+metrics.<span class="fn">r2_score</span>(y, yhat)
+
+<span class="cm"># 分类</span>
+metrics.<span class="fn">accuracy_score</span>(y, yhat)
+metrics.<span class="fn">roc_auc_score</span>(y, prob)
+metrics.<span class="fn">classification_report</span>(y, yhat)
+metrics.<span class="fn">confusion_matrix</span>(y, yhat)
+
+<span class="cm"># 信息准则（近似）via cross-entropy</span>
+metrics.<span class="fn">log_loss</span>(y, prob)</pre>
+      </div>
+
+      <div class="card">
+        <div class="card-label" style="color:#34d399">特征工程 &amp; 降维</div>
+        <div class="card-desc">PCA、StandardScaler、PolynomialFeatures 等预处理工具。</div>
+<pre><span class="kw">from</span> sklearn.decomposition <span class="kw">import</span> PCA
+<span class="kw">from</span> sklearn.preprocessing <span class="kw">import</span> PolynomialFeatures, RobustScaler
+<span class="kw">from</span> sklearn.feature_selection <span class="kw">import</span> SelectKBest, f_regression
+
+<span class="cm"># PCA</span>
+pca = <span class="cls">PCA</span>(n_components=<span class="num">5</span>)
+X_pc = pca.<span class="fn">fit_transform</span>(X)
+pca.explained_variance_ratio_
+
+<span class="cm"># 多项式特征</span>
+poly = <span class="cls">PolynomialFeatures</span>(degree=<span class="num">2</span>, include_bias=<span class="kw">False</span>)
+X_poly = poly.<span class="fn">fit_transform</span>(X)
+
+<span class="cm"># 单变量特征选择</span>
+sel = <span class="cls">SelectKBest</span>(f_regression, k=<span class="num">10</span>).<span class="fn">fit</span>(X, y)
+sel.get_support()</pre>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══════════════════════ MATPLOTLIB ══════════════════════ -->
+  <section id="matplotlib" class="pkg-section section-anchor">
+    <div class="pkg-header">
+      <span class="pkg-badge" style="background:#fb923c22;color:#fb923c">matplotlib</span>
+      <span class="pkg-title" style="color:#fb923c">Matplotlib</span>
+      <span class="pkg-tagline">底层绘图引擎 / 完全可控</span>
+    </div>
+
+    <div class="card-grid">
+
+      <div class="card">
+        <div class="card-label" style="color:#fb923c">Figure / Axes 对象模型</div>
+        <div class="card-desc">优先用 OO 接口（<code>fig, ax = plt.subplots()</code>），而非 pyplot 状态机接口，便于多子图控制。</div>
+<pre><span class="kw">import</span> matplotlib.pyplot <span class="kw">as</span> plt
+<span class="kw">import</span> numpy <span class="kw">as</span> np
+
+fig, axes = plt.<span class="fn">subplots</span>(<span class="num">2</span>, <span class="num">2</span>, figsize=(<span class="num">10</span>, <span class="num">8</span>))
+ax = axes[<span class="num">0</span>, <span class="num">0</span>]
+
+x = np.<span class="fn">linspace</span>(-<span class="num">3</span>, <span class="num">3</span>, <span class="num">200</span>)
+ax.<span class="fn">plot</span>(x, np.<span class="fn">sin</span>(x), color=<span class="st">'#00e5ff'</span>, lw=<span class="num">2</span>, label=<span class="st">'sin'</span>)
+ax.<span class="fn">fill_between</span>(x, np.<span class="fn">sin</span>(x), alpha=<span class="num">0.15</span>)
+ax.<span class="fn">set_title</span>(<span class="st">'Sine Wave'</span>, fontsize=<span class="num">13</span>)
+ax.<span class="fn">legend</span>()
+
+<span class="cm"># 双 y 轴</span>
+ax2 = ax.<span class="fn">twinx</span>()
+ax2.<span class="fn">plot</span>(x, np.<span class="fn">cos</span>(x), color=<span class="st">'#fb923c'</span>, ls=<span class="st">'--'</span>)
+
+plt.<span class="fn">tight_layout</span>()
+plt.<span class="fn">savefig</span>(<span class="st">'out.png'</span>, dpi=<span class="num">150</span>, bbox_inches=<span class="st">'tight'</span>)</pre>
+      </div>
+
+      <div class="card">
+        <div class="card-label" style="color:#fb923c">常用图形速查</div>
+        <div class="card-desc">散点图、柱状图、直方图、热力图等。</div>
+<pre><span class="cm"># 散点图</span>
+ax.<span class="fn">scatter</span>(x, y, c=colors, s=<span class="num">20</span>, alpha=<span class="num">0.7</span>, cmap=<span class="st">'viridis'</span>)
+
+<span class="cm"># 柱状图</span>
+ax.<span class="fn">bar</span>(categories, values, color=<span class="st">'#a78bfa'</span>, edgecolor=<span class="st">'none'</span>)
+
+<span class="cm"># 直方图</span>
+ax.<span class="fn">hist</span>(data, bins=<span class="num">50</span>, density=<span class="kw">True</span>, alpha=<span class="num">0.7</span>)
+
+<span class="cm"># 热力图（相关矩阵）</span>
+im = ax.<span class="fn">imshow</span>(corr, cmap=<span class="st">'coolwarm'</span>, vmin=-<span class="num">1</span>, vmax=<span class="num">1</span>)
+fig.<span class="fn">colorbar</span>(im, ax=ax)
+
+<span class="cm"># 误差棒</span>
+ax.<span class="fn">errorbar</span>(x, y, yerr=err, fmt=<span class="st">'o'</span>, capsize=<span class="num">4</span>)
+
+<span class="cm"># 填充置信区间</span>
+ax.<span class="fn">fill_between</span>(x, lower, upper, alpha=<span class="num">0.2</span>)</pre>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══════════════════════ SEABORN ══════════════════════ -->
+  <section id="seaborn" class="pkg-section section-anchor">
+    <div class="pkg-header">
+      <span class="pkg-badge" style="background:#f472b622;color:#f472b6">seaborn</span>
+      <span class="pkg-title" style="color:#f472b6">Seaborn</span>
+      <span class="pkg-tagline">高级统计可视化 / 基于 Matplotlib</span>
+    </div>
+
+    <div class="card-grid">
+
+      <div class="card">
+        <div class="card-label" style="color:#f472b6">统计图形</div>
+        <div class="card-desc">一行代码实现带置信区间的回归图、分布图、热力图，与 pandas DataFrame 无缝配合。</div>
+<pre><span class="kw">import</span> seaborn <span class="kw">as</span> sns
+
+<span class="cm"># 带 CI 的回归线</span>
+sns.<span class="fn">regplot</span>(x=<span class="st">'x'</span>, y=<span class="st">'y'</span>, data=df, ci=<span class="num">95</span>)
+
+<span class="cm"># 分布 + KDE</span>
+sns.<span class="fn">histplot</span>(data, kde=<span class="kw">True</span>, stat=<span class="st">'density'</span>)
+sns.<span class="fn">kdeplot</span>(data, bw_adjust=<span class="num">1.5</span>)
+
+<span class="cm"># 相关矩阵热力图</span>
+sns.<span class="fn">heatmap</span>(df.<span class="fn">corr</span>(), annot=<span class="kw">True</span>, fmt=<span class="st">'.2f'</span>, cmap=<span class="st">'RdBu_r'</span>, center=<span class="num">0</span>)
+
+<span class="cm"># Pairplot（多变量探索）</span>
+sns.<span class="fn">pairplot</span>(df, hue=<span class="st">'sector'</span>)
+
+<span class="cm"># 箱图 / 小提琴图</span>
+sns.<span class="fn">boxplot</span>(x=<span class="st">'group'</span>, y=<span class="st">'ret'</span>, data=df)
+sns.<span class="fn">violinplot</span>(x=<span class="st">'group'</span>, y=<span class="st">'ret'</span>, data=df, inner=<span class="st">'quartile'</span>)</pre>
+      </div>
+
+      <div class="card">
+        <div class="card-label" style="color:#f472b6">Figure-level vs Axes-level</div>
+        <div class="card-desc">Figure-level（<code>lmplot, FacetGrid</code>）返回独立对象；Axes-level（<code>regplot, histplot</code>）可嵌入已有 Axes。</div>
+<pre><span class="cm"># FacetGrid 分组绘图</span>
+g = sns.<span class="cls">FacetGrid</span>(df, col=<span class="st">'sector'</span>, row=<span class="st">'year'</span>, height=<span class="num">3</span>)
+g.<span class="fn">map</span>(sns.histplot, <span class="st">'daily_return'</span>, kde=<span class="kw">True</span>)
+
+<span class="cm"># lmplot（带分组回归）</span>
+sns.<span class="fn">lmplot</span>(x=<span class="st">'mktcap'</span>, y=<span class="st">'ret'</span>, hue=<span class="st">'sector'</span>, data=df)
+
+<span class="cm"># 嵌入已有 Axes</span>
+fig, ax = plt.<span class="fn">subplots</span>()
+sns.<span class="fn">regplot</span>(x=<span class="st">'x'</span>, y=<span class="st">'y'</span>, data=df, ax=ax)
+ax.<span class="fn">set_title</span>(<span class="st">'My custom title'</span>)</pre>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══════════════════════ NUMPY STATS ══════════════════════ -->
+  <section id="numpy" class="pkg-section section-anchor">
+    <div class="pkg-header">
+      <span class="pkg-badge" style="background:#facc1522;color:#facc15">numpy</span>
+      <span class="pkg-title" style="color:#facc15">NumPy（统计函数）</span>
+      <span class="pkg-tagline">向量化基础运算 / 最快</span>
+    </div>
+
+    <div class="card-grid">
+
+      <div class="card">
+        <div class="card-label" style="color:#facc15">描述统计</div>
+        <div class="card-desc">所有函数都支持 <code>axis=</code> 参数，沿特定轴计算，配合 <code>keepdims=True</code> 保持维度。</div>
+<pre><span class="kw">import</span> numpy <span class="kw">as</span> np
+
+a = np.<span class="fn">random.randn</span>(<span class="num">1000</span>, <span class="num">50</span>)  <span class="cm"># 1000 rows, 50 features</span>
+
+np.<span class="fn">mean</span>(a, axis=<span class="num">0</span>)      <span class="cm"># 每列均值</span>
+np.<span class="fn">std</span>(a, axis=<span class="num">0</span>, ddof=<span class="num">1</span>) <span class="cm"># 样本标准差</span>
+np.<span class="fn">var</span>(a, axis=<span class="num">0</span>, ddof=<span class="num">1</span>)
+np.<span class="fn">median</span>(a, axis=<span class="num">0</span>)
+np.<span class="fn">percentile</span>(a, [<span class="num">5</span>, <span class="num">25</span>, <span class="num">75</span>, <span class="num">95</span>], axis=<span class="num">0</span>)
+np.<span class="fn">quantile</span>(a, <span class="num">0.95</span>, axis=<span class="num">0</span>)
+
+<span class="cm"># 协方差 / 相关矩阵</span>
+np.<span class="fn">cov</span>(a.T)       <span class="cm"># (50×50) 协方差矩阵</span>
+np.<span class="fn">corrcoef</span>(a.T)  <span class="cm"># (50×50) 相关系数矩阵</span></pre>
+      </div>
+
+      <div class="card">
+        <div class="card-label" style="color:#facc15">随机数生成（推荐新 API）</div>
+        <div class="card-desc">用 <code>np.random.default_rng(seed)</code> 替代旧的全局状态 API，可重复且线程安全。</div>
+<pre><span class="cm"># 新 API（推荐）</span>
+rng = np.random.<span class="fn">default_rng</span>(seed=<span class="num">42</span>)
+rng.<span class="fn">normal</span>(<span class="num">0</span>, <span class="num">1</span>, size=(<span class="num">1000</span>,))
+rng.<span class="fn">uniform</span>(<span class="num">0</span>, <span class="num">1</span>, size=<span class="num">100</span>)
+rng.<span class="fn">multivariate_normal</span>(mu, Sigma, size=<span class="num">500</span>)
+rng.<span class="fn">choice</span>(arr, size=<span class="num">50</span>, replace=<span class="kw">False</span>)  <span class="cm"># 无放回采样</span>
+rng.<span class="fn">integers</span>(<span class="num">0</span>, <span class="num">10</span>, size=<span class="num">20</span>)
+
+<span class="cm"># Cholesky 法模拟相关收益</span>
+L = np.linalg.<span class="fn">cholesky</span>(Sigma)
+Z = rng.<span class="fn">standard_normal</span>((<span class="num">50</span>, <span class="num">10000</span>))
+X_corr = L @ Z    <span class="cm"># shape (50, 10000)</span></pre>
+      </div>
+
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- ══════════════════════ CHEATSHEET ══════════════════════ -->
+  <section id="cheatsheet" class="pkg-section section-anchor">
+    <div class="pkg-header">
+      <span class="pkg-badge" style="background:#94a3b822;color:#94a3b8">summary</span>
+      <span class="pkg-title" style="color:#94a3b8">对比总览</span>
+      <span class="pkg-tagline">选哪个包？</span>
+    </div>
+
+    <div class="card" style="grid-column: 1 / -1">
+      <table class="cmp-table">
+        <thead>
+          <tr>
+            <th>包</th>
+            <th>核心用途</th>
+            <th>优势</th>
+            <th>典型场景（Quant）</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="tag" style="background:#00e5ff22;color:#00e5ff">scipy.stats</span></td>
+            <td>概率分布、假设检验、基础统计</td>
+            <td>分布对象全面，底层可靠</td>
+            <td>检验因子 IC 是否显著、分布拟合、VaR 计算</td>
+          </tr>
+          <tr>
+            <td><span class="tag" style="background:#a78bfa22;color:#a78bfa">statsmodels</span></td>
+            <td>回归推断、时序建模、GLM</td>
+            <td>完整推断表（SE、p-val、CI）、鲁棒 SE、HAC</td>
+            <td>因子回归、Fama-MacBeth、ARIMA 预测、协整检验</td>
+          </tr>
+          <tr>
+            <td><span class="tag" style="background:#34d39922;color:#34d399">scikit-learn</span></td>
+            <td>ML 建模、特征工程、交叉验证</td>
+            <td>Pipeline、丰富评估指标、超参搜索</td>
+            <td>机器学习选股、Ridge/Lasso 特征压缩、随机森林信号</td>
+          </tr>
+          <tr>
+            <td><span class="tag" style="background:#fb923c22;color:#fb923c">matplotlib</span></td>
+            <td>底层绘图，完全可控</td>
+            <td>灵活性最高，发表级图形</td>
+            <td>自定义 P&amp;L 曲线、vol surface 3D 图、回测报告</td>
+          </tr>
+          <tr>
+            <td><span class="tag" style="background:#f472b622;color:#f472b6">seaborn</span></td>
+            <td>高级统计可视化</td>
+            <td>代码简洁，DataFrame 友好</td>
+            <td>EDA、相关矩阵、分组分布探索</td>
+          </tr>
+          <tr>
+            <td><span class="tag" style="background:#facc1522;color:#facc15">numpy</span></td>
+            <td>向量化计算基础</td>
+            <td>速度最快，底层支撑</td>
+            <td>协方差矩阵、Cholesky 采样、滚动统计量</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <br>
+    <div class="card">
+      <div class="card-label" style="color:#94a3b8">决策流程</div>
+      <div class="card-desc">
+        需要 <strong>p 值 / 置信区间 / 推断</strong>？→ <span style="color:#a78bfa">statsmodels</span> 或 <span style="color:#00e5ff">scipy.stats</span><br>
+        需要 <strong>概率分布对象</strong>（pdf/cdf/rvs）？→ <span style="color:#00e5ff">scipy.stats</span><br>
+        需要 <strong>预测 / 机器学习</strong>？→ <span style="color:#34d399">scikit-learn</span><br>
+        需要 <strong>时序模型</strong>（ARIMA/VAR）？→ <span style="color:#a78bfa">statsmodels</span><br>
+        需要 <strong>快速 EDA 可视化</strong>？→ <span style="color:#f472b6">seaborn</span><br>
+        需要 <strong>精细控制图形</strong>？→ <span style="color:#fb923c">matplotlib</span><br>
+        需要 <strong>大规模矩阵运算</strong>？→ <span style="color:#facc15">numpy</span>
+      </div>
+    </div>
+
+  </section>
+
+</main>
+
+<script>
+// Active nav highlight on scroll
+const sections = document.querySelectorAll('.section-anchor');
+const navLinks = document.querySelectorAll('nav a');
+
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      navLinks.forEach(a => a.classList.remove('active'));
+      const id = entry.target.id;
+      const link = document.querySelector(`nav a[href="#${id}"]`);
+      if (link) link.classList.add('active');
+    }
+  });
+}, { rootMargin: '-30% 0px -60% 0px' });
+
+sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>

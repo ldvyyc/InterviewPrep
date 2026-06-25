@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>随机微积分 — Quant Interview Prep</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=IBM+Plex+Mono:wght@400;600&family=Spectral:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+<style>
+  :root {
+    --ink: #0d0f1a;
+    --paper: #eef0f5;
+    --blue: #2a4a8b;
+    --teal: #1e6a6a;
+    --amber: #c97a2a;
+    --faded: #7a8090;
+    --border: #c8ccda;
+    --card-bg: #f5f6fa;
+    --highlight: #e8edfa;
+    --formula-bg: #e5e8f2;
+    --rust: #7a2a1e;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--paper); color: var(--ink); font-family: 'Spectral', Georgia, serif; font-weight: 300; line-height: 1.75; font-size: 16px; }
+  header { border-bottom: 3px double var(--ink); padding: 3rem 0 2rem; text-align: center; position: relative; overflow: hidden; }
+  header::before { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(0deg, transparent, transparent 28px, rgba(42,74,139,.06) 28px, rgba(42,74,139,.06) 29px); pointer-events: none; }
+  .header-tag { display: inline-block; font-family: 'IBM Plex Mono', monospace; font-size: 0.7rem; letter-spacing: .18em; text-transform: uppercase; color: var(--blue); border: 1px solid var(--blue); padding: .25em .9em; margin-bottom: 1.2rem; }
+  h1 { font-family: 'DM Serif Display', serif; font-size: clamp(2rem, 5vw, 3.6rem); font-weight: 400; line-height: 1.15; letter-spacing: -.01em; }
+  h1 em { font-style: italic; color: var(--teal); }
+  .subtitle { font-family: 'IBM Plex Mono', monospace; font-size: .78rem; color: var(--faded); letter-spacing: .08em; margin-top: .8rem; }
+  .container { max-width: 1060px; margin: 0 auto; padding: 0 2rem; }
+  nav { position: sticky; top: 0; z-index: 100; background: var(--ink); color: var(--paper); padding: .7rem 2rem; display: flex; gap: 0; overflow-x: auto; scrollbar-width: none; }
+  nav::-webkit-scrollbar { display: none; }
+  nav a { font-family: 'IBM Plex Mono', monospace; font-size: .7rem; letter-spacing: .1em; color: rgba(238,240,245,.7); text-decoration: none; padding: .3em 1.1em; white-space: nowrap; border-right: 1px solid rgba(255,255,255,.12); transition: color .2s; }
+  nav a:first-child { padding-left: 0; }
+  nav a:hover { color: #88aaff; }
+  section { padding: 3.5rem 0; border-bottom: 1px solid var(--border); }
+  .section-header { display: flex; align-items: baseline; gap: 1.2rem; margin-bottom: 2rem; }
+  .sec-num { font-family: 'IBM Plex Mono', monospace; font-size: .7rem; color: var(--blue); letter-spacing: .15em; flex-shrink: 0; }
+  h2 { font-family: 'DM Serif Display', serif; font-size: 1.9rem; font-weight: 400; border-bottom: 2px solid var(--ink); padding-bottom: .4rem; flex: 1; }
+  h3 { font-family: 'DM Serif Display', serif; font-size: 1.25rem; font-weight: 400; color: var(--teal); margin: 2rem 0 .7rem; }
+  h4 { font-family: 'IBM Plex Mono', monospace; font-size: .8rem; letter-spacing: .12em; text-transform: uppercase; color: var(--blue); margin: 1.5rem 0 .5rem; }
+  p { margin-bottom: 1rem; }
+  .formula-box { background: var(--formula-bg); border-left: 4px solid var(--blue); border-radius: 0 4px 4px 0; padding: 1.2rem 1.5rem; margin: 1.2rem 0; overflow-x: auto; font-size: .97rem; }
+  .formula-box .label { font-family: 'IBM Plex Mono', monospace; font-size: .65rem; color: var(--blue); letter-spacing: .15em; text-transform: uppercase; margin-bottom: .5rem; }
+  .def-block { background: var(--card-bg); border: 1px solid var(--border); border-top: 3px solid var(--teal); padding: 1.2rem 1.5rem; margin: 1.2rem 0; border-radius: 0 0 4px 4px; }
+  .thm-block { background: var(--highlight); border: 1px solid var(--blue); border-top: 3px solid var(--rust); padding: 1.2rem 1.5rem; margin: 1.2rem 0; border-radius: 0 0 4px 4px; }
+  .block-title { font-family: 'IBM Plex Mono', monospace; font-size: .68rem; letter-spacing: .15em; text-transform: uppercase; margin-bottom: .6rem; }
+  .def-block .block-title { color: var(--teal); }
+  .thm-block .block-title { color: var(--rust); }
+  .note { background: #eef5f5; border-left: 4px solid var(--teal); padding: .9rem 1.2rem; margin: 1rem 0; font-size: .9rem; }
+  .warn { background: #fdf0ee; border-left: 4px solid var(--rust); padding: .9rem 1.2rem; margin: 1rem 0; font-size: .9rem; }
+  .quiz-block { background: var(--ink); color: var(--paper); border-radius: 4px; padding: 1.5rem 1.8rem; margin: 1.8rem 0; }
+  .quiz-block .q-label { font-family: 'IBM Plex Mono', monospace; font-size: .65rem; letter-spacing: .2em; color: #88aaff; margin-bottom: .7rem; }
+  .quiz-block .q-text { font-family: 'Spectral', serif; font-size: 1rem; line-height: 1.6; margin-bottom: 1rem; }
+  .toggle-btn { font-family: 'IBM Plex Mono', monospace; font-size: .7rem; letter-spacing: .1em; background: var(--blue); color: #fff; border: none; padding: .4em 1.2em; cursor: pointer; font-weight: 600; transition: background .2s; }
+  .toggle-btn:hover { background: #3a5aaa; }
+  .answer { display: none; margin-top: 1rem; border-top: 1px solid rgba(238,240,245,.2); padding-top: 1rem; font-size: .93rem; line-height: 1.7; }
+  .answer .formula-box { background: rgba(229,232,242,.12); border-left-color: #88aaff; color: var(--paper); }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin: 1rem 0; }
+  @media (max-width: 680px) { .two-col { grid-template-columns: 1fr; } }
+  table { width: 100%; border-collapse: collapse; font-size: .9rem; margin: 1.2rem 0; }
+  th { background: var(--ink); color: var(--paper); font-family: 'IBM Plex Mono', monospace; font-size: .7rem; letter-spacing: .1em; text-transform: uppercase; padding: .7rem 1rem; text-align: left; }
+  td { padding: .65rem 1rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+  tr:hover td { background: var(--highlight); }
+  footer { text-align: center; padding: 2.5rem 2rem; font-family: 'IBM Plex Mono', monospace; font-size: .65rem; letter-spacing: .12em; color: var(--faded); border-top: 3px double var(--ink); }
+  section { opacity: 0; transform: translateY(16px); animation: fadeUp .5s forwards; }
+  @keyframes fadeUp { to { opacity: 1; transform: none; } }
+  section:nth-child(2) { animation-delay: .05s; }
+  section:nth-child(3) { animation-delay: .1s; }
+  section:nth-child(4) { animation-delay: .15s; }
+  section:nth-child(5) { animation-delay: .2s; }
+  section:nth-child(6) { animation-delay: .25s; }
+  section:nth-child(7) { animation-delay: .3s; }
+  ul, ol { padding-left: 1.5rem; margin-bottom: 1rem; }
+  li { margin-bottom: .4rem; }
+  code { font-family: 'IBM Plex Mono', monospace; font-size: .85em; background: var(--formula-bg); padding: .1em .4em; border-radius: 2px; }
+  .tag-row { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+  .tag { font-family: 'IBM Plex Mono', monospace; font-size: .65rem; letter-spacing: .12em; text-transform: uppercase; padding: .2em .7em; background: var(--ink); color: #88aaff; }
+  .intuition { background: linear-gradient(135deg, #eef2fa 0%, #e8eef8 100%); border: 1px solid #b0bcd8; border-left: 4px solid var(--blue); border-radius: 0 6px 6px 0; padding: 1rem 1.4rem; margin: 1rem 0; }
+  .intuition::before { content: '💡 直觉'; font-family: 'IBM Plex Mono', monospace; font-size: .65rem; letter-spacing: .12em; text-transform: uppercase; color: var(--blue); font-weight: 600; display: block; margin-bottom: .4rem; }
+  .intuition p { margin-bottom: 0; font-size: .93rem; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="container">
+    <div class="header-tag">Quant Interview Prep · Princeton MFin · Vol. II</div>
+    <h1>随机微积分<br>&amp; <em>Stochastic Calculus</em></h1>
+    <p class="subtitle">布朗运动 · Itô公式 · GBM · Girsanov · BSM · 利率模型</p>
+  </div>
+</header>
+
+<nav>
+  <a href="#s0">概览</a>
+  <a href="#s1">布朗运动</a>
+  <a href="#s2">Itô积分</a>
+  <a href="#s3">Itô公式</a>
+  <a href="#s4">GBM</a>
+  <a href="#s5">Girsanov</a>
+  <a href="#s6">金融应用</a>
+  <a href="#s7">连续鞅</a>
+  <a href="#s8">Q62真题</a>
+  <a href="#s9">综合例题</a>
+</nav>
+
+<div class="container">
+
+<!-- ══ 0. OVERVIEW ══ -->
+<section id="s0">
+  <div class="section-header">
+    <span class="sec-num">§ 00</span>
+    <h2>全局概览</h2>
+  </div>
+  <table>
+    <thead><tr><th>主题</th><th>核心概念</th><th>Quant重要度</th></tr></thead>
+    <tbody>
+      <tr><td><strong>布朗运动</strong></td><td>定义、路径性质、二次变差、反射原理</td><td>⭐⭐⭐⭐⭐</td></tr>
+      <tr><td><strong>Itô 积分</strong></td><td>构造、等距公式、鞅性质</td><td>⭐⭐⭐⭐⭐</td></tr>
+      <tr><td><strong>Itô 公式</strong></td><td>链式法则、二次变差修正项</td><td>⭐⭐⭐⭐⭐</td></tr>
+      <tr><td><strong>GBM</strong></td><td>SDE解析解、对数漂移修正、分布</td><td>⭐⭐⭐⭐⭐</td></tr>
+      <tr><td><strong>Girsanov 定理</strong></td><td>测度变换、风险中性测度</td><td>⭐⭐⭐⭐</td></tr>
+      <tr><td><strong>Black-Scholes</strong></td><td>PDE推导、公式、Greeks</td><td>⭐⭐⭐⭐⭐</td></tr>
+      <tr><td><strong>利率模型</strong></td><td>Vasicek、CIR、Hull-White、Heston</td><td>⭐⭐⭐⭐</td></tr>
+    </tbody>
+  </table>
+  <div class="note">
+    <strong>本文档范围：</strong>连续时间随机微积分。<strong>离散随机过程（Markov链、Poisson过程、竞争指数）在 Vol. I 中。</strong>
+  </div>
+</section>
+
+<!-- ══ 1. BROWNIAN MOTION ══ -->
+<section id="s1">
+  <div class="section-header">
+    <span class="sec-num">§ 01</span>
+    <h2>布朗运动 (Brownian Motion / Wiener Process)</h2>
+  </div>
+
+  <div class="def-block">
+    <div class="block-title">定义 — 标准布朗运动 \(W_t\)</div>
+    <ol>
+      <li>\(W_0 = 0\) a.s.</li>
+      <li><strong>独立增量：</strong>\(W_t - W_s \perp \mathcal{F}_s\) 对 \(s < t\)</li>
+      <li><strong>高斯增量：</strong>\(W_t - W_s \sim \mathcal{N}(0, t-s)\)</li>
+      <li><strong>连续路径：</strong>\(t \mapsto W_t\) 几乎处处连续</li>
+    </ol>
+  </div>
+
+  <h3>关键矩与协方差</h3>
+  <div class="two-col">
+    <div class="formula-box">
+      <div class="label">矩</div>
+      \[\mathbb{E}[W_t] = 0, \quad \mathbb{E}[W_t^2] = t\]
+      \[\text{Cov}(W_s, W_t) = \min(s,t)\]
+      \[\mathbb{E}[W_t^4] = 3t^2 \quad \text{（正态高阶矩）}\]
+      一般：\(\mathbb{E}[W_t^{2n}] = (2n-1)!! \cdot t^n\)
+    </div>
+    <div class="formula-box">
+      <div class="label">二次变差 (Quadratic Variation)</div>
+      \[[W]_t = t\]
+      \[(dW_t)^2 = dt\]
+      \[dW_t \cdot dt = 0\]
+      \[(dt)^2 = 0\]
+    </div>
+  </div>
+
+  <div class="thm-block">
+    <div class="block-title">定理 — 布朗运动的路径性质</div>
+    <ul>
+      <li>处处连续，处处<strong>不可微</strong>（以概率 1）</li>
+      <li>有限区间内<strong>一阶变差无穷</strong>，但二次变差有限</li>
+      <li>Hölder 连续指数 \(\alpha < 1/2\)（无法到达 1/2）</li>
+      <li><strong>自相似性：</strong>\(\{W_{ct}\} \overset{d}{=} \{\sqrt{c}\,W_t\}\)（时间缩放对应空间缩放的平方根）</li>
+    </ul>
+  </div>
+
+  <h3>重要鞅</h3>
+  <div class="formula-box">
+    <div class="label">布朗运动的三个基本鞅</div>
+    <strong>① </strong>\(W_t\)（布朗运动本身）
+    <br><br>
+    <strong>② </strong>\(W_t^2 - t\)（二次变差补偿）
+    <br><br>
+    <strong>③ </strong>\(e^{\sigma W_t - \sigma^2 t/2}\)（指数鞅，又称 Doléans-Dade 指数）
+  </div>
+
+  <h3>反射原理与最大值分布</h3>
+  <div class="formula-box">
+    <div class="label">布朗运动最大值</div>
+    \[ M_t = \max_{0 \leq s \leq t} W_s \]
+    \[ \mathbb{P}(M_t \geq a) = 2\mathbb{P}(W_t \geq a) = 2\Phi\!\left(-\frac{a}{\sqrt{t}}\right), \quad a > 0 \]
+    <p style="margin-top:.5rem;font-size:.88rem">联合密度：\(f(m,w) = \dfrac{2(2m-w)}{t\sqrt{2\pi t}}e^{-(2m-w)^2/(2t)}\)，\(m>0,\ w\leq m\)</p>
+  </div>
+
+  <h3>带漂移布朗运动</h3>
+  <div class="formula-box">
+    <div class="label">Brownian Motion with Drift</div>
+    \[ X_t = \mu t + \sigma W_t, \quad X_t \sim \mathcal{N}(\mu t,\, \sigma^2 t) \]
+    首达时间：\(\tau_a = \inf\{t: X_t = a\}\)，\(\mathbb{E}[\tau_a] = \dfrac{a}{\mu}\)（\(\mu > 0, a > 0\)）
+  </div>
+
+  <div class="quiz-block">
+    <div class="q-label">例题 01 — 面试经典三问</div>
+    <div class="q-text">
+      \(W_t\) 为标准布朗运动。<br>
+      <strong>(a)</strong> 计算 \(\mathbb{E}[W_t^3]\) 和 \(\mathbb{E}[W_t^4]\)。<br>
+      <strong>(b)</strong> 给定 \(W_2 = 4\)，求 \(\mathbb{E}[W_1 \mid W_2 = 4]\)。<br>
+      <strong>(c)</strong> 证明 \(W_t^2 - t\) 是鞅。
+    </div>
+    <button class="toggle-btn" onclick="toggle(this)">显示答案</button>
+    <div class="answer">
+      <div class="formula-box">
+        <strong>(a)</strong> 奇数矩为零（对称分布）：\(\mathbb{E}[W_t^3] = 0\)
+        \[\mathbb{E}[W_t^4] = 3(\mathbb{E}[W_t^2])^2 = 3t^2\]
+        （正态分布：若 \(X\sim\mathcal{N}(0,\sigma^2)\)，则 \(\mathbb{E}[X^{2n}] = (2n-1)!!\,\sigma^{2n}\)）
+        <br><br>
+        <strong>(b)</strong> 利用联合正态性（条件期望 = 线性回归）：
+        \[\mathbb{E}[W_1 \mid W_2] = \frac{\text{Cov}(W_1, W_2)}{\text{Var}(W_2)} W_2 = \frac{\min(1,2)}{2} W_2 = \frac{1}{2} W_2\]
+        \[\mathbb{E}[W_1 \mid W_2=4] = 2\]
+        <br>
+        <strong>(c)</strong>
+        \[\mathbb{E}[W_t^2 - t \mid \mathcal{F}_s] = \mathbb{E}[(W_s + (W_t-W_s))^2 \mid \mathcal{F}_s] - t\]
+        \[= W_s^2 + 2W_s\underbrace{\mathbb{E}[W_t-W_s\mid\mathcal{F}_s]}_{=0} + \underbrace{\mathbb{E}[(W_t-W_s)^2]}_{=t-s} - t = W_s^2 - s \quad\checkmark\]
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 2. ITO INTEGRAL ══ -->
+<section id="s2">
+  <div class="section-header">
+    <span class="sec-num">§ 02</span>
+    <h2>Itô 积分</h2>
+  </div>
+
+  <div class="def-block">
+    <div class="block-title">Itô 积分定义（直觉）</div>
+    对适应过程 \(H_t\)，Itô 积分通过简单过程极限定义（<strong>左端点近似</strong>，非中点/右端点）：
+    \[ I_t = \int_0^t H_s\,dW_s = \lim_{n\to\infty} \sum_k H_{t_k}(W_{t_{k+1}}-W_{t_k}) \]
+    <p style="margin-top:.5rem;font-size:.88rem;color:#444">关键：使用<strong>左端点</strong>（预测性，不用未来信息）→ 积分是鞅</p>
+  </div>
+
+  <div class="thm-block">
+    <div class="block-title">Itô 等距 (Itô Isometry)</div>
+    \[ \mathbb{E}\!\left[\left(\int_0^T H_t\,dW_t\right)^{\!2}\right] = \mathbb{E}\!\left[\int_0^T H_t^2\,dt\right] \]
+    <p style="margin-top:.5rem;font-size:.9rem">应用：计算随机积分的方差，以及验证平方可积性。</p>
+  </div>
+
+  <h3>Itô 积分的性质</h3>
+  <div class="formula-box">
+    <div class="label">核心性质</div>
+    <strong>① 线性：</strong>\(\int_0^T (\alpha H_t + \beta K_t)dW_t = \alpha\int_0^T H_t dW_t + \beta\int_0^T K_t dW_t\)
+    <br><br>
+    <strong>② 鞅性：</strong>\(\int_0^t H_s\,dW_s\) 是鞅，故 \(\mathbb{E}\!\left[\int_0^T H_t\,dW_t\right] = 0\)
+    <br><br>
+    <strong>③ 连续路径：</strong>Itô 积分有连续路径（几乎处处）
+  </div>
+
+  <div class="warn">
+    <strong>Itô vs Stratonovich：</strong>Itô 用左端点 → 满足预测性，是鞅，但链式法则有修正项。Stratonovich 用中点 → 链式法则与经典相同，但不是鞅，且需要未来信息。<strong>金融中用 Itô</strong>，因为交易策略必须基于已知信息（不能预知未来价格）。
+  </div>
+</section>
+
+<!-- ══ 3. ITO FORMULA ══ -->
+<section id="s3">
+  <div class="section-header">
+    <span class="sec-num">§ 03</span>
+    <h2>Itô 公式（随机微积分链式法则）</h2>
+  </div>
+
+  <div class="thm-block">
+    <div class="block-title">Itô 公式</div>
+    设 \(dX_t = \mu_t\,dt + \sigma_t\,dW_t\)，\(f(t,x) \in C^{1,2}\)，则：
+    \[
+    df(t,X_t) = \frac{\partial f}{\partial t}dt + \frac{\partial f}{\partial x}dX_t + \frac{1}{2}\frac{\partial^2 f}{\partial x^2}(dX_t)^2
+    \]
+    展开（利用 \((dW_t)^2=dt\)，\(dW_t\cdot dt=0\)，\((dt)^2=0\)）：
+    \[
+    df = \left(\frac{\partial f}{\partial t} + \mu_t\frac{\partial f}{\partial x} + \frac{1}{2}\sigma_t^2\frac{\partial^2 f}{\partial x^2}\right)dt + \sigma_t\frac{\partial f}{\partial x}\,dW_t
+    \]
+  </div>
+
+  <div class="intuition">
+    <p><strong>为什么多出 \(\frac{1}{2}\sigma^2 f''\) 这一项？</strong><br>
+    经典 Taylor 展开 \(df = f'dx + \frac{1}{2}f''(dx)^2 + \ldots\)，普通微积分里 \((dx)^2 \approx 0\) 被忽略。但布朗运动的 \((dW_t)^2 = dt\) 是 \(O(dt)\) 级别，<strong>不能忽略</strong>！这就是随机微积分与普通微积分最根本的区别。<br>
+    <strong>记忆口诀：</strong>Itô公式 = 普通链式法则 + 曲率修正项 \(\frac{1}{2}\sigma^2 f''\,dt\)。</p>
+  </div>
+
+  <h3>多维 Itô 公式</h3>
+  <div class="formula-box">
+    <div class="label">多维版本（两个相关 BM）</div>
+    设 \(dX_t = \mu_1 dt + \sigma_1 dW_t^1\)，\(dY_t = \mu_2 dt + \sigma_2 dW_t^2\)，\(dW_t^1 dW_t^2 = \rho\,dt\)，则：
+    \[d f(X_t, Y_t) = f_x dX + f_y dY + \frac{1}{2}f_{xx}(dX)^2 + f_{xy}dX\,dY + \frac{1}{2}f_{yy}(dY)^2\]
+    其中 \((dX)^2 = \sigma_1^2 dt\)，\(dX\,dY = \rho\sigma_1\sigma_2 dt\)，\((dY)^2 = \sigma_2^2 dt\)。
+  </div>
+
+  <h3>Itô 乘积法则</h3>
+  <div class="formula-box">
+    <div class="label">Itô 乘积公式</div>
+    \[ d(X_t Y_t) = X_t\,dY_t + Y_t\,dX_t + dX_t\,dY_t \]
+    比经典乘积法则多一项 \(dX_t\,dY_t\)（来自二次协变差）。
+  </div>
+
+  <div class="quiz-block">
+    <div class="q-label">例题 — Itô 公式综合练习</div>
+    <div class="q-text">
+      \(W_t\) 为标准布朗运动。<br>
+      <strong>(a)</strong> 计算 \(d(W_t^3)\) 并验证 \(\mathbb{E}[W_t^3] = 0\)。<br>
+      <strong>(b)</strong> 计算 \(\mathbb{E}\!\left[\int_0^T W_t\,dW_t\right]\) 和 \(\text{Var}\!\left[\int_0^T W_t\,dW_t\right]\)。<br>
+      <strong>(c)</strong> 证明 \(W_t^3 - 3tW_t\) 是鞅。
+    </div>
+    <button class="toggle-btn" onclick="toggle(this)">显示答案</button>
+    <div class="answer">
+      <div class="formula-box">
+        <strong>(a)</strong> 令 \(f(x)=x^3\)，\(f'=3x^2\)，\(f''=6x\)：
+        \[d(W_t^3) = 3W_t^2\,dW_t + \frac{1}{2}\cdot 6W_t\,dt = 3W_t\,dt + 3W_t^2\,dW_t\]
+        取期望：\(\mathbb{E}[W_t^3] = 3\int_0^t\mathbb{E}[W_s]\,ds = 0\) ✓（随机积分均值为 0，\(\mathbb{E}[W_s]=0\)）
+        <br><br>
+        <strong>(b)</strong>
+        \[\mathbb{E}\!\left[\int_0^T W_t\,dW_t\right] = 0 \quad \text{（Itô积分是鞅）}\]
+        \[\text{Var}\!\left[\int_0^T W_t\,dW_t\right] = \mathbb{E}\!\left[\int_0^T W_t^2\,dt\right] = \int_0^T t\,dt = \frac{T^2}{2}\]
+        （验证：\(\int_0^T W_t\,dW_t = \frac{1}{2}(W_T^2-T)\) by Itô，方差 \(=\text{Var}(\frac{W_T^2}{2}) = \frac{3T^2}{4} - \frac{T^2}{4} = \frac{T^2}{2}\) ✓）
+        <br><br>
+        <strong>(c)</strong> 令 \(g(t,x) = x^3 - 3tx\)：
+        \[d(W_t^3-3tW_t) = (3W_t^2\,dW_t + 3W_t\,dt) - 3W_t\,dt - 3t\,dW_t = 3(W_t^2-t)\,dW_t\]
+        纯 \(dW_t\) 项，无 \(dt\) 漂移项 ⟹ <strong>是鞅</strong> ✓
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 4. GBM ══ -->
+<section id="s4">
+  <div class="section-header">
+    <span class="sec-num">§ 04</span>
+    <h2>几何布朗运动 (GBM)</h2>
+  </div>
+
+  <p>Black-Scholes 世界中资产价格的标准假设。</p>
+
+  <div class="thm-block">
+    <div class="block-title">GBM 的 SDE 与解析解</div>
+    \[ dS_t = \mu S_t\,dt + \sigma S_t\,dW_t \]
+    令 \(f(S) = \ln S\)，Itô 公式（\(f'=1/S\)，\(f''=-1/S^2\)）：
+    \[ d(\ln S_t) = \left(\mu - \frac{\sigma^2}{2}\right)dt + \sigma\,dW_t \]
+    积分得：
+    \[
+    \boxed{S_t = S_0 \exp\!\left[\left(\mu - \frac{\sigma^2}{2}\right)t + \sigma W_t\right]}
+    \]
+    \[ \mathbb{E}[S_t] = S_0 e^{\mu t}, \quad \text{Var}[S_t] = S_0^2 e^{2\mu t}(e^{\sigma^2 t}-1) \]
+  </div>
+
+  <div class="warn">
+    <strong>面试必知：</strong>\(\mu - \sigma^2/2\) 是对数收益率的漂移（非 \(\mu\)），因为 Jensen 不等式：
+    \[\mathbb{E}[\ln S_t] = \ln S_0 + \left(\mu - \frac{\sigma^2}{2}\right)t \neq \ln\mathbb{E}[S_t] = \ln S_0 + \mu t\]
+    波动率越大，路径中位数（几何平均）增长越慢。这在风险管理中意味着高波动率会"侵蚀"长期复利收益。
+  </div>
+
+  <div class="intuition">
+    <p><strong>为什么是 \(\mu - \sigma^2/2\) 而不是 \(\mu\)？</strong><br>
+    想象两条路径：一条涨 +10%，一条跌 -10%。平均价格变化为 0%，但几何平均（复利）变化 = \(\sqrt{1.1\times0.9} - 1 = \sqrt{0.99}-1 \approx -0.5\%\)。波动率制造了"复利的阻力"，正是 \(\sigma^2/2\) 项。</p>
+  </div>
+
+  <div class="quiz-block">
+    <div class="q-label">例题 — GBM 完整计算</div>
+    <div class="q-text">
+      资产价格 \(dS_t = 0.1 S_t\,dt + 0.2 S_t\,dW_t\)，\(S_0=100\)，\(r=0.05\)，\(T=1\)。<br>
+      <strong>(a)</strong> 1年后 \(S_1\) 低于 90 的概率（真实测度下）。<br>
+      <strong>(b)</strong> 在 \(\mathbb{Q}\) 下同样的概率。<br>
+      <strong>(c)</strong> 行权价 \(K=105\) 的欧式看涨期权价格（BSM公式）。
+    </div>
+    <button class="toggle-btn" onclick="toggle(this)">显示答案</button>
+    <div class="answer">
+      <div class="formula-box">
+        <strong>(a)</strong> \(S_1 = 100\exp[(0.1-0.02)\cdot1 + 0.2 Z]\)，\(Z\sim\mathcal{N}(0,1)\)
+        \[\mathbb{P}(S_1 < 90) = \mathbb{P}\!\left(Z < \frac{\ln 0.9 - 0.08}{0.2}\right) = \Phi(-0.927) \approx 17.7\%\]
+        <br>
+        <strong>(b)</strong> 在 \(\mathbb{Q}\) 下漂移换为 \(r=0.05\)：
+        \[\mathbb{Q}(S_1 < 90) = \Phi\!\left(\frac{\ln(90/100)-(0.05-0.02)}{0.2}\right) = \Phi(-0.777) \approx 21.9\%\]
+        <br>
+        <strong>(c)</strong> BSM公式：
+        \[d_1 = \frac{\ln(100/105)+(0.05+0.02)}{0.2} \approx 0.106, \quad d_2 = 0.106 - 0.2 = -0.094\]
+        \[C = 100\Phi(0.106) - 105 e^{-0.05}\Phi(-0.094) \approx 54.2 - 46.2 \approx \boxed{8.0}\]
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 5. GIRSANOV ══ -->
+<section id="s5">
+  <div class="section-header">
+    <span class="sec-num">§ 05</span>
+    <h2>Girsanov 定理（测度变换）</h2>
+  </div>
+
+  <div class="thm-block">
+    <div class="block-title">Girsanov 定理</div>
+    设 \(\theta_t\) 为适应过程，定义 Radon-Nikodym 导数：
+    \[ \frac{d\mathbb{Q}}{d\mathbb{P}}\bigg|_{\mathcal{F}_T} = \exp\!\left(-\int_0^T\theta_t\,dW_t - \frac{1}{2}\int_0^T\theta_t^2\,dt\right) \]
+    则在测度 \(\mathbb{Q}\) 下，
+    \[ \tilde{W}_t = W_t + \int_0^t \theta_s\,ds \]
+    是标准布朗运动。
+  </div>
+
+  <p><strong>金融含义：</strong>通过 Girsanov 将真实测度 \(\mathbb{P}\) 转换为<strong>风险中性测度 \(\mathbb{Q}\)</strong>，市场价格漂移 \(\mu\) 变为无风险利率 \(r\)。</p>
+
+  <div class="formula-box">
+    <div class="label">市场价格漂移 → 风险中性</div>
+    \(\mathbb{P}\) 下：\(dS_t = \mu S_t\,dt + \sigma S_t\,dW_t\)
+    <br><br>
+    令 \(\theta = (\mu-r)/\sigma\)（Sharpe ratio / 市场风险价格），则 \(\mathbb{Q}\) 下：
+    \[dS_t = r S_t\,dt + \sigma S_t\,d\tilde{W}_t\]
+    \[\tilde{W}_t = W_t + \theta t\]
+  </div>
+
+  <div class="intuition">
+    <p><strong>直觉：</strong>Girsanov 定理就是换一个"坐标系"——在新测度下，漂移消失了（被吸收进布朗运动的漂移中）。金融中这就是为什么所有资产在风险中性测度下都以无风险利率增长：我们不是假装所有人都风险中性，而是数学上选了一个使定价便利的测度。</p>
+  </div>
+</section>
+
+<!-- ══ 6. FINANCE ══ -->
+<section id="s6">
+  <div class="section-header">
+    <span class="sec-num">§ 06</span>
+    <h2>金融应用</h2>
+  </div>
+
+  <h3>Black-Scholes PDE（Delta Hedging 推导）</h3>
+  <div class="formula-box">
+    <div class="label">BSM PDE</div>
+    \[ \frac{\partial V}{\partial t} + \frac{1}{2}\sigma^2 S^2\frac{\partial^2 V}{\partial S^2} + rS\frac{\partial V}{\partial S} - rV = 0 \]
+    <strong>推导思路：</strong>对冲组合 \(\Pi = V - \Delta S\)，选 \(\Delta = \partial V/\partial S\) 使其无风险，令 \(d\Pi = r\Pi\,dt\，代入 Itô 公式消去 \(dW_t\) 项。
+  </div>
+
+  <div class="formula-box">
+    <div class="label">欧式看涨期权 BSM 公式</div>
+    \[ C = S_0\Phi(d_1) - Ke^{-rT}\Phi(d_2) \]
+    \[ d_1 = \frac{\ln(S_0/K) + (r+\sigma^2/2)T}{\sigma\sqrt{T}}, \quad d_2 = d_1 - \sigma\sqrt{T} \]
+    看跌期权：\(P = Ke^{-rT}\Phi(-d_2) - S_0\Phi(-d_1)\)（看跌-看涨平价）
+  </div>
+
+  <h3>风险中性定价框架</h3>
+  <div class="formula-box">
+    <div class="label">基本定价公式</div>
+    \[ V_0 = e^{-rT}\mathbb{E}^{\mathbb{Q}}[V_T] \]
+    在 \(\mathbb{Q}\) 下：\(S_t = S_0\exp\!\left[\left(r - \frac{\sigma^2}{2}\right)t + \sigma\tilde{W}_t\right]\)
+  </div>
+
+  <h3>利率模型</h3>
+  <table>
+    <thead><tr><th>模型</th><th>SDE</th><th>特点</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>Vasicek</strong></td>
+        <td>\(dr_t = \kappa(\theta-r_t)dt + \sigma\,dW_t\)</td>
+        <td>均值回归，利率可为负，有解析解</td>
+      </tr>
+      <tr>
+        <td><strong>CIR</strong></td>
+        <td>\(dr_t = \kappa(\theta-r_t)dt + \sigma\sqrt{r_t}\,dW_t\)</td>
+        <td>利率非负（Feller 条件 \(2\kappa\theta > \sigma^2\)）</td>
+      </tr>
+      <tr>
+        <td><strong>Hull-White</strong></td>
+        <td>\(dr_t = (\theta(t)-\kappa r_t)dt + \sigma\,dW_t\)</td>
+        <td>时变漂移，精确拟合初始收益率曲线</td>
+      </tr>
+      <tr>
+        <td><strong>Heston</strong></td>
+        <td>\(dv_t = \kappa(\bar{v}-v_t)dt + \xi\sqrt{v_t}\,d\tilde{W}_t\)，\(\rho(W,\tilde{W})\)</td>
+        <td>随机波动率，刻画波动率微笑/偏斜</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="note">
+    <strong>Heston 模型与 Vasicek/CIR 的关系：</strong>Heston 的波动率过程与 CIR 利率过程形式相同，只是解释为"方差过程"。这使得同样的数学工具（特征函数定价）可以应用。
+  </div>
+</section>
+
+<!-- ══ 7. CONTINUOUS MARTINGALE ══ -->
+<section id="s7">
+  <div class="section-header">
+    <span class="sec-num">§ 07</span>
+    <h2>连续时间鞅方法</h2>
+  </div>
+
+  <h3>验证是否是鞅的标准方法</h3>
+  <div class="formula-box">
+    <div class="label">方法 1 — Itô 公式直接验证</div>
+    若用 Itô 公式展开后，\(dM_t\) 中<strong>无 \(dt\) 项</strong>（纯 \(dW_t\) 项），则 \(M_t\) 是鞅。
+    <br><br>
+    例：\(d(W_t^3-3tW_t) = 3(W_t^2-t)\,dW_t\) → 是鞅 ✓
+  </div>
+
+  <div class="formula-box">
+    <div class="label">方法 2 — 直接验证条件期望</div>
+    计算 \(\mathbb{E}[M_t \mid \mathcal{F}_s]\)，若等于 \(M_s\) 则是鞅。
+    <br><br>
+    例：\(M_t = e^{\sigma W_t - \sigma^2t/2}\)：
+    \[\mathbb{E}[M_t \mid \mathcal{F}_s] = e^{\sigma W_s - \sigma^2s/2}\cdot\mathbb{E}[e^{\sigma(W_t-W_s)-\sigma^2(t-s)/2}] = M_s \cdot 1 = M_s\]
+  </div>
+
+  <h3>常用连续鞅汇总</h3>
+  <table>
+    <thead><tr><th>鞅 \(M_t\)</th><th>验证方法</th><th>金融/应用含义</th></tr></thead>
+    <tbody>
+      <tr><td>\(W_t\)</td><td>增量独立，均值为 0</td><td>无漂移随机游走</td></tr>
+      <tr><td>\(W_t^2 - t\)</td><td>Itô公式 or 条件期望</td><td>二次变差的补偿</td></tr>
+      <tr><td>\(e^{\sigma W_t - \sigma^2 t/2}\)</td><td>MGF of BM，Novikov条件</td><td>Girsanov Radon-Nikodym 导数</td></tr>
+      <tr><td>\(W_t^3 - 3tW_t\)</td><td>Itô公式：纯 \(dW\) 项</td><td>Hermite 多项式 \(H_3\)</td></tr>
+      <tr><td>\(e^{-rt}S_t\)（BSM下）</td><td>\(\mathbb{Q}\) 下折现股价</td><td>无套利定价基础</td></tr>
+    </tbody>
+  </table>
+
+  <h3>随机微积分 vs 经典微积分：关键区别</h3>
+  <table>
+    <thead><tr><th>操作</th><th>经典微积分</th><th>随机微积分</th></tr></thead>
+    <tbody>
+      <tr><td>链式法则 \(df\)</td><td>\(f'\,dx\)</td><td>\(f'\,dX + \frac{1}{2}f''\,d[X]\)（Itô修正）</td></tr>
+      <tr><td>乘积法则</td><td>\(d(XY) = X\,dY + Y\,dX\)</td><td>\(d(XY) = X\,dY + Y\,dX + d[X,Y]\)</td></tr>
+      <tr><td>\((dx)^2\)</td><td>\(0\)（可忽略）</td><td>\((dW)^2 = dt\)（不可忽略！）</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ══ 8. Q62 ══ -->
+<section id="s8">
+  <div class="section-header">
+    <span class="sec-num">§ 08</span>
+    <h2>真题精练 Q62 · 鞅方法综合</h2>
+  </div>
+  <div class="tag-row">
+    <span class="tag">实际面试题</span>
+    <span class="tag">Philadelphia · Nov 2024</span>
+    <span class="tag">鞅综合</span>
+  </div>
+
+  <div class="quiz-block">
+    <div class="q-label">Q62(a) — 凸函数 of 鞅</div>
+    <div class="q-text">
+      若 \(X_n\) 是鞅，\(f\) 是凸函数，\(f(X_n)\) 是什么？
+    </div>
+    <button class="toggle-btn" onclick="toggle(this)">显示答案</button>
+    <div class="answer">
+      <div class="formula-box">
+        由 Jensen 不等式：\(\mathbb{E}[f(X_t)|\mathcal{F}_s] \geq f(\mathbb{E}[X_t|\mathcal{F}_s]) = f(X_s)\)
+        <br>
+        所以 \(f(X_n)\) 是<strong>下鞅 (submartingale)</strong>。<br><br>
+        例：\(|W_t|\)（凸函数）是下鞅；\(W_t^2\) 是下鞅（\(W_t^2-t\) 才是鞅）。<br>
+        反向：若 \(f\) 是凹函数，\(f(X_n)\) 是上鞅。
+      </div>
+    </div>
+  </div>
+
+  <div class="quiz-block">
+    <div class="q-label">Q62(b) — 鞅方法求 HH 期望步数</div>
+    <div class="q-text">
+      公平硬币连续投，用鞅方法求首次出现 HH 的期望步数。
+    </div>
+    <button class="toggle-btn" onclick="toggle(this)">显示答案</button>
+    <div class="answer">
+      <div class="formula-box">
+        状态机：\(S_0\)（初始），\(S_H\)（刚出现H），\(S_{HH}\)（结束）。
+        <br>
+        期望剩余步数：\(e_0=6, e_H=4\)（由一步分析法）。
+        <br><br>
+        <strong>鞅方法验证：</strong>令 \(M_n = e_{S_n} + n\)，可验证这是鞅（每步无论走向哪个状态，期望不变）。
+        <br>OST：\(\mathbb{E}[M_\tau] = M_0\)，即 \(0 + \mathbb{E}[\tau] = e_0 + 0\)，故 \(\mathbb{E}[\tau] = e_0 = \boxed{6}\)。
+      </div>
+    </div>
+  </div>
+
+  <div class="quiz-block">
+    <div class="q-label">Q62(c) — OST 使用条件</div>
+    <div class="q-text">
+      可选停时定理（OST）的使用条件是什么？
+    </div>
+    <button class="toggle-btn" onclick="toggle(this)">显示答案</button>
+    <div class="answer">
+      <div class="formula-box">
+        以下任一条件充分：
+        <ul style="color:var(--paper);margin:.4rem 0">
+          <li>停时 \(\tau\) 有界（\(\tau \leq N\) a.s.）</li>
+          <li>\(\mathbb{E}[\tau] < \infty\) 且增量有界（\(|M_{n+1}-M_n| \leq C\) a.s.）</li>
+          <li>序列 \(M_{n\wedge\tau}\) 一致可积</li>
+        </ul>
+        结论：\(\mathbb{E}[M_\tau] = \mathbb{E}[M_0]\)
+        <br><br>
+        <strong>反例：</strong>公平游走 \(S_n\)，\(\tau_1=\inf\{n:S_n=1\}\)，\(\mathbb{E}[\tau_1]=+\infty\)，OST 不适用——无法得出 \(\mathbb{E}[S_{\tau_1}]=S_0=0\)（实际上 \(S_{\tau_1}=1\neq0\)）。
+      </div>
+    </div>
+  </div>
+
+  <div class="quiz-block">
+    <div class="q-label">Q62(d) — \(W_t^3 - 3tW_t\) 是鞅吗？</div>
+    <div class="q-text">
+      用 Itô 公式验证 \(W_t^3 - 3tW_t\) 是否是鞅，并解释其数学含义。
+    </div>
+    <button class="toggle-btn" onclick="toggle(this)">显示答案</button>
+    <div class="answer">
+      <div class="formula-box">
+        \[d(W_t^3-3tW_t) = (3W_t^2\,dW_t + 3W_t\,dt) - 3W_t\,dt - 3t\,dW_t\]
+        \[= 3W_t^2\,dW_t - 3t\,dW_t = 3(W_t^2 - t)\,dW_t\]
+        纯 \(dW_t\) 项，无 \(dt\) 漂移项 ⟹ <strong>是鞅</strong> ✓
+        <br><br>
+        <strong>数学含义：</strong>这是<strong>Hermite 多项式</strong> \(H_3(x,t) = x^3 - 3tx\) 的布朗运动版本。更一般地，\(H_n(W_t, t)\) 对所有 \(n\) 都是鞅——这是布朗运动的多项式混沌展开，在随机分析和量化金融的 Wiener chaos 分解中有深刻应用。
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 9. 综合例题 ══ -->
+<section id="s9">
+  <div class="section-header">
+    <span class="sec-num">§ 09</span>
+    <h2>综合例题 & 高频考点</h2>
+  </div>
+
+  <div class="quiz-block">
+    <div class="q-label">例题 — 口头面试三问</div>
+    <div class="q-text">
+      <strong>(1)</strong> "为什么 GBM 中的漂移是 \(\mu - \sigma^2/2\) 而不是 \(\mu\)？"<br>
+      <strong>(2)</strong> "Itô 积分与 Stratonovich 积分的区别，及各自的金融含义？"<br>
+      <strong>(3)</strong> "如果一个 Markov 链有两个稳态分布，这说明什么？"
+    </div>
+    <button class="toggle-btn" onclick="toggle(this)">显示答案</button>
+    <div class="answer">
+      <div class="formula-box">
+        <strong>(1)</strong> \(\mathbb{E}[S_t]=S_0e^{\mu t}\)（算术平均），但 \(\mathbb{E}[\ln S_t]=\ln S_0+(\mu-\sigma^2/2)t\)（对数路径的均值）。Jensen 不等式：\(\mathbb{E}[\ln S] \neq \ln\mathbb{E}[S]\)。波动率越大，几何平均（路径中位数）增长越慢。这在风险管理中意味着高波动率侵蚀复利收益。
+      </div>
+      <div class="formula-box" style="margin-top:.6rem">
+        <strong>(2)</strong> Itô 用左端点（predictable）→ 鞅，计算需 Itô 修正项。Stratonovich 用中点 → 链式法则与经典相同，但需未来信息，不是鞅。金融中用 Itô，因为交易策略必须用<strong>过去/现在</strong>信息（不知道未来价格）。
+      </div>
+      <div class="formula-box" style="margin-top:.6rem">
+        <strong>(3)</strong> 链<strong>不是不可约的</strong>——存在至少两个不互通的闭集（两个孤立的常返类）。极限分布取决于初始分布在各闭集上的分配比例。
+      </div>
+    </div>
+  </div>
+
+  <h3>高频面试考点速查</h3>
+  <table>
+    <thead><tr><th>考点</th><th>标准结论</th></tr></thead>
+    <tbody>
+      <tr><td>\(W_t\) 是鞅</td><td>\(\mathbb{E}[W_t|\mathcal{F}_s]=W_s\)，增量独立且均值0</td></tr>
+      <tr><td>\(W_t^2 - t\) 是鞅</td><td>Itô公式或直接计算条件期望</td></tr>
+      <tr><td>\(e^{\sigma W_t - \sigma^2 t/2}\) 是鞅</td><td>Doléans-Dade指数，Girsanov变换的核心</td></tr>
+      <tr><td>GBM 解析解</td><td>\(S_t=S_0\exp[(\mu-\sigma^2/2)t+\sigma W_t]\)</td></tr>
+      <tr><td>Itô 等距关键应用</td><td>计算随机积分的方差</td></tr>
+      <tr><td>BSM 的 Markov 性</td><td>期权价格 \(V(t,S_t)\) 仅依赖当前股价</td></tr>
+      <tr><td>风险中性定价</td><td>\(V_0 = e^{-rT}\mathbb{E}^\mathbb{Q}[V_T]\)</td></tr>
+      <tr><td>\(\int_0^T W_t\,dW_t\) 的值</td><td>\(\frac{1}{2}(W_T^2 - T)\)（对 \(f(x)=x^2/2\) 用Itô）</td></tr>
+    </tbody>
+  </table>
+
+  <div class="note">
+    <strong>随机微积分的核心区别总结：</strong>普通微积分 \((dx)^2=0\)，随机微积分 \((dW)^2=dt\)。这一个差异衍生出 Itô 公式的修正项、GBM 的对数漂移修正、以及所有随机分析的独特性。理解这一点是掌握随机微积分的基础。
+  </div>
+</section>
+
+</div><!-- /.container -->
+
+<footer>
+  随机微积分 — Princeton MFin Quant Interview Prep · Vol. II<br>
+  布朗运动 · Itô积分与公式 · GBM · Girsanov · Black-Scholes · 利率模型
+</footer>
+
+<script>
+function toggle(btn) {
+  const ans = btn.nextElementSibling;
+  if (ans.style.display === 'block') {
+    ans.style.display = 'none';
+    btn.textContent = '显示答案';
+  } else {
+    ans.style.display = 'block';
+    btn.textContent = '隐藏答案';
+  }
+}
+window.MathJax = {
+  tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+  options: { skipHtmlTags: ['script','noscript','style','textarea'] },
+  startup: { typeset: true }
+};
+</script>
+</body>
+</html>

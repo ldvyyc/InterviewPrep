@@ -1,0 +1,1609 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sharpe Ratio — 量化面试完全手册</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body, {
+    delimiters: [
+      {left:'$$',right:'$$',display:true},
+      {left:'$',right:'$',display:false}
+    ],
+    throwOnError: false
+  });"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&family=Cinzel:wght@500;700&display=swap');
+
+  :root {
+    --bg: #0d0f14;
+    --surface: #13161e;
+    --surface2: #1a1e2a;
+    --border: #252a38;
+    --accent: #c9a84c;
+    --accent2: #7eb8d4;
+    --accent3: #7ecda5;
+    --text: #d4cfc6;
+    --text-dim: #7a7870;
+    --text-bright: #ede8df;
+    --sidebar-w: 270px;
+    --red: #d4756b;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'EB Garamond', Georgia, serif;
+    font-size: 17px;
+    line-height: 1.8;
+    display: flex;
+    min-height: 100vh;
+  }
+
+  /* ── SIDEBAR ── */
+  #sidebar {
+    width: var(--sidebar-w);
+    min-width: var(--sidebar-w);
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    height: 100vh;
+    position: fixed;
+    top: 0; left: 0;
+    overflow-y: auto;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+  }
+
+  #sidebar::-webkit-scrollbar { width: 4px; }
+  #sidebar::-webkit-scrollbar-track { background: transparent; }
+  #sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .sidebar-header {
+    padding: 24px 20px 16px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .sidebar-header .logo {
+    font-family: 'Cinzel', serif;
+    font-size: 12px;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .sidebar-header h1 {
+    font-family: 'Cinzel', serif;
+    font-size: 16px;
+    color: var(--text-bright);
+    font-weight: 700;
+    line-height: 1.3;
+  }
+
+  .sidebar-section {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .sidebar-section-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    padding: 6px 20px 4px;
+  }
+
+  .sidebar-link {
+    display: block;
+    padding: 5px 20px 5px 28px;
+    color: var(--text-dim);
+    text-decoration: none;
+    font-size: 13.5px;
+    font-family: 'EB Garamond', serif;
+    transition: color 0.15s, background 0.15s;
+    border-left: 2px solid transparent;
+    position: relative;
+  }
+
+  .sidebar-link:hover { color: var(--text-bright); background: var(--surface2); }
+  .sidebar-link.active { color: var(--accent); border-left-color: var(--accent); background: rgba(201,168,76,0.06); }
+
+  /* ── MAIN ── */
+  #main {
+    margin-left: var(--sidebar-w);
+    flex: 1;
+    padding: 0;
+  }
+
+  .hero {
+    background: linear-gradient(135deg, #0d1016 0%, #111520 40%, #13161e 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 60px 64px 48px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: 'S';
+    position: absolute;
+    right: 40px; top: -20px;
+    font-family: 'Cinzel', serif;
+    font-size: 280px;
+    color: rgba(201,168,76,0.04);
+    pointer-events: none;
+    line-height: 1;
+  }
+
+  .hero .tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  .hero h1 {
+    font-family: 'Cinzel', serif;
+    font-size: 36px;
+    color: var(--text-bright);
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 14px;
+  }
+
+  .hero p {
+    color: var(--text-dim);
+    font-size: 15px;
+    max-width: 580px;
+    font-style: italic;
+  }
+
+  .content {
+    padding: 0 64px 80px;
+    max-width: 960px;
+  }
+
+  /* ── SECTIONS ── */
+  .section {
+    margin-top: 56px;
+    scroll-margin-top: 24px;
+  }
+
+  .section-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  h2 {
+    font-family: 'Cinzel', serif;
+    font-size: 22px;
+    color: var(--text-bright);
+    font-weight: 700;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  h3 {
+    font-family: 'Cinzel', serif;
+    font-size: 15px;
+    color: var(--accent2);
+    font-weight: 500;
+    margin: 28px 0 12px;
+    letter-spacing: 0.04em;
+  }
+
+  h4 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--accent3);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin: 20px 0 8px;
+  }
+
+  p { margin-bottom: 12px; }
+
+  /* ── MATH BLOCKS ── */
+  .math-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 4px;
+    padding: 18px 24px;
+    margin: 18px 0;
+    overflow-x: auto;
+  }
+
+  .result-box {
+    background: rgba(201,168,76,0.07);
+    border: 1px solid rgba(201,168,76,0.3);
+    border-radius: 6px;
+    padding: 16px 22px;
+    margin: 16px 0;
+    text-align: center;
+  }
+
+  /* ── CALLOUTS ── */
+  .callout {
+    border-radius: 6px;
+    padding: 14px 20px;
+    margin: 16px 0;
+    display: flex;
+    gap: 12px;
+    font-size: 15.5px;
+  }
+
+  .callout-icon { font-size: 18px; flex-shrink: 0; margin-top: 2px; }
+
+  .callout.insight { background: rgba(126,184,212,0.08); border: 1px solid rgba(126,184,212,0.25); }
+  .callout.warning { background: rgba(212,117,107,0.08); border: 1px solid rgba(212,117,107,0.25); }
+  .callout.key { background: rgba(201,168,76,0.08); border: 1px solid rgba(201,168,76,0.25); }
+  .callout.result { background: rgba(126,205,165,0.08); border: 1px solid rgba(126,205,165,0.25); }
+
+  /* ── DERIVATION STEPS ── */
+  .steps { margin: 16px 0; }
+  .step {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 14px;
+    align-items: flex-start;
+  }
+  .step-num {
+    font-family: 'Cinzel', serif;
+    font-size: 12px;
+    color: var(--accent);
+    background: rgba(201,168,76,0.12);
+    border: 1px solid rgba(201,168,76,0.3);
+    border-radius: 3px;
+    width: 26px; height: 26px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .step-body { flex: 1; }
+
+  /* ── FORMULA TABLE ── */
+  .formula-grid {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    margin: 16px 0;
+  }
+
+  .formula-grid .frow {
+    display: contents;
+  }
+
+  .formula-grid .frow > div {
+    padding: 10px 18px;
+    border-bottom: 1px solid var(--border);
+    font-size: 15px;
+  }
+
+  .formula-grid .frow:last-child > div { border-bottom: none; }
+  .formula-grid .frow > div:first-child {
+    background: rgba(201,168,76,0.05);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--accent);
+    white-space: nowrap;
+    border-right: 1px solid var(--border);
+    display: flex; align-items: center;
+  }
+
+  /* ── QA CARDS ── */
+  .qa-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin: 20px 0;
+    overflow: hidden;
+  }
+
+  .qa-q {
+    background: var(--surface2);
+    padding: 12px 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--accent2);
+    letter-spacing: 0.05em;
+    display: flex; align-items: center; gap: 8px;
+    cursor: pointer;
+    border-bottom: 1px solid var(--border);
+    user-select: none;
+  }
+
+  .qa-q::before {
+    content: 'Q';
+    background: var(--accent2);
+    color: var(--bg);
+    font-weight: 700;
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 3px;
+  }
+
+  .qa-q .qa-title { flex: 1; }
+  .qa-q .qa-arrow { transition: transform 0.2s; color: var(--text-dim); }
+  .qa-q.open .qa-arrow { transform: rotate(90deg); }
+
+  .qa-a {
+    padding: 16px 20px;
+    display: none;
+  }
+
+  .qa-a.open { display: block; }
+
+  /* ── TABLE ── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 14.5px;
+  }
+  th {
+    background: var(--surface2);
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 10px 14px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  td {
+    padding: 9px 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+
+  /* ── CODE ── */
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    background: var(--surface2);
+    padding: 2px 6px;
+    border-radius: 3px;
+    color: var(--accent3);
+  }
+
+  pre {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 20px;
+    overflow-x: auto;
+    margin: 16px 0;
+  }
+  pre code {
+    background: none;
+    padding: 0;
+    font-size: 13px;
+    color: var(--text);
+  }
+
+  /* ── DIVIDER ── */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 40px 0;
+  }
+
+  /* ── NUMBER EXAMPLES ── */
+  .num-example {
+    background: var(--surface2);
+    border-radius: 6px;
+    padding: 14px 18px;
+    margin: 12px 0;
+    font-size: 15px;
+  }
+  .num-example .label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--accent3);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  /* ── RESPONSIVE SCROLL ── */
+  .katex-display { overflow-x: auto; overflow-y: hidden; padding: 6px 0; }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  /* anchors */
+  a { color: var(--accent2); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  /* tag badges */
+  .badge {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    margin-right: 4px;
+    letter-spacing: 0.05em;
+  }
+  .badge-def { background: rgba(201,168,76,0.15); color: var(--accent); border: 1px solid rgba(201,168,76,0.3); }
+  .badge-hard { background: rgba(212,117,107,0.15); color: var(--red); border: 1px solid rgba(212,117,107,0.3); }
+  .badge-key { background: rgba(126,205,165,0.15); color: var(--accent3); border: 1px solid rgba(126,205,165,0.3); }
+</style>
+</head>
+<body>
+
+<!-- ═══ SIDEBAR ═══ -->
+<nav id="sidebar">
+  <div class="sidebar-header">
+    <div class="logo">Quant Interview</div>
+    <h1>Sharpe Ratio<br>完全手册</h1>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-section-title">基础定义</div>
+    <a href="#s1" class="sidebar-link">§1 定义与年化</a>
+    <a href="#s2" class="sidebar-link">§2 杠杆不变性</a>
+    <a href="#s3" class="sidebar-link">§3 与 t 统计量的关系</a>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-section-title">统计推断</div>
+    <a href="#s4" class="sidebar-link">§4 SE 推导（Delta 法）</a>
+    <a href="#s5" class="sidebar-link">§5 显著性检验</a>
+    <a href="#s6" class="sidebar-link">§6 负收益天数问题</a>
+    <a href="#s7" class="sidebar-link">§7 样本偏差修正</a>
+    <a href="#s8" class="sidebar-link">§8 比较两策略 Sharpe</a>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-section-title">组合理论</div>
+    <a href="#s9" class="sidebar-link">§9 两策略组合</a>
+    <a href="#s10" class="sidebar-link">§10 最大 Sharpe 权重</a>
+    <a href="#s11" class="sidebar-link">§11 等相关 N 因子</a>
+    <a href="#s12" class="sidebar-link">§12 分配逻辑 (Cases)</a>
+    <a href="#s13" class="sidebar-link">§13 分散化直觉</a>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-section-title">均值-方差框架</div>
+    <a href="#s14" class="sidebar-link">§14 最小方差组合</a>
+    <a href="#s15" class="sidebar-link">§15 GMV 组合</a>
+    <a href="#s16" class="sidebar-link">§16 切线组合 & CML</a>
+    <a href="#s17" class="sidebar-link">§17 两基金分离</a>
+    <a href="#s18" class="sidebar-link">§18 风险贡献 Euler</a>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-section-title">实务专题</div>
+    <a href="#s19" class="sidebar-link">§19 自相关下的年化</a>
+    <a href="#s20" class="sidebar-link">§20 交易成本修正</a>
+    <a href="#s21" class="sidebar-link">§21 多重检验与挖矿</a>
+    <a href="#s22" class="sidebar-link">§22 面试题库速查</a>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-section-title">进阶专题</div>
+    <a href="#s23" class="sidebar-link">§23 稀疏序列 / 零收益插入</a>
+    <a href="#s24" class="sidebar-link">§24 非正态修正 Sharpe</a>
+    <a href="#s25" class="sidebar-link">§25 Probabilistic & Deflated SR</a>
+    <a href="#s26" class="sidebar-link">§26 Kelly 与 Sharpe 的关系</a>
+  </div>
+</nav>
+
+<!-- ═══ MAIN ═══ -->
+<main id="main">
+  <div class="hero">
+    <div class="tag">Quantitative Finance · Interview Prep · Princeton MFin</div>
+    <h1>Sharpe Ratio<br>量化面试完全手册</h1>
+    <p>涵盖定义、统计推断、组合优化、均值-方差理论与实务修正，附推导过程与面试速查题库。</p>
+  </div>
+
+  <div class="content">
+
+  <!-- ══════════════════════════════════════════
+       §1  定义与年化
+  ═══════════════════════════════════════════ -->
+  <div class="section" id="s1">
+    <div class="section-num">§ 01</div>
+    <h2>定义与年化</h2>
+
+    <p>设超额收益序列 $x_t = r_t - r_{f,t}$，样本均值 $\bar{x}$，样本标准差 $\hat{\sigma}$，样本 Sharpe 定义为：</p>
+
+    <div class="result-box">
+      $$\hat{S} = \frac{\bar{x}}{\hat{\sigma}}, \qquad \bar{x} = \frac{1}{n}\sum_{t=1}^n x_t, \quad \hat{\sigma}^2 = \frac{1}{n-1}\sum_{t=1}^n (x_t - \bar{x})^2$$
+    </div>
+
+    <h3>年化换算（i.i.d.）</h3>
+    <p>若 $x_t$ 独立同分布，每期与年之间有因子 $A$（如日度 $A=252$，月度 $A=12$，周度 $A=52$）：</p>
+    <div class="math-block">
+      $$S_{\text{ann}} = \sqrt{A} \cdot S_{\text{per}}$$
+    </div>
+
+    <div class="callout warning">
+      <div class="callout-icon">⚠️</div>
+      <div><strong>陷阱：自相关</strong>。若收益存在序列相关，直接乘 $\sqrt{A}$ 是错的。正确做法：先用 HAC 估计年化方差，再计算年化 Sharpe。见 §19。</div>
+    </div>
+
+    <h3>各频率年化因子</h3>
+    <table>
+      <tr><th>频率</th><th>年化因子 $A$</th><th>年化 Sharpe</th></tr>
+      <tr><td>日度</td><td>252</td><td>$\sqrt{252} \approx 15.87 \times S_d$</td></tr>
+      <tr><td>周度</td><td>52</td><td>$\sqrt{52} \approx 7.21 \times S_w$</td></tr>
+      <tr><td>月度</td><td>12</td><td>$\sqrt{12} \approx 3.46 \times S_m$</td></tr>
+    </table>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       §2  杠杆不变性
+  ═══════════════════════════════════════════ -->
+  <div class="section" id="s2">
+    <div class="section-num">§ 02</div>
+    <h2>杠杆不变性</h2>
+
+    <p>若对策略加 $L$ 倍杠杆（无借贷成本、无交易成本）：</p>
+    <div class="math-block">
+      $$\mu(Lw) = L\mu, \quad \sigma(Lw) = L\sigma \quad \Rightarrow \quad S(Lw) = \frac{L\mu}{L\sigma} = S$$
+    </div>
+
+    <div class="callout key">
+      <div class="callout-icon">🔑</div>
+      <div><strong>核心结论</strong>：Sharpe 决定<em>配置比例</em>，杠杆决定<em>绝对风险敞口</em>。加减杠杆不改变 Sharpe，只改变你在资本市场线（CML）上的位置。</div>
+    </div>
+
+    <div class="callout warning">
+      <div class="callout-icon">⚠️</div>
+      <div>现实中杠杆影响 Sharpe 的原因：① 融资成本（$r_f$ 上升）；② 保证金/强平风险；③ 市场冲击成本随规模增大；④ 尾部风险不对称。</div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       §3  与 t 统计量的关系
+  ═══════════════════════════════════════════ -->
+  <div class="section" id="s3">
+    <div class="section-num">§ 03</div>
+    <h2>与 t 统计量的关系</h2>
+
+    <p>检验均值是否显著不为 0 的 t 统计量：</p>
+    <div class="math-block">
+      $$t = \frac{\bar{x}}{\hat{\sigma}/\sqrt{n}} = \sqrt{n} \cdot \hat{S}$$
+    </div>
+
+    <table>
+      <tr><th>量</th><th>含义</th><th>与样本长度的关系</th></tr>
+      <tr><td><strong>Sharpe $\hat{S}$</strong></td><td>单位风险收益（不含样本信息）</td><td>❌ 无关</td></tr>
+      <tr><td><strong>t 统计量</strong></td><td>均值显著性（含样本量信息）</td><td>✅ 正比于 $\sqrt{n}$</td></tr>
+    </table>
+
+    <div class="callout insight">
+      <div class="callout-icon">💡</div>
+      <div>相同 Sharpe 的策略，样本越长 t 值越大，统计显著性越高。这是为什么 "策略本身好" 和 "统计上可以被置信" 是两件事。</div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       §4  SE 推导（Delta Method）
+  ═══════════════════════════════════════════ -->
+  <div class="section" id="s4">
+    <div class="section-num">§ 04</div>
+    <h2>Sharpe 的标准误推导（Delta Method）</h2>
+
+    <p><span class="badge badge-key">核心推导</span>目标：求 $\text{Var}(\hat{S})$，其中 $\hat{S} = g(\bar{r}, s) = \bar{r}/s$。</p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <strong>准备各分量的方差</strong>。在 i.i.d. 正态假设 $r_i \sim \mathcal{N}(\mu, \sigma^2)$ 下：
+          $$\bar{r} \sim \mathcal{N}\!\left(\mu, \frac{\sigma^2}{n}\right), \quad \text{Var}(\bar{r}) = \frac{\sigma^2}{n}$$
+          由卡方性质 $\frac{(n-1)s^2}{\sigma^2} \sim \chi^2_{n-1}$，$\text{Var}(\chi^2_k) = 2k$，得
+          $$\text{Var}(s^2) = \frac{2\sigma^4}{n-1} \approx \frac{2\sigma^4}{n}$$
+          一阶近似（$h(v) = \sqrt{v}$ 在 $v = \sigma^2$ 处展开）：
+          $$\text{Var}(s) \approx \left(\frac{1}{2\sigma}\right)^2 \text{Var}(s^2) = \frac{\sigma^2}{2n}$$
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <strong>计算 $\text{Cov}(\bar{r}, s)$</strong>。正态分布下样本均值与样本方差独立，故
+          $$\text{Cov}(\bar{r}, s^2) = 0 \implies \text{Cov}(\bar{r}, s) \approx 0$$
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <strong>Delta Method 展开</strong>。$g(x,y) = x/y$，在 $(\mu, \sigma)$ 处一阶展开：
+          $$\hat{S} - S \approx \frac{\partial g}{\partial x}\bigg|_{(\mu,\sigma)}(\bar{r}-\mu) + \frac{\partial g}{\partial y}\bigg|_{(\mu,\sigma)}(s-\sigma)$$
+          其中 $\frac{\partial g}{\partial x} = \frac{1}{\sigma}$，$\frac{\partial g}{\partial y} = -\frac{\mu}{\sigma^2} = -\frac{S}{\sigma}$。
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-body">
+          <strong>合并方差</strong>：
+          $$\text{Var}(\hat{S}) \approx \frac{1}{\sigma^2}\cdot\frac{\sigma^2}{n} + \frac{S^2}{\sigma^2}\cdot\frac{\sigma^2}{2n} = \frac{1}{n} + \frac{S^2}{2n} = \frac{1 + \frac{1}{2}S^2}{n}$$
+        </div>
+      </div>
+    </div>
+
+    <div class="result-box">
+      $$\boxed{\widehat{\text{SE}}(\hat{S}) \approx \sqrt{\frac{1 + \frac{1}{2}\hat{S}^2}{n-1}}}$$
+    </div>
+
+    <h3>直观分解</h3>
+    <table>
+      <tr><th>项</th><th>来源</th><th>含义</th></tr>
+      <tr><td>$1$</td><td>$\text{Var}(\bar{r})$</td><td>均值估计的不确定性</td></tr>
+      <tr><td>$\frac{1}{2}S^2$</td><td>$\text{Var}(s)$</td><td>方差估计的不确定性（S 越高影响越大）</td></tr>
+      <tr><td>$n-1$</td><td>自由度</td><td>样本量越大 SE 越小</td></tr>
+    </table>
+
+    <div class="callout warning">
+      <div class="callout-icon">⚠️</div>
+      <div><strong>自相关/异方差时</strong>：用 Newey–West HAC 标准误替换上式。</div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       §5  显著性检验
+  ═══════════════════════════════════════════ -->
+  <div class="section" id="s5">
+    <div class="section-num">§ 05</div>
+    <h2>显著性检验</h2>
+
+    <h3>检验 $H_0: S = 0$</h3>
+    <div class="math-block">
+      $$t = \sqrt{n} \cdot \hat{S} \overset{\text{approx}}{\sim} t_{n-1}$$
+    </div>
+    <p>大样本下用正态近似，双侧 95% CI：$\hat{S} \pm 1.96 \cdot \widehat{\text{SE}}(\hat{S})$。</p>
+
+    <h3>检验 $H_0: S = S_0$（非中心 t）</h3>
+    <p>在 i.i.d. 正态下，$\sqrt{n}\hat{S}$ 服从非中心 $t_{n-1}$，非中心参数 $\delta = \sqrt{n}S_0$。大样本时用 Delta Method 近似：</p>
+    <div class="math-block">
+      $$z = \frac{\hat{S} - S_0}{\widehat{\text{SE}}(\hat{S})} \overset{\text{approx}}{\sim} \mathcal{N}(0,1)$$
+    </div>
+
+    <div class="num-example">
+      <div class="label">数值练习</div>
+      $n = 252$，$\hat{S}_d = 0.2$（日度）。检验年化 Sharpe $> 0$：<br>
+      $t = \sqrt{252} \times 0.2 \approx 3.17$，$p \approx 0.0015$（单侧显著）。
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       §6  负收益天数问题
+  ═══════════════════════════════════════════ -->
+  <div class="section" id="s6">
+    <div class="section-num">§ 06</div>
+    <h2>负收益天数问题</h2>
+
+    <p><span class="badge badge-hard">高频面试题</span>年化 Sharpe = 8，观察到连续 $N$ 天总收益为负，$N$ 多大才能拒绝 "$S_\text{ann}=8$"？</p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          日度 Sharpe：$S_d = S_\text{ann}/\sqrt{252} = 8/\sqrt{252} \approx 0.504$，即 $\mu_d/\sigma_d \approx 0.5$。
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          $N$ 天总收益 $X_N = \sum_{t=1}^N r_t \sim \mathcal{N}(N\mu_d,\, N\sigma_d^2)$。
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          在 $H_0$ 下 $P(X_N < 0) = \Phi\!\left(-\frac{\mu_d \sqrt{N}}{\sigma_d}\right) = \Phi(-S_d\sqrt{N}) \leq \alpha$
+          $$\Rightarrow \quad N \geq \left(\frac{z_{1-\alpha}}{S_d}\right)^2$$
+        </div>
+      </div>
+    </div>
+
+    <table>
+      <tr><th>显著性 $\alpha$</th><th>$z_{1-\alpha}$</th><th>最小 $N$（天）</th><th>近似</th></tr>
+      <tr><td>10%</td><td>1.28</td><td>$(1.28/0.504)^2 \approx 6.4$</td><td>$\approx$ 7 天</td></tr>
+      <tr><td>5%</td><td>1.645</td><td>$(1.645/0.504)^2 \approx 10.7$</td><td>$\approx$ 11 天</td></tr>
+      <tr><td>1%</td><td>2.326</td><td>$(2.326/0.504)^2 \approx 21.3$</td><td>$\approx$ 22 天</td></tr>
+      <tr><td>0.5%</td><td>2.576</td><td>$(2.576/0.504)^2 \approx 26.1$</td><td>$\approx$ 27 天</td></tr>
+    </table>
+
+    <div class="callout insight">
+      <div class="callout-icon">💡</div>
+      <div>年化 Sharpe=8 的策略，连续 22 天亏损才在 1% 显著性下可以拒绝。说明即使策略非常好，短期亏损也不足为奇——这正是统计置信与策略质量的区别。</div>
+    </div>
+
+    <div class="callout result">
+      <div class="callout-icon">📋</div>
+      <div>常用参考表：$\Phi(-1.64) = 0.05$，$\Phi(-1.96) = 0.025$，$\Phi(-2.33) = 0.01$，$\Phi(-2.58) = 0.005$。</div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       §7  样本偏差修正
+  ═══════════════════════════════════════════ -->
+  <div class="section" id="s7">
+    <div class="section-num">§ 07</div>
+    <h2>样本偏差修正</h2>
+
+    <p>有限样本下 $\hat{S}$ 对真实 $S$ <strong>有偏（正偏）</strong>。一阶近似：</p>
+    <div class="math-block">
+      $$\mathbb{E}[\hat{S}] \approx S\left(1 + \frac{1+S^2}{4(n-1)}\right)$$
+    </div>
+    <p>实际中更常直接报告置信区间与检验，而非逐点校正。</p>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       §8  比较两策略 Sharpe
+  ═══════════════════════════════════════════ -->
+  <div class="section" id="s8">
+    <div class="section-num">§ 08</div>
+    <h2>比较两策略 Sharpe</h2>
+
+    <p>检验 $H_0: S_1 = S_2$，不能直接相减，需考虑两序列的协方差与自相关。</p>
+
+    <h3>Jobson–Korkie (1981) + Memmel (2003) 修正</h3>
+    <p>给出 $\text{Var}(\hat{S}_1 - \hat{S}_2)$ 的封闭近似，涉及三四阶矩，构造 z 统计量。</p>
+
+    <h3>Ledoit–Wolf (2008)</h3>
+    <p>更稳健的大样本检验，允许非正态、自相关。</p>
+
+    <div class="callout key">
+      <div class="callout-icon">🔑</div>
+      <div>面试要点：<strong>必须说明两策略的相关性会影响差异的显著性</strong>。同窗口观测需要协方差调整，不能用简单 z 检验。</div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       §9  两策略组合
+  ═══════════════════════════════════════════ -->
+  <div class="section" id="s9">
+    <div class="section-num">§ 09</div>
+    <h2>两策略组合的 Sharpe</h2>
+
+    <p>策略 1：Sharpe $S_1$，vol $\sigma_1$，return $\mu_1 = S_1\sigma_1$。<br>
+    策略 2：Sharpe $S_2$，vol $\sigma_2$，相关系数 $\rho$。权重 $w_1, w_2$，$w_1+w_2=1$。</p>
+
+    <div class="formula-grid">
+      <div class="frow"><div>组合期望</div><div>$\mu_p = w_1\mu_1 + w_2\mu_2 = w_1S_1\sigma_1 + w_2S_2\sigma_2$</div></div>
+      <div class="frow"><div>组合方差</div><div>$\sigma_p^2 = w_1^2\sigma_1^2 + w_2^2\sigma_2^2 + 2w_1w_2\rho\sigma_1\sigma_2$</div></div>
+      <div class="frow"><div>组合 Sharpe</div><div>$S_p = \mu_p / \sigma_p$</div></div>
+    </div>
+
+    <h3>特殊情形：$\rho = 1$（完全正相关）</h3>
+    <div class="math-block">
+      $$\sigma_p = |w_1\sigma_1 + w_2\sigma_2| \implies S_p = \frac{w_1\mu_1 + w_2\mu_2}{w_1\sigma_1 + w_2\sigma_2} \leq \max(S_1, S_2)$$
+    </div>
+    <p>完全正相关时无分散化收益，Sharpe 最多等于较大者。</p>
+
+    <h3>特殊情形：$\sigma_1 = \sigma_2$，$S_1 = S_2 = S$</h3>
+    <div class="math-block">
+      $$S_p = \frac{S}{\sqrt{(1+\rho)/2}}, \quad \rho < 1 \text{ 时} \; S_p > S$$
+    </div>
+
+    <h3>关键面试题：10%/90% 混合</h3>
+    <p><span class="badge badge-hard">面试题</span>现有 Sharpe=3 的策略。加入 10% 的新（不相关）策略，保持组合 Sharpe $\geq 3$，新策略的最低 Sharpe 是多少？</p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          设新策略 Sharpe=$s$，vol=$\sigma_2$，旧策略 vol=$\sigma_1$，$\rho=0$。<br>
+          目标：$S_p \geq 3$，即 $S_p^2 \geq 9$。
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          为简化，令 $\sigma_1 = \sigma_2 = \sigma$（volatility 相同，Sharpe 之比即 return 之比）：
+          $$S_p^2 = \frac{(0.9\mu_1 + 0.1\mu_2)^2}{(0.9)^2\sigma^2 + (0.1)^2\sigma^2} = \frac{(0.9\cdot3 + 0.1\cdot s)^2\sigma^2}{0.82\sigma^2}$$
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          要求 $S_p^2 \geq 9$：
+          $$(0.9\cdot3 + 0.1\cdot s)^2 \geq 9 \times 0.82 = 7.38$$
+          $$0.27 + 0.1s \geq \sqrt{7.38} \approx 2.716$$
+          $$s \geq \frac{2.716 - 2.7}{0.1} \approx 0.16$$
+        </div>
+      </div>
+    </div>
+
+    <div class="result-box">
+      $$\boxed{s_{\min} \approx 0.16}$$
+    </div>
+
+    <div class="callout insight">
+      <div class="callout-icon">💡</div>
+      <div><strong>为什么答案远低于 3？</strong>分散化的威力。新策略与旧策略不相关，加入它不仅增加分子（期望收益），更重要的是分母（组合方差）的增幅被相关性为零所抑制。即使新策略本身很弱，不相关这一特性已经贡献了巨大的风险分散价值。</div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       §10  最大 Sharpe 权重
+  ═══════════════════════════════════════════ -->
+  <div class="section" id="s10">
+    <div class="section-num">§ 10</div>
+    <h2>最大 Sharpe 的最优权重</h2>
+
+    <p>问题：$\max_w \dfrac{w^\top\mu}{\sqrt{w^\top\Sigma w}}$（含无风险资产时替换 $\mu \to \mu - r_f\mathbf{1}$）。</p>
+
+    <h3>推导（拉格朗日法）</h3>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">同质性：Sharpe 是 $w$ 的零次齐次函数，固定分母为 1 等价：$\max_w\; w^\top\mu$ s.t. $w^\top\Sigma w = 1$。</div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">拉格朗日：$\mathcal{L} = w^\top\mu - \frac{\lambda}{2}(w^\top\Sigma w - 1)$。FOC：$\mu - \lambda\Sigma w = 0 \Rightarrow w \propto \Sigma^{-1}\mu$。</div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">归一化（$\mathbf{1}^\top w = 1$）：$w^* = \dfrac{\Sigma^{-1}\mu}{\mathbf{1}^\top\Sigma^{-1}\mu}$。</div>
+      </div>
+    </div>
+
+    <div class="result-box">
+      $$w_{\text{tan}} = \frac{\Sigma^{-1}(\mu - r_f\mathbf{1})}{\mathbf{1}^\top\Sigma^{-1}(\mu - r_f\mathbf{1})}, \qquad S_{\max} = \sqrt{(\mu-r_f\mathbf{1})^\top\Sigma^{-1}(\mu-r_f\mathbf{1})}$$
+    </div>
+
+    <h3>两策略（归一化 vol=1）的闭式解</h3>
+    <p>设 $\sigma_1 = \sigma_2 = 1$，相关矩阵 $C = \begin{pmatrix}1&\rho\\\rho&1\end{pmatrix}$，$s = (S_1, S_2)^\top$，则</p>
+    <div class="math-block">
+      $$S_{\max} = \sqrt{s^\top C^{-1} s} = \sqrt{\frac{S_1^2 + S_2^2 - 2\rho S_1 S_2}{1-\rho^2}}$$
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       §11  等相关 N 因子
+  ═══════════════════════════════════════════ -->
+  <div class="section" id="s11">
+    <div class="section-num">§ 11</div>
+    <h2>等相关 $N$ 因子等权组合</h2>
+
+    <p><span class="badge badge-key">经典闭式解</span>设 $N$ 个因子，每因子 Sharpe $= S$，方差 $= \sigma^2$，两两相关 $= \rho$，等权 $w_i = 1/N$。</p>
+
+    <h3>推导</h3>
+    <div class="math-block">
+      $$\sigma_p^2 = \frac{1}{N^2}\left(N\sigma^2 + N(N-1)\rho\sigma^2\right) = \frac{\sigma^2\left(1+(N-1)\rho\right)}{N}$$
+    </div>
+    <div class="math-block">
+      $$\mu_p = \frac{1}{N} \cdot N\mu = \mu = S\sigma$$
+    </div>
+
+    <div class="result-box">
+      $$\boxed{S_{\text{combo}} = S \cdot \sqrt{\frac{N}{1+(N-1)\rho}}}$$
+    </div>
+
+    <h3>等权即最优权</h3>
+    <p>等 Sharpe + 等方差 + 等相关条件下，$w^* \propto \Sigma^{-1}\mu \propto \Sigma^{-1}\mathbf{1} \propto \mathbf{1}$（等相关矩阵的逆满足 $R^{-1}\mathbf{1} \propto \mathbf{1}$），因此等权就是切线组合。</p>
+
+    <h3>$N=16$，$S=1$ 时的数值</h3>
+    <div class="result-box">
+      $$S_{\text{combo}} = \frac{4}{\sqrt{1+15\rho}}$$
+    </div>
+    <table>
+      <tr><th>$\rho$</th><th>$S_{\text{combo}}$</th><th>解释</th></tr>
+      <tr><td>0</td><td>4.00</td><td>完全独立，信息可加</td></tr>
+      <tr><td>0.2</td><td>2.00</td><td>中等相关</td></tr>
+      <tr><td>0.5</td><td>1.37</td><td>高相关，收益大幅衰减</td></tr>
+      <tr><td>1.0</td><td>1.00</td><td>完全冗余，无分散化</td></tr>
+    </table>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       §12  分配逻辑 (Cases)
+  ═══════════════════════════════════════════ -->
+  <div class="section" id="s12">
+    <div class="section-num">§ 12</div>
+    <h2>多策略 Sharpe 分配逻辑</h2>
+
+    <h3>Case 1：N 个独立策略，Sharpe 不同</h3>
+    <p>最大化组合 Sharpe $S_p = \dfrac{\sum w_i\mu_i}{\sqrt{\sum w_i^2\sigma_i^2}}$（独立时协方差为零）。</p>
+    <p>由 Cauchy–Schwarz 不等式：最优权重 $w_i \propto \mu_i/\sigma_i^2 = S_i/\sigma_i$。若所有策略 vol 相同，则 $w_i \propto S_i$（按 Sharpe 分配）。</p>
+    <div class="result-box">
+      $$S_p^2 = \sum_i S_i^2 \quad \text{（独立时）}$$
+    </div>
+
+    <h3>Case 2：N 个独立策略，Sharpe 相同 $= S$</h3>
+    <div class="result-box">
+      $$S_p = S\sqrt{N}$$
+    </div>
+
+    <h3>Case 3：某策略 Sharpe $= 0$</h3>
+    <div class="callout warning">
+      <div class="callout-icon">🚫</div>
+      <div>Sharpe = 0 的策略<strong>永远不应该分配资金</strong>。$\mu_i = 0$，加入不增加分子，只增加分母（方差），纯负贡献。</div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       §13  分散化直觉
+  ═══════════════════════════════════════════ -->
+  <div class="section" id="s13">
+    <div class="section-num">§ 13</div>
+    <h2>分散化的直觉</h2>
+
+    <div class="callout insight">
+      <div class="callout-icon">📐</div>
+      <div>
+        <strong>分散化的本质是向量加法</strong>。把每个策略的 Sharpe 想象成向量空间里的一个向量。不相关的策略向量相互垂直——正交方向上的"信号"可以无损叠加。<br><br>
+        数学上：$S_p^2 = \sum S_i^2$（独立时），信号平方可加，而非信号本身。这就是为什么两个 Sharpe=1 的不相关策略合并后 Sharpe=$\sqrt{2}$，而非 2。
+      </div>
+    </div>
+
+    <h3>相关性是"Sharpe 杀手"</h3>
+    <p>从公式 $S_{\text{combo}} = S\sqrt{\frac{N}{1+(N-1)\rho}}$ 可以看出：</p>
+    <ul style="margin-left:20px; margin-bottom: 12px; line-height:2">
+      <li>$\rho \to 0$：$S_{\text{combo}} \to S\sqrt{N}$（最大分散化）</li>
+      <li>$\rho \to 1$：$S_{\text{combo}} \to S$（完全冗余，无提升）</li>
+      <li><strong>相关性每上升 0.1，分散化收益大幅缩水</strong></li>
+    </ul>
+    <div class="callout key">
+      <div class="callout-icon">🔑</div>
+      <div>"多做一个 Sharpe 高的策略"远不如"找一个与现有策略不相关的策略"。<strong>低相关性比高 Sharpe 更珍贵。</strong></div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ══════════════════════════════════════════
+       §14  最小方差组合
+  ═══════════════════════════════════════════ -->
+  <div class="section" id="s14">
+    <div class="section-num">§ 14</div>
+    <h2>均值-方差框架：固定目标收益的最小方差组合</h2>
+
+    <h3>问题设定</h3>
+    <div class="math-block">
+      $$\min_w\; w^\top\Sigma w \quad \text{s.t.}\quad \mathbf{1}^\top w = 1,\; \mu^\top w = \mu^*$$
+    </div>
+
+    <h3>拉格朗日推导</h3>
+    <p>定义四个标量：</p>
+    <div class="math-block">
+      $$A = \mathbf{1}^\top\Sigma^{-1}\mathbf{1}, \quad B = \mathbf{1}^\top\Sigma^{-1}\mu, \quad C = \mu^\top\Sigma^{-1}\mu, \quad D = AC - B^2 > 0$$
+    </div>
+
+    <div class="result-box">
+      $$w(\mu^*) = \Sigma^{-1}\!\left(\frac{C-B\mu^*}{D}\mathbf{1} + \frac{A\mu^*-B}{D}\mu\right)$$
+    </div>
+
+    <h3>有效前沿方程</h3>
+    <div class="result-box">
+      $$\sigma_p^2(\mu^*) = \frac{A{\mu^*}^2 - 2B\mu^* + C}{D}$$
+    </div>
+    <p>在 $(\sigma, \mu)$ 平面是一条向右开口的双曲线，其上半支为有效前沿。</p>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       §15  GMV 组合
+  ═══════════════════════════════════════════ -->
+  <div class="section" id="s15">
+    <div class="section-num">§ 15</div>
+    <h2>全局最小方差（GMV）组合</h2>
+
+    <div class="math-block">
+      $$\min_w\; w^\top\Sigma w \quad \text{s.t.}\; \mathbf{1}^\top w = 1$$
+    </div>
+
+    <p>FOC：$2\Sigma w - \lambda\mathbf{1} = 0 \Rightarrow w \propto \Sigma^{-1}\mathbf{1}$，归一化得：</p>
+
+    <div class="result-box">
+      $$w_{\text{GMV}} = \frac{\Sigma^{-1}\mathbf{1}}{A}, \qquad \mu_{\text{GMV}} = \frac{B}{A}, \qquad \sigma^2_{\text{GMV}} = \frac{1}{A}$$
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       §16  切线组合 & CML
+  ═══════════════════════════════════════════ -->
+  <div class="section" id="s16">
+    <div class="section-num">§ 16</div>
+    <h2>切线组合与资本市场线（CML）</h2>
+
+    <div class="result-box">
+      $$w_{\text{tan}} = \frac{\Sigma^{-1}(\mu-r_f\mathbf{1})}{\mathbf{1}^\top\Sigma^{-1}(\mu-r_f\mathbf{1})}, \qquad S_{\max} = \sqrt{(\mu-r_f\mathbf{1})^\top\Sigma^{-1}(\mu-r_f\mathbf{1})}$$
+    </div>
+
+    <h3>资本市场线（CML）</h3>
+    <div class="result-box">
+      $$\mu_p = r_f + S_{\max} \cdot \sigma_p$$
+    </div>
+
+    <h3>均值-方差效用最优杠杆</h3>
+    <p>效用函数 $U = \mu_p - \frac{\gamma}{2}\sigma_p^2$，最优杠杆（切线组合的配置比例）：</p>
+    <div class="math-block">
+      $$\alpha^* = \frac{\mu_{\text{tan}} - r_f}{\gamma\,\sigma^2_{\text{tan}}}$$
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       §17  两基金分离
+  ═══════════════════════════════════════════ -->
+  <div class="section" id="s17">
+    <div class="section-num">§ 17</div>
+    <h2>两基金分离定理</h2>
+
+    <h3>含无风险资产</h3>
+    <div class="result-box">
+      $$\text{最优组合} = \alpha \cdot w_{\text{tan}} + (1-\alpha) \cdot \text{无风险资产}$$
+    </div>
+    <p>$\alpha$ 由风险厌恶系数 $\gamma$ 决定，所有投资者持有相同的切线组合（仅比例不同）。</p>
+
+    <h3>仅含风险资产（无 $r_f$）</h3>
+    <p>任何有效前沿上的组合都可表示为<strong>两个有效组合的线性组合</strong>。常用基：GMV 组合 + 任意另一有效组合。</p>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       §18  风险贡献 Euler
+  ═══════════════════════════════════════════ -->
+  <div class="section" id="s18">
+    <div class="section-num">§ 18</div>
+    <h2>风险贡献与 Euler 分解</h2>
+
+    <p>组合波动的 Euler 分解（$\sigma_p$ 是 $w$ 的一次齐次函数）：</p>
+    <div class="math-block">
+      $$\sigma_p = \sum_{i=1}^n w_i \cdot \frac{(\Sigma w)_i}{\sigma_p}$$
+    </div>
+
+    <div class="result-box">
+      $$RC_i = w_i \cdot \frac{(\Sigma w)_i}{\sigma_p}, \qquad \sum_i RC_i = \sigma_p$$
+    </div>
+
+    <p><strong>风险平价（Risk Parity）</strong>：$RC_1 = RC_2 = \cdots = RC_n$，即每个资产贡献等额风险。</p>
+
+    <div class="callout insight">
+      <div class="callout-icon">💡</div>
+      <div>Risk parity ≠ 等权重。High-vol 资产需要更小的名义权重才能达到等风险贡献。实务中常用迭代法或二次规划求解。</div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ══════════════════════════════════════════
+       §19  自相关下的年化
+  ═══════════════════════════════════════════ -->
+  <div class="section" id="s19">
+    <div class="section-num">§ 19</div>
+    <h2>自相关下的年化 Sharpe</h2>
+
+    <p>若收益存在序列相关，年化方差应使用 Newey–West 型估计：</p>
+    <div class="math-block">
+      $$\widehat{\sigma^2_{\text{ann}}} = \hat{\gamma}(0) + 2\sum_{k=1}^{A-1}\left(1 - \frac{k}{A}\right)\hat{\gamma}(k)$$
+    </div>
+    <p>其中 $\hat{\gamma}(k) = \frac{1}{n}\sum_{t=k+1}^n (x_t - \bar{x})(x_{t-k} - \bar{x})$ 是第 $k$ 阶样本自协方差。</p>
+
+    <h3>HAC 标准误检验</h3>
+    <div class="math-block">
+      $$t_{\text{HAC}} = \frac{\bar{x}}{\widehat{\text{SE}}_{\text{HAC}}(\bar{x})}$$
+    </div>
+
+    <div class="callout key">
+      <div class="callout-icon">🔑</div>
+      <div>对于趋势跟踪、均值回归等存在序列相关的策略，必须用 HAC，否则会<strong>高估</strong>年化 Sharpe 的显著性。</div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       §20  交易成本修正
+  ═══════════════════════════════════════════ -->
+  <div class="section" id="s20">
+    <div class="section-num">§ 20</div>
+    <h2>交易成本对 Sharpe 的影响</h2>
+
+    <p>设单位换手成本 $c$，换手率（turnover）$\tau$，则期望收益约减为 $\mu' = \mu - c\tau$。</p>
+
+    <div class="result-box">
+      $$S' \approx \frac{\mu - c\tau}{\sigma} = S - \frac{c\tau}{\sigma}$$
+    </div>
+
+    <h3>含交易成本的组合优化</h3>
+    <p>原始目标：$\max_w \mu^\top w - \frac{\lambda}{2}w^\top\Sigma w$，加入成本惩罚：</p>
+    <div class="math-block">
+      $$\max_{w_t}\; \mu^\top w_t - \frac{\lambda}{2}w_t^\top\Sigma w_t - \gamma\|w_t - w_{t-1}\|_1$$
+    </div>
+    <p>或二次成本版本（$L_2$ 惩罚）：$-\frac{\gamma}{2}\|w_t - w_{t-1}\|_2^2$。</p>
+
+    <h3>降低换手的实务方法</h3>
+    <table>
+      <tr><th>方法</th><th>思路</th></tr>
+      <tr><td>显式惩罚</td><td>在目标函数中加 $c^\top|\Delta w|$</td></tr>
+      <tr><td>换手约束</td><td>$\|w_t - w_{t-1}\|_1 \leq \tau_{\max}$</td></tr>
+      <tr><td>信号平滑</td><td>$w_t = (1-\rho)w_{t-1} + \rho\tilde{w}_t$，$\rho \in (0,1)$</td></tr>
+      <tr><td>分层执行控制</td><td>结合 Almgren-Chriss 冲击成本模型</td></tr>
+    </table>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       §21  多重检验与挖矿
+  ═══════════════════════════════════════════ -->
+  <div class="section" id="s21">
+    <div class="section-num">§ 21</div>
+    <h2>多重检验与数据挖矿偏差</h2>
+
+    <p>若同时测试 $m$ 个策略，取最优的 Sharpe 存在<strong>选择偏差</strong>。校正方法：</p>
+
+    <table>
+      <tr><th>方法</th><th>说明</th></tr>
+      <tr><td>Bonferroni / Holm</td><td>调整 p 值阈值为 $\alpha/m$（保守）</td></tr>
+      <tr><td>Benjamini–Hochberg</td><td>控制 FDR（假发现率），更宽松</td></tr>
+      <tr><td>White's Reality Check</td><td>Bootstrap 构造零分布</td></tr>
+      <tr><td>SPA Test</td><td>Superior Predictive Ability</td></tr>
+      <tr><td>样本外验证</td><td>最根本：在独立测试集上验证</td></tr>
+    </table>
+
+    <div class="callout warning">
+      <div class="callout-icon">⚠️</div>
+      <div>Harvey, Liu & Zhu (2016) 建议：对已发表的量化因子，显著性门槛应从 $t > 2$ 提高到 $t > 3$，以应对数据挖矿膨胀。</div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       §22  面试题库速查
+  ═══════════════════════════════════════════ -->
+  <div class="section" id="s22">
+    <div class="section-num">§ 22</div>
+    <h2>面试题库速查</h2>
+
+    <div class="qa-card">
+      <div class="qa-q" onclick="toggleQA(this)">
+        <span class="qa-title">Q1. Sharpe Ratio 定义与年化；有自相关还能用 √A 年化吗？</span>
+        <span class="qa-arrow">▶</span>
+      </div>
+      <div class="qa-a">
+        <p>$\hat{S} = \bar{x}/\hat{\sigma}$。i.i.d. 时年化 $S_\text{ann} = \sqrt{A} \cdot S_\text{per}$。<br>
+        <strong>有自相关时不能</strong>直接乘 $\sqrt{A}$——需要用 HAC 估计年化方差：$\hat{\sigma}^2_\text{ann} = \hat{\gamma}(0) + 2\sum_{k=1}^{A-1}(1-k/A)\hat{\gamma}(k)$。</p>
+      </div>
+    </div>
+
+    <div class="qa-card">
+      <div class="qa-q" onclick="toggleQA(this)">
+        <span class="qa-title">Q2. Sharpe 的标准误是多少？怎么推？</span>
+        <span class="qa-arrow">▶</span>
+      </div>
+      <div class="qa-a">
+        <p>Delta Method：$\hat{S} = g(\bar{r}, s) = \bar{r}/s$，展开得</p>
+        $$\text{SE}(\hat{S}) \approx \sqrt{\frac{1+\frac{1}{2}S^2}{n-1}}$$
+        <p>"1" 来自均值不确定性，"$\frac{1}{2}S^2$" 来自方差估计（卡方分布）的不确定性。有自相关时用 HAC。</p>
+      </div>
+    </div>
+
+    <div class="qa-card">
+      <div class="qa-q" onclick="toggleQA(this)">
+        <span class="qa-title">Q3. 年化 Sharpe=8，连续多少天亏损才能拒绝？</span>
+        <span class="qa-arrow">▶</span>
+      </div>
+      <div class="qa-a">
+        <p>日度 $S_d = 8/\sqrt{252} \approx 0.504$。$N$ 天总收益 $\sim \mathcal{N}(N\mu_d, N\sigma_d^2)$。</p>
+        $$N \geq \left(\frac{z_{1-\alpha}}{S_d}\right)^2$$
+        <p>$\alpha=5\% \Rightarrow N \approx 11$ 天；$\alpha=1\% \Rightarrow N \approx 22$ 天。</p>
+      </div>
+    </div>
+
+    <div class="qa-card">
+      <div class="qa-q" onclick="toggleQA(this)">
+        <span class="qa-title">Q4. 加杠杆 Sharpe 会变吗？</span>
+        <span class="qa-arrow">▶</span>
+      </div>
+      <div class="qa-a">
+        <p>理论上<strong>不变</strong>：$S(Lw) = L\mu/(L\sigma) = S$。现实中因融资成本、保证金约束、冲击成本随规模增加，实际 Sharpe 会下降。</p>
+      </div>
+    </div>
+
+    <div class="qa-card">
+      <div class="qa-q" onclick="toggleQA(this)">
+        <span class="qa-title">Q5. 两个独立、Sharpe=1 的策略等权组合，Sharpe 是多少？</span>
+        <span class="qa-arrow">▶</span>
+      </div>
+      <div class="qa-a">
+        <p>等 vol、$\rho=0$：$S_p = S\sqrt{N/(1+(N-1)\rho)} = 1 \times \sqrt{2} \approx 1.414$。</p>
+        <p>或者用 $S_p^2 = S_1^2 + S_2^2$（独立时）：$S_p = \sqrt{1+1} = \sqrt{2}$。</p>
+      </div>
+    </div>
+
+    <div class="qa-card">
+      <div class="qa-q" onclick="toggleQA(this)">
+        <span class="qa-title">Q6. 最大 Sharpe 的权重怎么推？</span>
+        <span class="qa-arrow">▶</span>
+      </div>
+      <div class="qa-a">
+        <p>同质性固定分母，拉格朗日得 $w^* \propto \Sigma^{-1}(\mu - r_f\mathbf{1})$，归一化得切线组合。$S_\max = \sqrt{(\mu-r_f\mathbf{1})^\top\Sigma^{-1}(\mu-r_f\mathbf{1})}$。</p>
+      </div>
+    </div>
+
+    <div class="qa-card">
+      <div class="qa-q" onclick="toggleQA(this)">
+        <span class="qa-title">Q7. 16 个独立等 Sharpe=1 的因子，组合 Sharpe？</span>
+        <span class="qa-arrow">▶</span>
+      </div>
+      <div class="qa-a">
+        <p>$\rho=0$：$S_p = 1 \times \sqrt{16} = 4$。有相关时：$S_p = 4/\sqrt{1+15\rho}$。</p>
+      </div>
+    </div>
+
+    <div class="qa-card">
+      <div class="qa-q" onclick="toggleQA(this)">
+        <span class="qa-title">Q8. Sharpe=0 的策略应该配多少资金？</span>
+        <span class="qa-arrow">▶</span>
+      </div>
+      <div class="qa-a">
+        <p><strong>零</strong>。$\mu_i = 0$，加入不增加组合期望收益（分子），只增加方差（分母），对 Sharpe 纯负贡献。$w^* = 0$。</p>
+      </div>
+    </div>
+
+    <div class="qa-card">
+      <div class="qa-q" onclick="toggleQA(this)">
+        <span class="qa-title">Q9. 现有 Sharpe=3，加入 10% 不相关新策略保持 Sharpe≥3，最低 Sharpe 是多少？</span>
+        <span class="qa-arrow">▶</span>
+      </div>
+      <div class="qa-a">
+        <p>答案约 $0.16$。等 vol 假设下：$(0.9 \times 3 + 0.1 \times s)^2 \geq 9 \times (0.81 + 0.01) = 7.38$，解得 $s \geq 0.16$。远低于 3，体现分散化带来的巨大价值：不相关性本身就是 alpha。</p>
+      </div>
+    </div>
+
+    <div class="qa-card">
+      <div class="qa-q" onclick="toggleQA(this)">
+        <span class="qa-title">Q10. 信息比率（IR）与 Sharpe 有什么区别？</span>
+        <span class="qa-arrow">▶</span>
+      </div>
+      <div class="qa-a">
+        <p>$\text{IR} = \mathbb{E}[a]/\sigma(a)$，$a_t = r_t - r_{\text{benchmark},t}$ 是主动收益。Sharpe 是超额（vs 无风险利率）收益的 IR。若基准是无风险利率，IR=Sharpe。主动管理用 IR，绝对收益策略用 Sharpe。</p>
+      </div>
+    </div>
+
+    <div class="qa-card">
+      <div class="qa-q" onclick="toggleQA(this)">
+        <span class="qa-title">Q11. 相关性如何影响组合 Sharpe？直觉？</span>
+        <span class="qa-arrow">▶</span>
+      </div>
+      <div class="qa-a">
+        <p>$S_p^2 = (S_1^2 + S_2^2 - 2\rho S_1 S_2)/(1-\rho^2)$（等 vol 下）。$\rho \downarrow \Rightarrow S_p \uparrow$。</p>
+        <p>直觉：正交信号可以无损叠加（向量加法）。相关信号在同方向上"浪费"，噪声重叠而信号未增加。</p>
+      </div>
+    </div>
+
+    <div class="qa-card">
+      <div class="qa-q" onclick="toggleQA(this)">
+        <span class="qa-title">Q12. 有自相关的策略如何正确计算和检验年化 Sharpe？</span>
+        <span class="qa-arrow">▶</span>
+      </div>
+      <div class="qa-a">
+        <p>① 用 HAC（Newey–West）估计 $\bar{x}$ 的标准误；② 年化方差用自协方差加权求和；③ $t_\text{HAC} = \bar{x}/\widehat{\text{SE}}_\text{HAC}$；④ 报告时注明带宽选择方法（如 Bartlett kernel，带宽 $\sim n^{1/5}$）。</p>
+      </div>
+    </div>
+
+    <div class="qa-card">
+      <div class="qa-q" onclick="toggleQA(this)">
+        <span class="qa-title">Q13. 序列一半为 0、一半服从 (μ,σ²)，删掉所有 0 后 Sharpe 如何变化？</span>
+        <span class="qa-arrow">▶</span>
+      </div>
+      <div class="qa-a">
+        <p>设完整序列共 $2n$ 个点（$n$ 个 0，$n$ 个非零）。<br>
+        <strong>完整序列均值：</strong>$\bar{x}_{\text{full}} = \mu/2$。<br>
+        <strong>完整序列方差（全方差公式）：</strong>$\sigma^2_{\text{full}} = \sigma^2/2 + \mu^2/4$。<br>
+        故 $S_{\text{full}} = \dfrac{\mu/2}{\sqrt{\sigma^2/2 + \mu^2/4}}$。<br>
+        <strong>删零后：</strong>$S_{\text{trim}} = \mu/\sigma$。<br>
+        比值 $S_{\text{trim}}/S_{\text{full}} = \sqrt{2 + S_{\text{trim}}^2/2} > 1$，删零后 Sharpe <strong>严格提升</strong>。</p>
+        <p>直觉：0 收益贡献了分子（期望）的"稀释"，但同时拉低了分母（波动）；稀释效应主导，净效果是 Sharpe 下降——反过来删掉 0 就是 Sharpe 上升。详细推导见 §23。</p>
+      </div>
+    </div>
+
+    <div class="qa-card">
+      <div class="qa-q" onclick="toggleQA(this)">
+        <span class="qa-title">Q14. 非正态收益下怎么修正 Sharpe？偏度/峰度的影响方向？</span>
+        <span class="qa-arrow">▶</span>
+      </div>
+      <div class="qa-a">
+        <p>Adjusted Sharpe（Pezier & White 2006）：$S^* = S \cdot \left[1 + \dfrac{\hat{\gamma}_1}{6}S - \dfrac{\hat{\gamma}_2-3}{24}S^2\right]$，其中 $\hat\gamma_1$ 为偏度，$\hat\gamma_2$ 为峰度。<br>
+        <strong>负偏度</strong>（左肥尾，如卖期权）→ $S^*$ 低于 $S$；<strong>超峰度</strong>（fat tails）→ $S^*$ 进一步降低。</p>
+      </div>
+    </div>
+
+    <div class="qa-card">
+      <div class="qa-q" onclick="toggleQA(this)">
+        <span class="qa-title">Q15. Probabilistic Sharpe Ratio (PSR) 是什么？</span>
+        <span class="qa-arrow">▶</span>
+      </div>
+      <div class="qa-a">
+        <p>$\text{PSR}(S^*) = \Phi\!\left(\dfrac{(\hat{S}-S^*)\sqrt{n-1}}{\sqrt{1 - \hat\gamma_1\hat{S} + \frac{\hat\gamma_2-1}{4}\hat{S}^2}}\right)$，即 $P(\text{真实 }S > S^*)$。纳入了有限样本、偏度、峰度对估计不确定性的影响，比单纯的 $t$ 检验更全面。</p>
+      </div>
+    </div>
+
+    <div class="qa-card">
+      <div class="qa-q" onclick="toggleQA(this)">
+        <span class="qa-title">Q16. Kelly criterion 与 Sharpe 有什么关系？</span>
+        <span class="qa-arrow">▶</span>
+      </div>
+      <div class="qa-a">
+        <p>连续时间 Kelly（对数效用）：$f^* = \mu/\sigma^2 = S/\sigma$（fraction of wealth）。<br>
+        Sharpe 越高，Kelly 仓位越大；vol 越高，Kelly 仓位越小。<br>
+        若对数收益 $\mu$ 已超额（扣 $r_f$），则 $f^* = S_{\text{ann}}/\sigma_{\text{ann}}$（年化口径一致）。<br>
+        实务中常取 half-Kelly 以控制回撤。</p>
+      </div>
+    </div>
+
+    <div class="qa-card">
+      <div class="qa-q" onclick="toggleQA(this)">
+        <span class="qa-title">Q17. Sortino / Calmar 与 Sharpe 的区别及适用场景？</span>
+        <span class="qa-arrow">▶</span>
+      </div>
+      <div class="qa-a">
+        <p><strong>Sortino</strong>：分母换成下行标准差 $\sigma_d$（只计负收益的波动），$\text{Sortino} = \mu/\sigma_d \geq \text{Sharpe}$。适合收益正偏、收益对称性差的策略（如趋势跟踪）。<br>
+        <strong>Calmar</strong>：$\text{Calmar} = \mu_\text{ann}/\text{MaxDD}$，用最大回撤代替波动率，适合对回撤敏感的 CTA/hedge fund 投资者。<br>
+        <strong>Sharpe 的优点</strong>：数学性质好（均值-方差框架闭式），统计推断成熟，行业通用。</p>
+      </div>
+    </div>
+
+  </div><!-- end §22 -->
+
+  <!-- ══════════════════════════════════════════
+       §23  稀疏序列 / 零收益插入
+  ═══════════════════════════════════════════ -->
+  <div class="section" id="s23">
+    <div class="section-num">§ 23</div>
+    <h2>稀疏序列与零收益：全方差公式推导</h2>
+
+    <p><span class="badge badge-hard">面试题</span>序列共 $2n$ 个观测：$n$ 个为 0，另外 $n$ 个 i.i.d. $\sim (\mu, \sigma^2)$，$\mu > 0$。<br>
+    问：删掉所有 0 后，Sharpe 如何变化？请用<strong>全方差公式</strong>推导。</p>
+
+    <h3>Step 1：完整序列的矩</h3>
+    <p>令 $G$ 为组别指示变量，$G=1$（概率 $1/2$）对应非零组，$G=0$ 对应零组。</p>
+    <div class="math-block">
+      $$\bar{x}_{\text{full}} = \frac{n\mu + n\cdot 0}{2n} = \frac{\mu}{2}$$
+    </div>
+
+    <h3>Step 2：全方差公式（Law of Total Variance）</h3>
+    <div class="math-block">
+      $$\text{Var}(X) = \underbrace{\mathbb{E}[\text{Var}(X\mid G)]}_{\text{组内方差的均值}} + \underbrace{\text{Var}(\mathbb{E}[X\mid G])}_{\text{组间均值的方差}}$$
+    </div>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <strong>组内方差均值</strong>：$G=1$ 时 $\text{Var}=\sigma^2$，$G=0$ 时 $\text{Var}=0$。
+          $$\mathbb{E}[\text{Var}(X\mid G)] = \frac{1}{2}\sigma^2 + \frac{1}{2}\cdot 0 = \frac{\sigma^2}{2}$$
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <strong>组间均值方差</strong>：$\mathbb{E}[X\mid G=1]=\mu$，$\mathbb{E}[X\mid G=0]=0$，各以概率 $1/2$ 取值。
+          $$\text{Var}(\mathbb{E}[X\mid G]) = \frac{1}{2}\!\left(\mu - \frac{\mu}{2}\right)^{\!2} + \frac{1}{2}\!\left(0 - \frac{\mu}{2}\right)^{\!2} = \frac{\mu^2}{4}$$
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          合并：
+          $$\sigma^2_{\text{full}} = \frac{\sigma^2}{2} + \frac{\mu^2}{4}$$
+        </div>
+      </div>
+    </div>
+
+    <h3>Step 3：两种 Sharpe 对比</h3>
+    <div class="formula-grid">
+      <div class="frow"><div>完整序列</div><div>$S_{\text{full}} = \dfrac{\mu/2}{\sqrt{\sigma^2/2 + \mu^2/4}}$</div></div>
+      <div class="frow"><div>删零后</div><div>$S_{\text{trim}} = \dfrac{\mu}{\sigma}$</div></div>
+    </div>
+
+    <h3>Step 4：比值</h3>
+    <div class="math-block">
+      $$\frac{S_{\text{trim}}}{S_{\text{full}}} = \frac{\mu/\sigma}{\dfrac{\mu/2}{\sqrt{\sigma^2/2+\mu^2/4}}} = \frac{2\sqrt{\sigma^2/2 + \mu^2/4}}{\sigma} = \sqrt{\frac{2\sigma^2/2 + \mu^2/2}{\sigma^2/2 \cdot 2}} = \sqrt{2 + \frac{\mu^2}{2\sigma^2}}$$
+    </div>
+
+    <div class="result-box">
+      $$\boxed{\frac{S_{\text{trim}}}{S_{\text{full}}} = \sqrt{2 + \frac{S_{\text{trim}}^2}{2}} > 1}$$
+    </div>
+
+    <div class="callout insight">
+      <div class="callout-icon">💡</div>
+      <div><strong>直觉</strong>：插入 0 同时稀释了均值（分子 $\times 1/2$）和方差（分母比例减小）。但对分子的稀释比例大于对分母的稀释——均值被 dilute 了 $1/2$，而 std 仅被 dilute 了不到 $1/2$（因为额外引入了跨组均值方差 $\mu^2/4$）。因此净效果是完整序列的 Sharpe 低于删零后的 Sharpe。</div>
+    </div>
+
+    <div class="callout key">
+      <div class="callout-icon">🔑</div>
+      <div><strong>实务含义</strong>：如果策略有大量不交易日（返回 0），用全样本计算的 Sharpe 会被低估。应使用<strong>交易日 Sharpe</strong>，或明确说明年化因子使用的是交易日频率。</div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       §24  非正态修正 Sharpe
+  ═══════════════════════════════════════════ -->
+  <div class="section" id="s24">
+    <div class="section-num">§ 24</div>
+    <h2>非正态收益下的修正 Sharpe</h2>
+
+    <p>标准 Sharpe 假设收益正态，忽略了偏度（$\gamma_1$）和超额峰度（$\gamma_2 - 3$）对风险的影响。</p>
+
+    <h3>Adjusted Sharpe Ratio（Pezier & White, 2006）</h3>
+    <div class="math-block">
+      $$S^* = \hat{S} \cdot \left[1 + \frac{\hat\gamma_1}{6}\hat{S} - \frac{\hat\gamma_2 - 3}{24}\hat{S}^2\right]$$
+    </div>
+
+    <table>
+      <tr><th>情形</th><th>$\gamma_1$</th><th>$\gamma_2$</th><th>$S^*$ vs $S$</th><th>典型策略</th></tr>
+      <tr><td>左偏 + 厚尾</td><td>$< 0$</td><td>$> 3$</td><td>$S^* < S$（高估风险）</td><td>卖期权、信用策略</td></tr>
+      <tr><td>右偏 + 薄尾</td><td>$> 0$</td><td>$< 3$</td><td>$S^* > S$（低估风险奖励）</td><td>趋势跟踪、动量</td></tr>
+      <tr><td>正态</td><td>$= 0$</td><td>$= 3$</td><td>$S^* = S$</td><td>—</td></tr>
+    </table>
+
+    <div class="callout warning">
+      <div class="callout-icon">⚠️</div>
+      <div>卖期权策略的 Sharpe 虚高——极端亏损（$\gamma_1 \ll 0$，$\gamma_2 \gg 3$）使 Adjusted Sharpe 大幅低于原始 Sharpe，这正是 2008 年大量 "高 Sharpe 策略" 爆仓的根源。</div>
+    </div>
+
+    <h3>Sortino Ratio（下行风险）</h3>
+    <div class="math-block">
+      $$\text{Sortino} = \frac{\mu - r_f}{\sigma_{\text{downside}}}, \qquad \sigma_{\text{downside}} = \sqrt{\mathbb{E}[\min(r-r_f,0)^2]}$$
+    </div>
+    <p>对于对称正态分布，$\sigma_{\text{downside}} = \sigma/\sqrt{2}$，Sortino $= \sqrt{2}\cdot$Sharpe。非对称时 Sortino 比 Sharpe 更能区分策略质量。</p>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       §25  Probabilistic & Deflated Sharpe
+  ═══════════════════════════════════════════ -->
+  <div class="section" id="s25">
+    <div class="section-num">§ 25</div>
+    <h2>Probabilistic & Deflated Sharpe Ratio</h2>
+
+    <h3>Probabilistic Sharpe Ratio（PSR）</h3>
+    <p>Bailey & López de Prado (2012)。给定基准 Sharpe $S^*$，估计真实 Sharpe 超过 $S^*$ 的概率：</p>
+    <div class="math-block">
+      $$\text{PSR}(S^*) = \Phi\!\left(\frac{(\hat{S}-S^*)\sqrt{n-1}}{\sqrt{1 - \hat\gamma_1\hat{S} + \dfrac{\hat\gamma_2-1}{4}\hat{S}^2}}\right)$$
+    </div>
+    <p>分母在标准误 $\sqrt{(1+\hat S^2/2)/n}$ 的基础上，进一步引入偏度项（$-\hat\gamma_1\hat S$）和峰度项（$(\hat\gamma_2-1)/4\cdot\hat S^2$）的修正。</p>
+
+    <div class="callout insight">
+      <div class="callout-icon">💡</div>
+      <div>PSR 统一了 Sharpe 估计、样本量、非正态三个维度的不确定性，给出"这个策略真的有正 Sharpe"的直接概率表述，比单纯的 t 检验更直观。</div>
+    </div>
+
+    <h3>Deflated Sharpe Ratio（DSR）</h3>
+    <p>当从 $T$ 个试验中选最优策略时，存在选择偏差（multiple testing inflation）。DSR 以多重检验调整后的 $S^*$ 代入 PSR：</p>
+    <div class="math-block">
+      $$S^*_{\text{DSR}} \approx \sqrt{\frac{(1-\hat\gamma_1+\hat\gamma_2/4)\hat S^2_{\max}}{n-1}} \cdot \left[(1-\gamma)\Phi^{-1}\!\left(1-\frac{\alpha}{T}\right) + \gamma\Phi^{-1}\!\left(1-\frac{\alpha}{T}\right)\right]$$
+    </div>
+    <p>简化理解：$S^*$ 随试验数 $T$ 的增加而提高（Bonferroni 精神）。回测越多，需要更高的 OOS Sharpe 才算真实。</p>
+
+    <table>
+      <tr><th>指标</th><th>解决的问题</th><th>核心输入</th></tr>
+      <tr><td>标准 SE</td><td>样本量不确定性</td><td>$n$, $\hat S$</td></tr>
+      <tr><td>PSR</td><td>+非正态（偏度/峰度）</td><td>$n$, $\hat S$, $\gamma_1$, $\gamma_2$</td></tr>
+      <tr><td>DSR</td><td>+多重回测选择偏差</td><td>PSR 输入 + 试验次数 $T$</td></tr>
+    </table>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       §26  Kelly 与 Sharpe 的关系
+  ═══════════════════════════════════════════ -->
+  <div class="section" id="s26">
+    <div class="section-num">§ 26</div>
+    <h2>Kelly Criterion 与 Sharpe 的关系</h2>
+
+    <h3>连续时间 Kelly（对数效用最优仓位）</h3>
+    <p>设策略超额收益 $dX = \mu\,dt + \sigma\,dW$，最大化对数财富增长率：</p>
+    <div class="math-block">
+      $$g(f) = f\mu - \frac{f^2\sigma^2}{2} \implies f^* = \frac{\mu}{\sigma^2} = \frac{S}{\sigma}$$
+    </div>
+    <p>其中 $S = \mu/\sigma$ 为 Sharpe。最优增长率（Kelly growth rate）：</p>
+    <div class="result-box">
+      $$g^* = g(f^*) = \frac{\mu^2}{2\sigma^2} = \frac{S^2}{2}$$
+    </div>
+
+    <div class="callout key">
+      <div class="callout-icon">🔑</div>
+      <div><strong>核心关系</strong>：最优对数增长率 $= S^2/2$。Sharpe 越高，Kelly 允许的仓位越大（$f^* \propto S$），且长期财富复利增长越快（$g^* \propto S^2$）。这是为什么 Sharpe 是量化策略质量的核心衡量——它直接决定了资本的理论复利上限。</div>
+    </div>
+
+    <h3>多策略 Kelly（向量扩展）</h3>
+    <p>$N$ 个策略，超额收益向量 $\mu$，协方差矩阵 $\Sigma$：</p>
+    <div class="math-block">
+      $$f^* = \Sigma^{-1}\mu \propto w_{\text{tan}}, \qquad g^* = \frac{\mu^\top\Sigma^{-1}\mu}{2} = \frac{S_{\max}^2}{2}$$
+    </div>
+    <p>多策略最优增长率等于切线组合最大 Sharpe 的平方的一半——分散化提高 $S_{\max}$，直接以平方速率提升复利增长。</p>
+
+    <h3>实务：Half-Kelly</h3>
+    <table>
+      <tr><th>分数</th><th>预期增长率</th><th>最大回撤特征</th><th>实务建议</th></tr>
+      <tr><td>Full Kelly ($f^*$)</td><td>最大 $g^*$</td><td>极端，历史最大回撤 $\approx 100\%$</td><td>理论最优，实操过激</td></tr>
+      <tr><td>Half Kelly ($f^*/2$)</td><td>$3g^*/4$</td><td>回撤减半（近似）</td><td>行业实践首选</td></tr>
+      <tr><td>Quarter Kelly</td><td>$7g^*/16$</td><td>更温和</td><td>极保守机构</td></tr>
+    </table>
+
+    <div class="callout warning">
+      <div class="callout-icon">⚠️</div>
+      <div>参数估计误差（$\hat\mu$, $\hat\Sigma$）会使真实 Kelly 仓位偏离最优，过度加仓导致破产。实务中参数不确定性本身就是使用 Half-Kelly 的最重要理由。</div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       公式汇总表
+  ═══════════════════════════════════════════ -->
+  <div class="section" id="summary">
+    <div class="section-num">附录</div>
+    <h2>核心公式速查表</h2>
+
+    <table>
+      <tr><th>公式</th><th>表达式</th></tr>
+      <tr><td>样本 Sharpe</td><td>$\hat{S} = \bar{x}/\hat{\sigma}$</td></tr>
+      <tr><td>年化（i.i.d.）</td><td>$S_\text{ann} = \sqrt{A} \cdot S_\text{per}$</td></tr>
+      <tr><td>标准误（SE）</td><td>$\text{SE}(\hat{S}) \approx \sqrt{(1+\frac{1}{2}S^2)/(n-1)}$</td></tr>
+      <tr><td>t 统计量</td><td>$t = \sqrt{n}\,\hat{S}$</td></tr>
+      <tr><td>负收益天数阈值</td><td>$N \geq (z_{1-\alpha}/S_d)^2$</td></tr>
+      <tr><td>切线组合权重</td><td>$w^* \propto \Sigma^{-1}(\mu - r_f\mathbf{1})$</td></tr>
+      <tr><td>最大 Sharpe</td><td>$S_\max = \sqrt{(\mu-r_f\mathbf{1})^\top\Sigma^{-1}(\mu-r_f\mathbf{1})}$</td></tr>
+      <tr><td>两策略 Sharpe（等 vol）</td><td>$S_p = \sqrt{(S_1^2+S_2^2-2\rho S_1S_2)/(1-\rho^2)}$</td></tr>
+      <tr><td>等相关 N 因子</td><td>$S_p = S\sqrt{N/(1+(N-1)\rho)}$</td></tr>
+      <tr><td>独立时</td><td>$S_p^2 = \sum S_i^2$</td></tr>
+      <tr><td>GMV 权重</td><td>$w_\text{GMV} = \Sigma^{-1}\mathbf{1}/A$</td></tr>
+      <tr><td>有效前沿</td><td>$\sigma_p^2 = (A\mu^{*2} - 2B\mu^* + C)/D$</td></tr>
+      <tr><td>CML</td><td>$\mu_p = r_f + S_\max\,\sigma_p$</td></tr>
+      <tr><td>风险贡献</td><td>$RC_i = w_i(\Sigma w)_i/\sigma_p$</td></tr>
+      <tr><td>TC 修正</td><td>$S' \approx S - c\tau/\sigma$</td></tr>
+      <tr><td>稀疏序列（半零）</td><td>$S_{\text{full}} = \dfrac{\mu/2}{\sqrt{\sigma^2/2+\mu^2/4}}$，$S_{\text{trim}}/S_{\text{full}}=\sqrt{2+S_{\text{trim}}^2/2}$</td></tr>
+      <tr><td>Adjusted Sharpe</td><td>$S^* = S[1+(\gamma_1/6)S - (\gamma_2-3)/24\cdot S^2]$</td></tr>
+      <tr><td>PSR</td><td>$\Phi\!\left(\frac{(\hat S-S^*)\sqrt{n-1}}{\sqrt{1-\gamma_1\hat S+(\gamma_2-1)/4\cdot\hat S^2}}\right)$</td></tr>
+      <tr><td>Kelly 最优仓位</td><td>$f^* = \mu/\sigma^2 = S/\sigma$</td></tr>
+      <tr><td>Kelly 最优增长率</td><td>$g^* = S^2/2$</td></tr>
+      <tr><td>多策略 Kelly 增长率</td><td>$g^* = S_{\max}^2/2$</td></tr>
+    </table>
+  </div>
+
+  </div><!-- end content -->
+</main>
+
+<script>
+// sidebar active link
+const links = document.querySelectorAll('.sidebar-link');
+const sections = document.querySelectorAll('.section');
+
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      links.forEach(l => l.classList.remove('active'));
+      const a = document.querySelector(`.sidebar-link[href="#${e.target.id}"]`);
+      if (a) a.classList.add('active');
+    }
+  });
+}, { threshold: 0.3, rootMargin: '-60px 0px -60% 0px' });
+
+sections.forEach(s => observer.observe(s));
+
+// QA toggle
+function toggleQA(el) {
+  el.classList.toggle('open');
+  const ans = el.nextElementSibling;
+  ans.classList.toggle('open');
+}
+</script>
+</body>
+</html>

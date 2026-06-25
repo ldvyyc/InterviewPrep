@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>随机过程 — Quant Interview Prep</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=IBM+Plex+Mono:wght@400;600&family=Spectral:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+<style>
+  :root {
+    --ink: #0f0e0d;
+    --paper: #f5f0e8;
+    --gold: #c9932a;
+    --rust: #8b3a2a;
+    --sage: #3a5a40;
+    --faded: #9a9080;
+    --border: #d4c9b0;
+    --card-bg: #faf6ee;
+    --highlight: #fef3dc;
+    --formula-bg: #f0ebe0;
+    --danger: #7a1e1e;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--paper); color: var(--ink); font-family: 'Spectral', Georgia, serif; font-weight: 300; line-height: 1.75; font-size: 16px; }
+  header { border-bottom: 3px double var(--ink); padding: 3rem 0 2rem; text-align: center; position: relative; overflow: hidden; }
+  header::before { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(0deg, transparent, transparent 28px, rgba(201,147,42,.07) 28px, rgba(201,147,42,.07) 29px); pointer-events: none; }
+  .header-tag { display: inline-block; font-family: 'IBM Plex Mono', monospace; font-size: 0.7rem; letter-spacing: .18em; text-transform: uppercase; color: var(--gold); border: 1px solid var(--gold); padding: .25em .9em; margin-bottom: 1.2rem; }
+  h1 { font-family: 'DM Serif Display', serif; font-size: clamp(2rem, 5vw, 3.6rem); font-weight: 400; line-height: 1.15; letter-spacing: -.01em; }
+  h1 em { font-style: italic; color: var(--rust); }
+  .subtitle { font-family: 'IBM Plex Mono', monospace; font-size: .78rem; color: var(--faded); letter-spacing: .08em; margin-top: .8rem; }
+  .container { max-width: 1060px; margin: 0 auto; padding: 0 2rem; }
+  nav { position: sticky; top: 0; z-index: 100; background: var(--ink); color: var(--paper); padding: .7rem 2rem; display: flex; gap: 0; overflow-x: auto; scrollbar-width: none; }
+  nav::-webkit-scrollbar { display: none; }
+  nav a { font-family: 'IBM Plex Mono', monospace; font-size: .7rem; letter-spacing: .1em; color: rgba(245,240,232,.7); text-decoration: none; padding: .3em 1.1em; white-space: nowrap; border-right: 1px solid rgba(255,255,255,.12); transition: color .2s; }
+  nav a:first-child { padding-left: 0; }
+  nav a:hover { color: var(--gold); }
+  section { padding: 3.5rem 0; border-bottom: 1px solid var(--border); }
+  .section-header { display: flex; align-items: baseline; gap: 1.2rem; margin-bottom: 2rem; }
+  .sec-num { font-family: 'IBM Plex Mono', monospace; font-size: .7rem; color: var(--gold); letter-spacing: .15em; flex-shrink: 0; }
+  h2 { font-family: 'DM Serif Display', serif; font-size: 1.9rem; font-weight: 400; border-bottom: 2px solid var(--ink); padding-bottom: .4rem; flex: 1; }
+  h3 { font-family: 'DM Serif Display', serif; font-size: 1.25rem; font-weight: 400; color: var(--rust); margin: 2rem 0 .7rem; }
+  h4 { font-family: 'IBM Plex Mono', monospace; font-size: .8rem; letter-spacing: .12em; text-transform: uppercase; color: var(--sage); margin: 1.5rem 0 .5rem; }
+  p { margin-bottom: 1rem; }
+  .formula-box { background: var(--formula-bg); border-left: 4px solid var(--gold); border-radius: 0 4px 4px 0; padding: 1.2rem 1.5rem; margin: 1.2rem 0; overflow-x: auto; font-size: .97rem; }
+  .formula-box .label { font-family: 'IBM Plex Mono', monospace; font-size: .65rem; color: var(--gold); letter-spacing: .15em; text-transform: uppercase; margin-bottom: .5rem; }
+  .def-block { background: var(--card-bg); border: 1px solid var(--border); border-top: 3px solid var(--sage); padding: 1.2rem 1.5rem; margin: 1.2rem 0; border-radius: 0 0 4px 4px; }
+  .thm-block { background: var(--highlight); border: 1px solid var(--gold); border-top: 3px solid var(--rust); padding: 1.2rem 1.5rem; margin: 1.2rem 0; border-radius: 0 0 4px 4px; }
+  .block-title { font-family: 'IBM Plex Mono', monospace; font-size: .68rem; letter-spacing: .15em; text-transform: uppercase; margin-bottom: .6rem; }
+  .def-block .block-title { color: var(--sage); }
+  .thm-block .block-title { color: var(--rust); }
+  .note { background: #f0f5f1; border-left: 4px solid var(--sage); padding: .9rem 1.2rem; margin: 1rem 0; font-size: .9rem; }
+  .warn { background: #fdf0ee; border-left: 4px solid var(--rust); padding: .9rem 1.2rem; margin: 1rem 0; font-size: .9rem; }
+  .quiz-block { background: var(--ink); color: var(--paper); border-radius: 4px; padding: 1.5rem 1.8rem; margin: 1.8rem 0; }
+  .quiz-block .q-label { font-family: 'IBM Plex Mono', monospace; font-size: .65rem; letter-spacing: .2em; color: var(--gold); margin-bottom: .7rem; }
+  .quiz-block .q-text { font-family: 'Spectral', serif; font-size: 1rem; line-height: 1.6; margin-bottom: 1rem; }
+  .toggle-btn { font-family: 'IBM Plex Mono', monospace; font-size: .7rem; letter-spacing: .1em; background: var(--gold); color: var(--ink); border: none; padding: .4em 1.2em; cursor: pointer; font-weight: 600; transition: background .2s; }
+  .toggle-btn:hover { background: #e0a83a; }
+  .answer { display: none; margin-top: 1rem; border-top: 1px solid rgba(245,240,232,.2); padding-top: 1rem; font-size: .93rem; line-height: 1.7; }
+  .answer .formula-box { background: rgba(240,235,224,.1); border-left-color: var(--gold); color: var(--paper); }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin: 1rem 0; }
+  @media (max-width: 680px) { .two-col { grid-template-columns: 1fr; } }
+  table { width: 100%; border-collapse: collapse; font-size: .9rem; margin: 1.2rem 0; }
+  th { background: var(--ink); color: var(--paper); font-family: 'IBM Plex Mono', monospace; font-size: .7rem; letter-spacing: .1em; text-transform: uppercase; padding: .7rem 1rem; text-align: left; }
+  td { padding: .65rem 1rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+  tr:hover td { background: var(--highlight); }
+  footer { text-align: center; padding: 2.5rem 2rem; font-family: 'IBM Plex Mono', monospace; font-size: .65rem; letter-spacing: .12em; color: var(--faded); border-top: 3px double var(--ink); }
+  section { opacity: 0; transform: translateY(16px); animation: fadeUp .5s forwards; }
+  @keyframes fadeUp { to { opacity: 1; transform: none; } }
+  section:nth-child(2) { animation-delay: .05s; }
+  section:nth-child(3) { animation-delay: .1s; }
+  section:nth-child(4) { animation-delay: .15s; }
+  section:nth-child(5) { animation-delay: .2s; }
+  section:nth-child(6) { animation-delay: .25s; }
+  section:nth-child(7) { animation-delay: .3s; }
+  section:nth-child(8) { animation-delay: .35s; }
+  ul, ol { padding-left: 1.5rem; margin-bottom: 1rem; }
+  li { margin-bottom: .4rem; }
+  code { font-family: 'IBM Plex Mono', monospace; font-size: .85em; background: var(--formula-bg); padding: .1em .4em; border-radius: 2px; }
+  .tag-row { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+  .tag { font-family: 'IBM Plex Mono', monospace; font-size: .65rem; letter-spacing: .12em; text-transform: uppercase; padding: .2em .7em; background: var(--ink); color: var(--gold); }
+  .intuition { background: linear-gradient(135deg, #f0f8f2 0%, #e8f4ec 100%); border: 1px solid #b0d4b8; border-left: 4px solid var(--sage); border-radius: 0 6px 6px 0; padding: 1rem 1.4rem; margin: 1rem 0; position: relative; }
+  .intuition::before { content: '💡 直觉'; font-family: 'IBM Plex Mono', monospace; font-size: .65rem; letter-spacing: .12em; text-transform: uppercase; color: var(--sage); font-weight: 600; display: block; margin-bottom: .4rem; }
+  .intuition p { margin-bottom: 0; font-size: .93rem; }
+  .steps { counter-reset: step-counter; list-style: none; padding: 0; margin: .8rem 0; }
+  .steps li { counter-increment: step-counter; padding: .6rem 1rem .6rem 3rem; margin-bottom: .4rem; background: var(--card-bg); border: 1px solid var(--border); border-radius: 3px; position: relative; font-size: .93rem; }
+  .steps li::before { content: counter(step-counter); position: absolute; left: .8rem; top: 50%; transform: translateY(-50%); width: 1.5em; height: 1.5em; background: var(--gold); color: var(--ink); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'IBM Plex Mono', monospace; font-size: .7rem; font-weight: 600; }
+  .chips { display: flex; flex-wrap: wrap; gap: .5rem; margin: .8rem 0; }
+  .chip { font-family: 'IBM Plex Mono', monospace; font-size: .68rem; letter-spacing: .08em; padding: .25em .8em; border: 1px solid var(--border); border-radius: 2px; color: var(--faded); }
+  .chip.hot { border-color: var(--gold); color: var(--gold); }
+  .chip.key { border-color: var(--rust); color: var(--rust); background: #fdf0ee; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="container">
+    <div class="header-tag">Quant Interview Prep · Princeton MFin · Vol. I</div>
+    <h1>随机过程<br>&amp; <em>Markov Chains</em></h1>
+    <p class="subtitle">DTMC · CTMC · Poisson过程 · 竞争指数 · 鞅方法 · Cover Time</p>
+  </div>
+</header>
+
+<nav>
+  <a href="#s0">概览</a>
+  <a href="#s1">基础概念</a>
+  <a href="#s2">DTMC</a>
+  <a href="#s3">CTMC</a>
+  <a href="#s4">Poisson过程</a>
+  <a href="#s5">竞争指数</a>
+  <a href="#s6">金融应用</a>
+  <a href="#s7">Q2.1–Q2.3</a>
+  <a href="#s8">Q56–Q61</a>
+  <a href="#s9">Cover Time</a>
+  <a href="#s10">RW & 鞅</a>
+</nav>
+
+<div class="container">
+
+<!-- ══ 0. OVERVIEW ══ -->
+<section id="s0">
+  <div class="section-header">
+    <span class="sec-num">§ 00</span>
+    <h2>全局概览</h2>
+  </div>
+  <table>
+    <thead><tr><th>主题</th><th>核心概念</th><th>Quant重要度</th></tr></thead>
+    <tbody>
+      <tr><td><strong>离散时间 Markov Chain</strong></td><td>转移矩阵、稳态分布、吸收态、击中时间</td><td>⭐⭐⭐⭐⭐</td></tr>
+      <tr><td><strong>连续时间 Markov Chain</strong></td><td>Q矩阵、Kolmogorov方程、生灭过程</td><td>⭐⭐⭐⭐</td></tr>
+      <tr><td><strong>Poisson 过程</strong></td><td>三种等价定义、叠加与细化、条件均匀性</td><td>⭐⭐⭐⭐⭐</td></tr>
+      <tr><td><strong>竞争指数 / 最小值</strong></td><td>最小指数仍指数、谁最小的概率、独立性</td><td>⭐⭐⭐⭐⭐</td></tr>
+      <tr><td><strong>鞅方法</strong></td><td>OST定理、吸收概率、期望停时</td><td>⭐⭐⭐⭐⭐</td></tr>
+      <tr><td><strong>Cover Time</strong></td><td>阶段分解、Gambler's Ruin应用</td><td>⭐⭐⭐</td></tr>
+    </tbody>
+  </table>
+  <div class="note">
+    <strong>本文档范围：</strong>随机过程的离散与连续 Markov 结构、Poisson 过程及指数分布竞争、鞅方法与随机游走。<strong>随机微积分（Itô公式、GBM、BSM）在 Vol. II 中。</strong>
+  </div>
+</section>
+
+<!-- ══ 1. BASICS ══ -->
+<section id="s1">
+  <div class="section-header">
+    <span class="sec-num">§ 01</span>
+    <h2>随机过程基础</h2>
+  </div>
+
+  <div class="def-block">
+    <div class="block-title">定义 — 随机过程</div>
+    <p>一族定义在概率空间 \((\Omega, \mathcal{F}, \mathbb{P})\) 上的随机变量 \(\{X_t\}_{t \in T}\)，称为随机过程。</p>
+    <ul>
+      <li>若 \(T = \{0,1,2,\ldots\}\)：<strong>离散时间</strong>过程</li>
+      <li>若 \(T = [0,\infty)\)：<strong>连续时间</strong>过程</li>
+    </ul>
+  </div>
+
+  <h3>Filtration 与信息结构</h3>
+  <p><strong>Filtration</strong> \(\{\mathcal{F}_t\}\) 是递增的 σ-代数族，表示"截至时刻 t 的已知信息"。</p>
+  <div class="formula-box">
+    <div class="label">适应过程 (Adapted Process)</div>
+    \[ X_t \text{ 是 } \mathcal{F}_t\text{-可测的} \quad \forall t \]
+  </div>
+  <div class="formula-box">
+    <div class="label">鞅 (Martingale)</div>
+    \[ \mathbb{E}[X_t \mid \mathcal{F}_s] = X_s, \quad \forall s \leq t \]
+  </div>
+  <div class="two-col">
+    <div class="def-block">
+      <div class="block-title">下鞅 (Submartingale)</div>
+      \[\mathbb{E}[X_t \mid \mathcal{F}_s] \geq X_s\]
+      <p style="font-size:.88rem;margin-top:.5rem;color:var(--faded)">例：\(|W_t|\)（凸函数of鞅）</p>
+    </div>
+    <div class="def-block">
+      <div class="block-title">上鞅 (Supermartingale)</div>
+      \[\mathbb{E}[X_t \mid \mathcal{F}_s] \leq X_s\]
+      <p style="font-size:.88rem;margin-top:.5rem;color:var(--faded)">例：风险中性折现资产价格</p>
+    </div>
+  </div>
+
+  <h3>平稳性</h3>
+  <table>
+    <thead><tr><th>类型</th><th>条件</th></tr></thead>
+    <tbody>
+      <tr><td><strong>严平稳</strong></td><td>联合分布不随时移变化：\((X_{t_1},\ldots,X_{t_n}) \overset{d}{=} (X_{t_1+h},\ldots,X_{t_n+h})\)</td></tr>
+      <tr><td><strong>宽平稳 (WSS)</strong></td><td>均值常数 + 协方差仅依赖时间差：\(\text{Cov}(X_t, X_{t+h}) = C(h)\)</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ══ 2. DTMC ══ -->
+<section id="s2">
+  <div class="section-header">
+    <span class="sec-num">§ 02</span>
+    <h2>离散时间 Markov 链 (DTMC)</h2>
+  </div>
+
+  <div class="def-block">
+    <div class="block-title">Markov 性质 — 核心定义</div>
+    \[ \mathbb{P}(X_{n+1} = j \mid X_n = i, X_{n-1}, \ldots, X_0) = \mathbb{P}(X_{n+1} = j \mid X_n = i) \]
+    <p style="margin-top:.6rem;font-size:.9rem;color:#444"><strong>直觉：</strong>"给定现在，未来与过去无关"——系统的全部信息浓缩在当前状态中。</p>
+  </div>
+
+  <div class="intuition">
+    <p><strong>类比：</strong>下棋时，只需要看当前棋盘局面，不需要记住整个对局历史。股价的技术分析若满足 Markov 性，则"K线历史"在数学上不提供额外信息。</p>
+  </div>
+
+  <h3>转移矩阵与 Chapman–Kolmogorov</h3>
+  <div class="formula-box">
+    <div class="label">Chapman–Kolmogorov 方程</div>
+    \[ P^{(m+n)}_{ij} = \sum_k P^{(m)}_{ik} P^{(n)}_{kj} \quad \Leftrightarrow \quad P^{(n)} = P^n \]
+  </div>
+
+  <h3>状态分类</h3>
+  <table>
+    <thead><tr><th>状态类型</th><th>定义</th><th>金融类比</th></tr></thead>
+    <tbody>
+      <tr><td><strong>吸收态</strong></td><td>\(P_{ii}=1\)，进入后无法离开</td><td>违约状态、到期</td></tr>
+      <tr><td><strong>常返态</strong></td><td>\(\mathbb{P}(T_i < \infty \mid X_0=i) = 1\)</td><td>均值回归价格</td></tr>
+      <tr><td><strong>暂态</strong></td><td>\(\mathbb{P}(T_i < \infty \mid X_0=i) < 1\)</td><td>趋势性资产</td></tr>
+      <tr><td><strong>周期态</strong></td><td>最大公因子 \(d(i)>1\)</td><td>季节性周期</td></tr>
+    </tbody>
+  </table>
+
+  <h3>稳态分布 (Stationary Distribution)</h3>
+  <div class="formula-box">
+    <div class="label">稳态方程组</div>
+    \[ \pi = \pi P \quad \text{即} \quad \pi_j = \sum_i \pi_i P_{ij}, \qquad \sum_j \pi_j = 1 \]
+  </div>
+  <div class="intuition">
+    <p><strong>物理意义：</strong>想象一大批粒子同时在链上游走。\(\pi_j\) = 长期下来有多少比例的粒子在状态 j。流入 = 流出。<br>
+    <strong>求解套路：</strong>列 \(\pi P = \pi\)，去掉一个方程（线性相关），换成 \(\sum \pi_i = 1\)。</p>
+  </div>
+
+  <div class="thm-block">
+    <div class="block-title">定理 — 遍历定理 (Ergodic Theorem)</div>
+    <p>若链<strong>不可约</strong>且<strong>遍历</strong>（正常返 + 非周期），则：</p>
+    \[ \lim_{n\to\infty} P^n_{ij} = \pi_j \quad \text{（与初始状态无关）} \]
+    \[ \pi_j = \frac{1}{\mathbb{E}[T_j \mid X_0=j]} \quad \text{（稳态概率 = 平均回访时间的倒数）} \]
+  </div>
+
+  <h3>细致平衡 (Detailed Balance)</h3>
+  <div class="formula-box">
+    <div class="label">细致平衡条件（可逆链的充分条件）</div>
+    \[ \pi_i P_{ij} = \pi_j P_{ji} \quad \forall i, j \]
+  </div>
+
+  <h3>击中时间 (Hitting Time)</h3>
+  <div class="formula-box">
+    <div class="label">期望击中时间方程（一步分析法）</div>
+    设 \(h_i = \mathbb{E}[T_A \mid X_0 = i]\)（到达集合 \(A\) 的期望时间），则：
+    \[ h_i = 0 \quad (i \in A), \qquad h_i = 1 + \sum_j P_{ij} h_j \quad (i \notin A) \]
+  </div>
+
+  <h3>吸收链：基本矩阵</h3>
+  <div class="formula-box">
+    <div class="label">基本矩阵 (Fundamental Matrix)</div>
+    \[ N = (I - Q)^{-1}, \quad \mathbf{t} = N\mathbf{1}, \quad B = NR \]
+    其中 \(Q\) = 暂态之间的转移子矩阵，\(R\) = 暂态→吸收态的转移子矩阵。
+  </div>
+
+  <div class="quiz-block">
+    <div class="q-label">例题 01 — 经典 Simple Random Walk（Gambler's Ruin）</div>
+    <div class="q-text">
+      粒子在 \(\{0,1,2,3\}\) 上游走，0 和 3 为吸收壁，从内部状态 \(i\) 以概率 \(p\) 向右走，\(q=1-p\) 向左走。<br>
+      <strong>(a)</strong> 从状态 1 出发到达状态 3 的概率。<br>
+      <strong>(b)</strong> 期望吸收时间的方程组。
+    </div>
+    <button class="toggle-btn" onclick="toggle(this)">显示答案</button>
+    <div class="answer">
+      <div class="formula-box">
+        <strong>(a)</strong> \(u_i = P(\text{到达}3\mid X_0=i)\)，\(u_0=0, u_3=1\)，内部：\(u_i = p u_{i+1} + q u_{i-1}\)
+        <br><br>
+        若 \(p\neq q\)：\(\displaystyle u_i = \frac{1-(q/p)^i}{1-(q/p)^3}\)；若 \(p=q=\frac{1}{2}\)：\(u_i = \frac{i}{3}\)
+        <br><br>
+        故 \(u_1 = \dfrac{1-(q/p)}{1-(q/p)^3}\)
+      </div>
+      <div class="formula-box">
+        <strong>(b)</strong> \(e_i = \mathbb{E}[T\mid X_0=i]\)，\(e_0=e_3=0\)：
+        \[e_1 = 1 + p e_2, \quad e_2 = 1 + q e_1\]
+        若 \(p=q=\frac{1}{2}\)：\(e_1 = e_2 = 2\)
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 3. CTMC ══ -->
+<section id="s3">
+  <div class="section-header">
+    <span class="sec-num">§ 03</span>
+    <h2>连续时间 Markov 链 (CTMC)</h2>
+  </div>
+
+  <div class="def-block">
+    <div class="block-title">Markov 性质 — 连续时间</div>
+    \[ \mathbb{P}(X_t = j \mid \mathcal{F}_s) = \mathbb{P}(X_t = j \mid X_s), \quad \forall s \leq t \]
+  </div>
+
+  <h3>Q 矩阵（生成元矩阵）</h3>
+  <div class="formula-box">
+    <div class="label">Q 矩阵定义</div>
+    \[ q_{ij} \geq 0 \quad (i \neq j), \qquad q_{ii} = -\sum_{j \neq i} q_{ij} \]
+    \[ \mathbb{P}(X_{t+h}=j \mid X_t=i) = \delta_{ij} + q_{ij}h + o(h) \]
+  </div>
+
+  <div class="formula-box">
+    <div class="label">Kolmogorov 前向 & 后向方程</div>
+    \[ P'(t) = P(t)Q \quad \text{(前向)}, \qquad P'(t) = QP(t) \quad \text{(后向)}, \qquad P(t) = e^{Qt} \]
+  </div>
+
+  <h3>稳态分布 (CTMC)</h3>
+  <div class="formula-box">
+    <div class="label">稳态方程</div>
+    \[ \pi Q = 0, \quad \sum_j \pi_j = 1 \]
+  </div>
+
+  <h3>生灭过程 (Birth-Death Process)</h3>
+  <p>状态空间 \(\{0,1,2,\ldots\}\)，仅允许 \(\pm1\) 跳转，速率 \(\lambda_i\)（生）、\(\mu_i\)（死）。</p>
+  <div class="formula-box">
+    <div class="label">生灭过程稳态分布（细致平衡）</div>
+    \[ \pi_n = \pi_0 \prod_{k=1}^{n} \frac{\lambda_{k-1}}{\mu_k}, \qquad \pi_0 = \left(1 + \sum_{n=1}^\infty \prod_{k=1}^n \frac{\lambda_{k-1}}{\mu_k}\right)^{-1} \]
+  </div>
+
+  <div class="quiz-block">
+    <div class="q-label">例题 — M/M/1 排队模型</div>
+    <div class="q-text">
+      到达率 \(\lambda\)，服务率 \(\mu\)，单服务台，\(\rho = \lambda/\mu < 1\)。求稳态分布、平均队长、平均等待时间。
+    </div>
+    <button class="toggle-btn" onclick="toggle(this)">显示答案</button>
+    <div class="answer">
+      <div class="formula-box">
+        稳态分布（几何）：\(\pi_n = (1-\rho)\rho^n\)
+        <br><br>
+        队列平均长度：\(\mathbb{E}[N] = \dfrac{\rho}{1-\rho} = \dfrac{\lambda}{\mu-\lambda}\)
+        <br><br>
+        平均系统时间：\(\mathbb{E}[W] = \dfrac{1}{\mu-\lambda}\)；平均等待时间：\(\mathbb{E}[W_q] = \dfrac{\lambda}{\mu(\mu-\lambda)}\)
+        <br><br>
+        <strong>Little's Law：</strong>\(\mathbb{E}[N] = \lambda \cdot \mathbb{E}[W]\)
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 4. POISSON PROCESS ══ -->
+<section id="s4">
+  <div class="section-header">
+    <span class="sec-num">§ 04</span>
+    <h2>Poisson 过程</h2>
+  </div>
+
+  <div class="tag-row">
+    <span class="tag">超高频考点</span>
+    <span class="tag">三种等价定义</span>
+    <span class="tag">叠加与细化</span>
+    <span class="tag">PASTA性质</span>
+  </div>
+
+  <h3>三种等价定义</h3>
+
+  <div class="def-block">
+    <div class="block-title">定义 1 — 计数过程（公理化）</div>
+    \(\{N(t), t \geq 0\}\) 是速率为 \(\lambda\) 的 Poisson 过程，若：
+    <ol style="margin-top:.5rem">
+      <li>\(N(0) = 0\)</li>
+      <li><strong>独立增量：</strong>不重叠区间上的增量相互独立</li>
+      <li><strong>平稳增量：</strong>\(N(t+s) - N(s) \overset{d}{=} N(t)\)</li>
+      <li>\(N(t) \sim \text{Poisson}(\lambda t)\)，即 \(\mathbb{P}(N(t)=k) = \dfrac{(\lambda t)^k e^{-\lambda t}}{k!}\)</li>
+    </ol>
+  </div>
+
+  <div class="def-block">
+    <div class="block-title">定义 2 — 到达间隔（构造性）</div>
+    相邻到达时间间隔 \(X_i = T_i - T_{i-1}\) i.i.d. \(\sim \text{Exp}(\lambda)\)
+  </div>
+
+  <div class="def-block">
+    <div class="block-title">定义 3 — 无穷小（微分刻画）</div>
+    \[ \mathbb{P}(N(t+h) - N(t) = 1) = \lambda h + o(h) \]
+    \[ \mathbb{P}(N(t+h) - N(t) \geq 2) = o(h) \]
+    \[ \mathbb{P}(N(t+h) - N(t) = 0) = 1 - \lambda h + o(h) \]
+  </div>
+
+  <div class="thm-block">
+    <div class="block-title">三种定义完全等价</div>
+    <p>以上三种定义可以互相推出，使用哪种取决于问题情境：公理化用于理论推导，构造性用于模拟，微分刻画用于 CTMC 嵌入分析。</p>
+  </div>
+
+  <h3>核心性质</h3>
+  <div class="formula-box">
+    <div class="label">Poisson 过程核心公式</div>
+    \[ \mathbb{E}[N(t)] = \lambda t, \quad \text{Var}[N(t)] = \lambda t \]
+    间隔时间：\(X_i \sim \text{Exp}(\lambda)\)，<strong>无记忆性</strong>：\(\mathbb{P}(X > s+t \mid X > s) = e^{-\lambda t}\)
+  </div>
+
+  <h3>指数分布的无记忆性</h3>
+  <div class="thm-block">
+    <div class="block-title">定理 — 无记忆性 ⟺ 指数分布（连续情形唯一）</div>
+    \[ \mathbb{P}(X > s + t \mid X > s) = \mathbb{P}(X > t) \]
+    <p style="margin-top:.6rem;font-size:.9rem">证明：\(\dfrac{P(X>s+t)}{P(X>s)} = \dfrac{e^{-\lambda(s+t)}}{e^{-\lambda s}} = e^{-\lambda t} = P(X>t)\)</p>
+    <p style="font-size:.88rem;color:#666;margin-top:.4rem">直觉：已经等了 \(s\) 时间，未来还需等待的时间分布与刚开始等一样——"没有记忆"。</p>
+  </div>
+
+  <h3>到达时刻分布</h3>
+  <div class="formula-box">
+    <div class="label">第 n 次到达时刻 \(S_n\)</div>
+    \[ S_n = X_1 + \cdots + X_n \sim \text{Gamma}(n, \lambda), \quad f_{S_n}(t) = \frac{\lambda^n t^{n-1} e^{-\lambda t}}{(n-1)!} \]
+    与计数过程的等价关系：\(\{N(t) \geq n\} \Leftrightarrow \{S_n \leq t\}\)
+  </div>
+
+  <h3>条件均匀性（面试重点）</h3>
+  <div class="thm-block">
+    <div class="block-title">定理 — 给定 \(N(t)=n\)，到达时刻均匀分布</div>
+    给定 \(N(t) = n\)，则 \(n\) 个到达时刻 \((T_1, \ldots, T_n)\) 联合分布等价于 \([0,t]\) 上 \(n\) 个<strong>独立均匀</strong>随机变量的<strong>次序统计量</strong>：
+    \[ f(t_1,\ldots,t_n \mid N(t)=n) = \frac{n!}{t^n}, \quad 0 < t_1 < \cdots < t_n < t \]
+    <strong>直觉：</strong>已知 \([0,t]\) 内恰好有 \(n\) 个到达，每个到达点均匀散布在区间内。
+  </div>
+
+  <h3>叠加与细化</h3>
+  <div class="two-col">
+    <div class="formula-box">
+      <div class="label">叠加 (Superposition)</div>
+      \[ N_1 \sim \text{PP}(\lambda_1),\ N_2 \sim \text{PP}(\lambda_2) \]
+      \[ \Rightarrow N_1 + N_2 \sim \text{PP}(\lambda_1 + \lambda_2) \]
+    </div>
+    <div class="formula-box">
+      <div class="label">细化 (Thinning)</div>
+      每个到达以概率 \(p\) 独立保留：
+      \[ N_{\text{kept}} \sim \text{PP}(p\lambda) \]
+      \[ N_{\text{removed}} \sim \text{PP}((1-p)\lambda) \]
+      两者<strong>独立</strong>！
+    </div>
+  </div>
+
+  <h3>PASTA 性质</h3>
+  <div class="thm-block">
+    <div class="block-title">PASTA — Poisson Arrivals See Time Averages</div>
+    泊松到达者看到的系统状态分布 = 时间平均分布。这是排队论的核心性质，对非泊松过程一般<strong>不成立</strong>。
+  </div>
+
+  <div class="quiz-block">
+    <div class="q-label">例题 — Poisson 过程综合</div>
+    <div class="q-text">
+      Poisson 过程，速率 \(\lambda = 2\)（每小时2次）。<br>
+      <strong>(a)</strong> 在 \([0,3]\) 内恰好 5 次到达的概率。<br>
+      <strong>(b)</strong> 已知 \([0,2]\) 内恰好 3 次到达，3 次到达均在 \([0,1]\) 内的概率。<br>
+      <strong>(c)</strong> 第 4 次到达时刻的期望。
+    </div>
+    <button class="toggle-btn" onclick="toggle(this)">显示答案</button>
+    <div class="answer">
+      <div class="formula-box">
+        <strong>(a)</strong> \(N(3) \sim \text{Poisson}(6)\)：
+        \[\mathbb{P}(N(3)=5) = \frac{6^5 e^{-6}}{5!} = \frac{7776\,e^{-6}}{120} \approx 0.1606\]
+        <strong>(b)</strong> 利用条件均匀性：给定 \(N(2)=3\)，3次到达均匀分布在 \([0,2]\)。<br>
+        3次均在 \([0,1]\) 的概率 = \(\left(\dfrac{1}{2}\right)^3 = \dfrac{1}{8}\)
+        <br><br>
+        <strong>(c)</strong> \(S_4 = X_1+X_2+X_3+X_4\)，\(X_i\sim\text{Exp}(2)\)，期望 \(1/2$ 小时：
+        \[\mathbb{E}[S_4] = \frac{4}{\lambda} = \frac{4}{2} = 2 \text{ 小时}\]
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 5. COMPETING EXPONENTIALS ══ -->
+<section id="s5">
+  <div class="section-header">
+    <span class="sec-num">§ 05</span>
+    <h2>竞争指数 (Competing Exponentials)</h2>
+  </div>
+
+  <div class="tag-row">
+    <span class="tag">超高频考点</span>
+    <span class="tag">面试必背</span>
+    <span class="tag">指数最小值</span>
+  </div>
+
+  <h3>核心结论（三合一）</h3>
+
+  <div class="thm-block">
+    <div class="block-title">定理 — 竞争指数</div>
+    设 \(T_1 \sim \text{Exp}(\lambda_1), \ldots, T_n \sim \text{Exp}(\lambda_n)\) 独立，令 \(M = \min(T_1, \ldots, T_n)\)，则：
+    <br><br>
+    <strong>① 最小值仍是指数分布：</strong>
+    \[ M \sim \text{Exp}(\lambda_1 + \cdots + \lambda_n) \]
+    <strong>② 谁最小的概率：</strong>
+    \[ P(T_i = \min) = \frac{\lambda_i}{\lambda_1 + \cdots + \lambda_n} \]
+    <strong>③ 谁最小与最小值无关（独立性）：</strong>
+    \[ \{T_i = \min\} \perp M \]
+  </div>
+
+  <h3>完整证明（\(n=2\)）</h3>
+  <div class="formula-box">
+    <div class="label">谁最小的概率</div>
+    \[ P(T_1 < T_2) = \int_0^\infty \lambda_1 e^{-\lambda_1 t} \cdot e^{-\lambda_2 t} dt = \lambda_1 \int_0^\infty e^{-(\lambda_1+\lambda_2)t} dt = \frac{\lambda_1}{\lambda_1 + \lambda_2} \]
+  </div>
+  <div class="formula-box">
+    <div class="label">最小值的分布</div>
+    \[ P(M > t) = P(T_1 > t, T_2 > t) = e^{-\lambda_1 t} \cdot e^{-\lambda_2 t} = e^{-(\lambda_1+\lambda_2)t} \]
+    故 \(M \sim \text{Exp}(\lambda_1 + \lambda_2)\)。
+  </div>
+  <div class="formula-box">
+    <div class="label">独立性证明</div>
+    \[ P(T_1 < T_2,\ M > t) = \int_t^\infty \lambda_1 e^{-\lambda_1 s} e^{-\lambda_2 s} ds = \frac{\lambda_1}{\lambda_1+\lambda_2} e^{-(\lambda_1+\lambda_2)t} \]
+    \[ = P(T_1 < T_2) \cdot P(M > t) \quad \checkmark \]
+  </div>
+
+  <h3>与 Poisson 过程的联系</h3>
+  <div class="intuition">
+    <p>两个独立 Poisson 过程 \(N_1 \sim \text{PP}(\lambda_1)\)，\(N_2 \sim \text{PP}(\lambda_2)\)，第一次到达时刻分别为 \(T_1, T_2\)。</p>
+    <p>竞争指数 = 两个过程<strong>谁先发生一次事件</strong>的问题。\(P(T_1 < T_2) = \lambda_1/(\lambda_1+\lambda_2)\) 就是 \(N_1\) 先到一步的概率。</p>
+  </div>
+
+  <h3>经典例题：\(X > Y\) 的概率</h3>
+  <div class="quiz-block">
+    <div class="q-label">例题 — X, Y 独立指数，求 P(X > Y)</div>
+    <div class="q-text">
+      \(X \sim \text{Exp}(1/6)\)（均值 6），\(Y \sim \text{Exp}(1/8)\)（均值 8），独立。求 \(P(X > Y)\)。
+    </div>
+    <button class="toggle-btn" onclick="toggle(this)">显示答案</button>
+    <div class="answer">
+      <div class="formula-box">
+        <strong>方法 1：直接积分</strong>
+        \[P(X > Y) = \int_0^\infty \frac{1}{8}e^{-y/8}\left(\int_y^\infty \frac{1}{6}e^{-x/6}dx\right)dy = \int_0^\infty \frac{1}{8}e^{-y/8} \cdot e^{-y/6}\,dy\]
+        \[= \frac{1/8}{1/8 + 1/6} = \frac{1/8}{7/24} = \boxed{\frac{3}{7}}\]
+        <br>
+        <strong>方法 2：竞争指数通用公式</strong>（\(\lambda_X=1/6\)，\(\lambda_Y=1/8\)）：
+        \[P(X > Y) = P(Y \text{ 先到}) = \frac{\lambda_Y}{\lambda_X + \lambda_Y} = \frac{1/8}{1/6+1/8} = \frac{3}{7}\]
+        <br>
+        <strong>直觉验证：</strong>\(X\) 均值更大（速率更小），更"慢"，所以 \(P(X>Y) = 3/7 < 1/2\)，符合直觉。
+      </div>
+    </div>
+  </div>
+
+  <div class="quiz-block">
+    <div class="q-label">例题 — 多个竞争指数 + 独立性</div>
+    <div class="q-text">
+      三台机器，寿命分别为 \(T_1\sim\text{Exp}(1)\)，\(T_2\sim\text{Exp}(2)\)，\(T_3\sim\text{Exp}(3)\)，独立。<br>
+      <strong>(a)</strong> 最先坏的机器是机器 2 的概率。<br>
+      <strong>(b)</strong> 最先坏的机器坏掉时，距现在的期望时间。<br>
+      <strong>(c)</strong> 机器 2 最先坏掉后，剩余两台中下一个坏掉的期望时间。
+    </div>
+    <button class="toggle-btn" onclick="toggle(this)">显示答案</button>
+    <div class="answer">
+      <div class="formula-box">
+        <strong>(a)</strong> \(P(T_2 = \min) = \dfrac{2}{1+2+3} = \dfrac{1}{3}\)
+        <br><br>
+        <strong>(b)</strong> \(M = \min(T_1,T_2,T_3) \sim \text{Exp}(1+2+3) = \text{Exp}(6)\)，期望 \(= \dfrac{1}{6}\)
+        <br><br>
+        <strong>(c)</strong> 关键：由无记忆性，已知 \(T_2\) 最先坏，\(T_1\) 和 \(T_3\) 的剩余寿命分布不变（仍为 \(\text{Exp}(1)\) 和 \(\text{Exp}(3)\)）。<br>
+        下一台坏掉的时间 \(\sim \text{Exp}(1+3) = \text{Exp}(4)\)，期望 \(= \dfrac{1}{4}\)。
+      </div>
+      <p style="margin-top:.8rem;font-size:.88rem;opacity:.8"><strong>核心技巧：</strong>独立性与无记忆性联合使用——"已知谁最先，其余的未来分布不变"，这正是指数分布无记忆性的关键作用。</p>
+    </div>
+  </div>
+
+  <div class="quiz-block">
+    <div class="q-label">例题 — 混合指数分布 · 均值与方差（Q2.3 原题）</div>
+    <div class="q-text">
+      以各 50% 概率随机选择参数 \(\lambda_1\) 或 \(\lambda_2\) 的指数分布，作为混合分布 \(T\)。求 \(\mathbb{E}[T]\) 与 \(\text{Var}(T)\)。
+    </div>
+    <button class="toggle-btn" onclick="toggle(this)">显示答案</button>
+    <div class="answer">
+      <div class="formula-box">
+        密度：\(f_T(t) = \dfrac{1}{2}\lambda_1 e^{-\lambda_1 t} + \dfrac{1}{2}\lambda_2 e^{-\lambda_2 t}\)
+        <br><br>
+        <strong>均值（全期望）：</strong>
+        \[\mathbb{E}[T] = \frac{1}{2}\cdot\frac{1}{\lambda_1} + \frac{1}{2}\cdot\frac{1}{\lambda_2}\]
+        <br>
+        <strong>方差（全方差公式）：</strong>
+        \[\text{Var}(T) = \underbrace{\mathbb{E}[\text{Var}(T|I)]}_{\text{组内方差}} + \underbrace{\text{Var}(\mathbb{E}[T|I])}_{\text{组间方差}}\]
+        \[= \frac{1}{2\lambda_1^2} + \frac{1}{2\lambda_2^2} + \frac{1}{4}\left(\frac{1}{\lambda_1}-\frac{1}{\lambda_2}\right)^2\]
+        <br>
+        <strong>验证：</strong>若 \(\lambda_1=\lambda_2=\lambda\)，则 \(\text{Var}=\frac{1}{\lambda^2}\) ✓（组间方差为0）
+      </div>
+    </div>
+  </div>
+
+  <h3>速查表</h3>
+  <table>
+    <thead><tr><th>情形</th><th>结论</th></tr></thead>
+    <tbody>
+      <tr><td>\(\min(T_1,\ldots,T_n)\) 的分布</td><td>\(\text{Exp}(\sum\lambda_i)\)</td></tr>
+      <tr><td>\(P(T_i = \min)\)</td><td>\(\lambda_i / \sum\lambda_j\)</td></tr>
+      <tr><td>谁最小 与 最小值</td><td>独立！</td></tr>
+      <tr><td>\(P(X>Y)\)，\(X\sim\text{Exp}(\lambda)\)，\(Y\sim\text{Exp}(\mu)\)</td><td>\(\mu/(\lambda+\mu)\)</td></tr>
+      <tr><td>无记忆性后继续等待</td><td>分布不变，剩余寿命仍为原指数</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ══ 6. FINANCE APPLICATIONS ══ -->
+<section id="s6">
+  <div class="section-header">
+    <span class="sec-num">§ 06</span>
+    <h2>金融应用（离散随机过程部分）</h2>
+  </div>
+
+  <div class="two-col">
+    <div class="def-block">
+      <div class="block-title">信用评级迁移模型</div>
+      <p>状态空间：\(\{AAA, AA, \ldots, CCC, D\}\)</p>
+      <p>年度转移矩阵 \(P\) 给出评级变化概率。"D"为吸收态（违约）。</p>
+      <p>10年后仍存活概率：\((P^{10})_{AAA, \neq D}\)</p>
+    </div>
+    <div class="def-block">
+      <div class="block-title">隐 Markov 模型 (HMM)</div>
+      <p>市场状态（牛/熊/震荡）为隐状态，观测值（收益率）条件独立于状态。</p>
+      <p>在量化研究中用于状态识别（regime detection）和特征构建。</p>
+    </div>
+  </div>
+
+  <div class="quiz-block">
+    <div class="q-label">例题 — 信用迁移 & 吸收概率</div>
+    <div class="q-text">
+      债券评级迁移矩阵（状态：B, CCC, D）：
+      \[P = \begin{pmatrix} 0.90 & 0.05 & 0.05 \\ 0.15 & 0.70 & 0.15 \\ 0 & 0 & 1 \end{pmatrix}\]
+      从状态 B 出发，求最终违约概率及期望违约时间。
+    </div>
+    <button class="toggle-btn" onclick="toggle(this)">显示答案</button>
+    <div class="answer">
+      <p>D 是吸收态。暂态子矩阵：\(Q = \begin{pmatrix}0.90 & 0.05\\0.15 & 0.70\end{pmatrix}\)</p>
+      <div class="formula-box">
+        \(I-Q = \begin{pmatrix}0.10 & -0.05\\-0.15 & 0.30\end{pmatrix}\)，\(\det = 0.0225\)
+        <br><br>
+        \(N = (I-Q)^{-1} = \dfrac{1}{0.0225}\begin{pmatrix}0.30 & 0.05\\0.15 & 0.10\end{pmatrix} = \begin{pmatrix}13.33 & 2.22\\6.67 & 4.44\end{pmatrix}\)
+        <br><br>
+        从 B 出发期望吸收时间：\(13.33 + 2.22 = 15.56\) 期（必然违约，概率=1）
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 7. Q2.1-2.3 ══ -->
+<section id="s7">
+  <div class="section-header">
+    <span class="sec-num">§ 07</span>
+    <h2>真题精练 Q2.1–Q2.3</h2>
+  </div>
+  <div class="tag-row">
+    <span class="tag">实际面试题</span>
+    <span class="tag">城市迁移</span>
+    <span class="tag">吸收链</span>
+    <span class="tag">混合指数</span>
+  </div>
+
+  <div class="quiz-block">
+    <div class="q-label">Q2.1 — 城市人口迁移 · 稳态分布</div>
+    <div class="q-text">
+      三座城市：NY、SF、Nash。每天：NY有50%离开，SF有50%离开，Nash有100%离开；离开后等概率去其他两座城市。<br>
+      <strong>问：长期稳态下三城市人口比例？（答案：NY 40%，SF 40%，Nash 20%）</strong>
+    </div>
+    <button class="toggle-btn" onclick="toggle(this)">显示答案</button>
+    <div class="answer">
+      <div class="formula-box">
+        转移矩阵：
+        \[P = \begin{pmatrix} 0.5 & 0.25 & 0.25 \\ 0.25 & 0.5 & 0.25 \\ 0.5 & 0.5 & 0 \end{pmatrix}\]
+        由对称性：\(\pi_{NY} = \pi_{SF}\)（NY 和 SF 条件完全对称）。
+        <br>
+        由第三行方程：\(\pi_{Nash} = 0.25\pi_{NY} + 0.25\pi_{SF} = 0.5\pi_{NY}\)
+        <br>
+        归一化：\(2\pi_{NY} + 0.5\pi_{NY} = 1 \Rightarrow \pi_{NY} = 0.4\)
+        \[\boxed{\text{NY: 40\%,\quad SF: 40\%,\quad Nash: 20\%}}\]
+      </div>
+    </div>
+  </div>
+
+  <div class="quiz-block">
+    <div class="q-label">Q2.2 — NY 变吸收态 · 期望吸收时间</div>
+    <div class="q-text">
+      在 Q2.1 基础上，到达 NY 即永久留下（NY = 吸收态），且原在 NY 的人必须先离开再回来。从各城市出发，期望多少天聚集至 NY？
+    </div>
+    <button class="toggle-btn" onclick="toggle(this)">显示答案</button>
+    <div class="answer">
+      <div class="formula-box">
+        暂态：{SF, Nash}，吸收态：{NY}。
+        \[Q = \begin{pmatrix}0.5 & 0.25 \\ 0.5 & 0\end{pmatrix},\quad R = \begin{pmatrix}0.25\\0.5\end{pmatrix}\]
+        \[N = (I-Q)^{-1} = \begin{pmatrix}2.67 & 0.67 \\ 1.33 & 1.33\end{pmatrix}\]
+        从 SF 出发：\(t_{SF} = 2.67 + 0.67 = \mathbf{3.33}\) 天<br>
+        从 Nash 出发：\(t_{Nash} = 1.33 + 1.33 = \mathbf{2.67}\) 天<br><br>
+        从 NY 出发（必须先离开）：\(t_{NY} = 1 + \frac{1}{2}(3.33) + \frac{1}{2}(2.67) = \boxed{4}\) 天
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 8. Q56-Q61 ══ -->
+<section id="s8">
+  <div class="section-header">
+    <span class="sec-num">§ 08</span>
+    <h2>真题精练 Q56–Q61</h2>
+  </div>
+  <div class="tag-row">
+    <span class="tag">实际面试题</span>
+    <span class="tag">QR Interview</span>
+    <span class="tag">Philadelphia · Nov 2024</span>
+  </div>
+
+  <div class="quiz-block">
+    <div class="q-label">Q56 — Good Day / Bad Day Chain · 稳态 + 击中时间</div>
+    <div class="q-text">
+      Good→Good: 0.6，Good→Bad: 0.4；Bad→Good: 0.3，Bad→Bad: 0.7。<br>
+      <strong>从 Bad 出发，期望多少天后再次遇到 Bad 天？</strong>
+    </div>
+    <button class="toggle-btn" onclick="toggle(this)">显示答案</button>
+    <div class="answer">
+      <div class="formula-box">
+        <strong>方法一（最快）：</strong>稳态分布倒推。
+        \[0.4\pi_G = 0.3\pi_B \Rightarrow \pi_B = \frac{4}{7}\]
+        平均回访时间 = \(\dfrac{1}{\pi_B} = \boxed{1.75 \text{ 天}}\)
+        <br><br>
+        <strong>方法二：直接列方程</strong>
+        \[h_G = 1 + 0.6 h_G \Rightarrow h_G = 2.5, \quad h_B = 1 + 0.3 h_G = 1.75\]
+      </div>
+    </div>
+  </div>
+
+  <div class="quiz-block">
+    <div class="q-label">Q57/Q58 — Consecutive Heads · 一步分析法</div>
+    <div class="q-text">
+      公平硬币，期望多少次投掷首次出现连续 2 次正面 (HH)？
+    </div>
+    <button class="toggle-btn" onclick="toggle(this)">显示答案</button>
+    <div class="answer">
+      <div class="formula-box">
+        状态机：\(S_0\)（初始）、\(S_H\)（刚出现1次H）、\(S_{HH}\)（结束）。
+        <br>
+        设 \(e_0, e_H\) = 从各状态出发的期望步数：
+        \[e_0 = 1 + \frac{1}{2}e_H + \frac{1}{2}e_0 \Rightarrow e_0 = 2 + e_H\]
+        \[e_H = 1 + \frac{1}{2}\cdot 0 + \frac{1}{2}e_0 \Rightarrow e_H = 1 + \frac{1}{2}e_0\]
+        联立：\(e_0 = 2 + 1 + \frac{1}{2}e_0 \Rightarrow e_0 = \boxed{6}\)
+      </div>
+    </div>
+  </div>
+
+  <div class="quiz-block">
+    <div class="q-label">Q60 — Ball Replacement · 吸收链</div>
+    <div class="q-text">
+      袋中 2 红 1 蓝，每次随机取出一个球，放入一个蓝球（不管取出什么），直到所有球为蓝。从初始状态出发，期望几次？
+    </div>
+    <button class="toggle-btn" onclick="toggle(this)">显示答案</button>
+    <div class="answer">
+      <div class="formula-box">
+        状态 = 红球数。初始状态 2，目标状态 0。
+        <br>
+        状态 2（2红1蓝）：取出红（概率2/3）→状态1；取出蓝（概率1/3）→状态2
+        <br>
+        状态 1（1红2蓝）：取出红（概率1/3）→状态0；取出蓝（概率2/3）→状态1
+        <br><br>
+        \[e_1 = 1 + \frac{2}{3}e_1 \Rightarrow e_1 = 3\]
+        \[e_2 = 1 + \frac{1}{3}e_2 + \frac{2}{3}e_1 \Rightarrow e_2 = \boxed{4.5}\]
+      </div>
+    </div>
+  </div>
+
+  <div class="quiz-block">
+    <div class="q-label">Q61 — Alternating Dice · 生成函数</div>
+    <div class="q-text">
+      骰子 A 和 B 交替掷（A 先），游戏在 A 掷出 6 时结束。<br>
+      (a) 游戏在 A 轮次结束的概率。(b) 总掷骰次数期望。
+    </div>
+    <button class="toggle-btn" onclick="toggle(this)">显示答案</button>
+    <div class="answer">
+      <div class="formula-box">
+        <strong>(a)</strong> 概率 = <strong>1</strong>（只有 A 能终止游戏）。
+        <br><br>
+        <strong>(b)</strong> 第 \(k\) 轮 A 成功时，已掷 \(2k-1\) 次（A 掷 k 次，B 掷 k-1 次）：
+        \[\mathbb{E} = \sum_{k=1}^\infty \left(\frac{5}{6}\right)^{k-1}\frac{1}{6}(2k-1) = \frac{1}{6}\cdot\frac{1+5/6}{(1/6)^2} = \boxed{11}\]
+        <strong>直觉验证：</strong>A 平均第 6 轮成功，前 5 轮各有一次 B 的掷骰 = 5+6 = 11 次。✓
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 9. COVER TIME ══ -->
+<section id="s9">
+  <div class="section-header">
+    <span class="sec-num">§ 09</span>
+    <h2>圆环随机游走 · Cover Time</h2>
+  </div>
+  <div class="tag-row">
+    <span class="tag">高难度题型</span>
+    <span class="tag">阶段分解</span>
+    <span class="tag">Gambler's Ruin应用</span>
+  </div>
+
+  <div class="def-block">
+    <div class="block-title">问题设定</div>
+    <p>圆环 \(N\) 个位置，从 0 出发，以概率 \(p\) 向右，\(q=1-p\) 向左（模 \(N\) 循环）。</p>
+    <p><strong>Cover Time</strong> \(T_C\) = 首次访问所有 \(N\) 个位置所需的步数。</p>
+  </div>
+
+  <div class="intuition">
+    <p><strong>为什么难？</strong>击中时间有固定目标可列方程；Cover Time 的目标集合动态变化，需要<strong>阶段分解</strong>。</p>
+  </div>
+
+  <div class="thm-block">
+    <div class="block-title">关键引理 — 已访问集合是连续弧段</div>
+    任意时刻已访问集合形如 \([-L, R]\)（圆环上的弧），覆盖完成 \(\Leftrightarrow L+R=N-1\)。
+  </div>
+
+  <div class="formula-box">
+    <div class="label">阶段分解</div>
+    \[T_C = \sum_{k=1}^{N-1} \Delta_k\]
+    \(\Delta_k\) = 已访问 \(k\) 个位置后，首次访问第 \(k+1\) 个新位置所需的额外步数。
+  </div>
+
+  <div class="thm-block">
+    <div class="block-title">定理 — 公平游走 Cover Time（\(p = 1/2\)）</div>
+    \[\mathbb{E}[\Delta_k] = k \quad (\text{每阶段平均需要 }k\text{ 步})\]
+    \[\mathbb{E}[T_C] = \sum_{k=1}^{N-1} k = \frac{N(N-1)}{2}\]
+  </div>
+
+  <table>
+    <thead><tr><th>情形</th><th>期望 Cover Time</th><th>量级</th></tr></thead>
+    <tbody>
+      <tr><td>圆环，\(p=1/2\)</td><td>\(\dfrac{N(N-1)}{2}\)</td><td>\(O(N^2)\)</td></tr>
+      <tr><td>圆环，\(p\to1\)</td><td>\(N-1\)（直接绕圈）</td><td>\(O(N)\)</td></tr>
+      <tr><td>完全图 \(K_N\)</td><td>\(N H_N \approx N\ln N\)</td><td>\(O(N\log N)\)</td></tr>
+    </tbody>
+  </table>
+
+  <div class="quiz-block">
+    <div class="q-label">例题 — N=5 圆环完整推导</div>
+    <div class="q-text">
+      圆环 \(N=5\)，公平游走。写出各阶段期望并求 \(\mathbb{E}[T_C]\)。
+    </div>
+    <button class="toggle-btn" onclick="toggle(this)">显示答案</button>
+    <div class="answer">
+      <div class="formula-box">
+        \(\mathbb{E}[\Delta_1]=1\)，\(\mathbb{E}[\Delta_2]=2\)，\(\mathbb{E}[\Delta_3]=3\)，\(\mathbb{E}[\Delta_4]=4\)
+        \[\mathbb{E}[T_C] = 1+2+3+4 = \boxed{10} = \frac{5\times4}{2}\]
+        若 \(p=0.7\)：偏右使游走更接近"确定性绕圈"，\(\mathbb{E}[T_C] \approx 5.8 < 10\)，当 \(p\to1\) 时趋向 4。
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 10. RW & MARTINGALE ══ -->
+<section id="s10">
+  <div class="section-header">
+    <span class="sec-num">§ 10</span>
+    <h2>Random Walk & Martingale 方法</h2>
+  </div>
+  <div class="tag-row">
+    <span class="tag">超高频考点</span>
+    <span class="tag">OST定理</span>
+    <span class="tag">鞅构造</span>
+  </div>
+
+  <h3>简单随机游走基础</h3>
+  <div class="def-block">
+    <div class="block-title">定义</div>
+    \(\xi_i\) i.i.d.，\(P(\xi_i=+1)=p\)，\(P(\xi_i=-1)=q\)，\(S_n = \sum_{i=1}^n \xi_i\)，\(S_0=0\)。
+  </div>
+
+  <div class="two-col">
+    <div class="formula-box">
+      <div class="label">基本矩（公平游走 \(p=1/2\)）</div>
+      \[\mathbb{E}[S_n] = 0, \quad \text{Var}(S_n) = n\]
+      \[\mathbb{E}[S_n^2] = n\]
+    </div>
+    <div class="formula-box">
+      <div class="label">有偏游走（\(p \neq 1/2\)）</div>
+      \[\mathbb{E}[S_n] = n(p-q)\]
+      \[\text{Var}(S_n) = 4pqn\]
+    </div>
+  </div>
+
+  <h3>三个标准鞅</h3>
+  <div class="formula-box">
+    <div class="label">公平游走的三大鞅（面试必背）</div>
+    <strong>① 线性鞅：</strong>\(M_n^{(1)} = S_n\)
+    <br><br>
+    <strong>② 二次鞅：</strong>\(M_n^{(2)} = S_n^2 - n\)
+    <br><br>
+    <strong>③ 指数鞅：</strong>\(M_n^{(3)} = \left(\frac{q}{p}\right)^{S_n}\)（有偏游走，\(p>1/2\) 时 \(q/p < 1\)）
+  </div>
+
+  <h3>Optional Stopping Theorem (OST)</h3>
+  <div class="thm-block">
+    <div class="block-title">定理 — 可选停时定理</div>
+    若 \(M_n\) 是鞅，\(\tau\) 是停时，满足以下任一条件，则 \(\mathbb{E}[M_\tau] = \mathbb{E}[M_0]\)：
+    <ul>
+      <li>\(\tau\) 有界（\(\tau \leq N\) 几乎处处）</li>
+      <li>\(\mathbb{E}[\tau] < \infty\) 且 \(|M_{n+1} - M_n|\) 一致有界</li>
+      <li>\(M_{n\wedge\tau}\) 一致可积</li>
+    </ul>
+  </div>
+
+  <div class="warn">
+    <strong>OST 陷阱：</strong>公平游走首达 +1 的期望时间 \(\mathbb{E}[\tau_1] = +\infty\)，OST 不能直接适用！
+  </div>
+
+  <h3>经典 Gambler's Ruin（鞅方法）</h3>
+  <div class="formula-box">
+    <div class="label">公平游走，边界 \(+a\) 和 \(-b\)，从 0 出发</div>
+    <strong>① 用 \(S_n\) + OST：</strong>\(\mathbb{E}[S_\tau]=0 \Rightarrow a\cdot P(\text{到}+a) + (-b)\cdot P(\text{到}-b) = 0\)
+    \[P(\text{到}+a) = \frac{b}{a+b}\]
+    <strong>② 用 \(S_n^2-n\) + OST：</strong>\(\mathbb{E}[S_\tau^2] = \mathbb{E}[\tau]\)
+    \[\mathbb{E}[\tau] = a^2\cdot\frac{b}{a+b} + b^2\cdot\frac{a}{a+b} = ab\]
+  </div>
+
+  <div class="quiz-block">
+    <div class="q-label">例题 A — 标准 OST 流程（公平游走）</div>
+    <div class="q-text">
+      公平游走，\(S_0=0\)，停时 \(\tau = \min\{n: S_n=3 \text{ 或 } S_n=-1\}\)。<br>
+      用鞅方法求 <strong>(a)</strong> \(P(S_\tau=3)\) 和 <strong>(b)</strong> \(\mathbb{E}[\tau]\)。
+    </div>
+    <button class="toggle-btn" onclick="toggle(this)">显示答案</button>
+    <div class="answer">
+      <div class="formula-box">
+        <strong>(a)</strong> 鞅①：\(\mathbb{E}[S_\tau]=0\)，设 \(u=P(S_\tau=3)\)：
+        \[3u + (-1)(1-u) = 0 \Rightarrow 4u=1 \Rightarrow \boxed{u=\frac{1}{4}}\]
+        验证：\(a=3,b=1\)，\(P=b/(a+b)=1/4\) ✓
+        <br><br>
+        <strong>(b)</strong> 鞅②：\(\mathbb{E}[\tau] = \mathbb{E}[S_\tau^2] = 9\cdot\frac{1}{4} + 1\cdot\frac{3}{4} = 3\)
+        <br>验证：\(\mathbb{E}[\tau]=ab=3\times1=3\) ✓
+      </div>
+    </div>
+  </div>
+
+  <div class="quiz-block">
+    <div class="q-label">例题 B — 有偏游走：吸收概率 + 期望停时</div>
+    <div class="q-text">
+      有偏游走，\(p=2/3\)，\(q=1/3\)，\(S_0=0\)，边界 \(+2\) 和 \(-1\)。<br>
+      <strong>(a)</strong> \(P(S_\tau=+2)\)（用指数鞅 \((q/p)^{S_n}=(1/2)^{S_n}\)）。<br>
+      <strong>(b)</strong> 用 \(S_n-n(p-q)\) 求 \(\mathbb{E}[\tau]\)。
+    </div>
+    <button class="toggle-btn" onclick="toggle(this)">显示答案</button>
+    <div class="answer">
+      <div class="formula-box">
+        <strong>(a)</strong> OST 用 \((1/2)^{S_\tau}\)，设 \(u=P(S_\tau=2)\)：
+        \[\frac{u}{4} + 2(1-u) = 1 \Rightarrow u = \frac{4}{7}\]
+        验证 Gambler's Ruin 公式：\(\dfrac{1-(1/2)^1}{1-(1/2)^3} = \dfrac{4}{7}\) ✓
+        <br><br>
+        <strong>(b)</strong> 鞅 \(S_n - n/3\)，OST：\(\mathbb{E}[S_\tau] = \frac{1}{3}\mathbb{E}[\tau]\)
+        \[\mathbb{E}[S_\tau] = 2\cdot\frac{4}{7} + (-1)\cdot\frac{3}{7} = \frac{5}{7}\]
+        \[\mathbb{E}[\tau] = \frac{5/7}{1/3} = \boxed{\frac{15}{7}}\]
+      </div>
+    </div>
+  </div>
+
+  <div class="quiz-block">
+    <div class="q-label">例题 C — 单边无穷破产（指数鞅 + 截断法）</div>
+    <div class="q-text">
+      有偏游走 \(p=2/3\)，\(S_0=0\)，无右边界，左边界 \(-3\)（破产）。求永远不破产的概率。
+    </div>
+    <button class="toggle-btn" onclick="toggle(this)">显示答案</button>
+    <div class="answer">
+      <div class="formula-box">
+        用指数鞅 \(\rho^{S_n}=(1/2)^{S_n}\)，截断停时 \(\tau_N = \min(\tau_{-3}, N)\)，OST 给 \(\mathbb{E}[\rho^{S_{\tau_N}}]=1\)。
+        <br>令 \(N\to\infty\)：若不破产则 \(S_n\to+\infty\)，\(\rho^{S_n}\to0\)；若破产则 \(S_{\tau_{-3}}=-3\)：
+        \[\rho^{-3}\cdot P(\tau_{-3}<\infty) + 0 = 1 \Rightarrow P(\tau_{-3}<\infty) = \rho^3 = \frac{1}{8}\]
+        \[\boxed{P(\text{永不破产}) = \frac{7}{8}}\]
+        <strong>一般结论：</strong>有偏游走（\(p>1/2\)），从 0 出发，破产到 \(-b\) 的概率 \(= (q/p)^b\)。
+      </div>
+    </div>
+  </div>
+
+  <h3>鞅方法解题模板总结</h3>
+  <table>
+    <thead><tr><th>目标</th><th>使用的鞅</th><th>OST 给出</th></tr></thead>
+    <tbody>
+      <tr><td>吸收概率（公平）</td><td>\(S_n\)</td><td>\(\mathbb{E}[S_\tau]=0\)，解比例</td></tr>
+      <tr><td>期望停时（公平）</td><td>\(S_n^2 - n\)</td><td>\(\mathbb{E}[\tau]=ab\)</td></tr>
+      <tr><td>吸收概率（有偏）</td><td>\((q/p)^{S_n}\)</td><td>Gambler's Ruin 推广</td></tr>
+      <tr><td>期望停时（有偏）</td><td>\(S_n - n(p-q)\)</td><td>联立吸收概率</td></tr>
+      <tr><td>单边无穷破产</td><td>\((q/p)^{S_n}\)（截断法）</td><td>\(P(\text{破产})=(q/p)^b\)</td></tr>
+    </tbody>
+  </table>
+
+  <h3>高频面试陷阱</h3>
+  <table>
+    <thead><tr><th>命题</th><th>对/错</th><th>原因</th></tr></thead>
+    <tbody>
+      <tr><td>"公平游走必然到达 +1"</td><td>✅ 对</td><td>一维公平 RW 常返</td></tr>
+      <tr><td>"公平游走到达 +1 的期望时间有限"</td><td>❌ 错</td><td>\(\mathbb{E}[\tau_1]=+\infty\)</td></tr>
+      <tr><td>"鞅的停时期望等于初始值"（无条件）</td><td>❌ 错</td><td>需验证 OST 条件</td></tr>
+      <tr><td>"\(S_n^2\) 是鞅"</td><td>❌ 错</td><td>\(S_n^2-n\) 才是鞅</td></tr>
+      <tr><td>"\(|S_n|\) 是鞅"</td><td>❌ 错</td><td>是下鞅（凸函数 of 鞅）</td></tr>
+      <tr><td>"从 \(x\) 出发，边界 \(+a,-b\) 的期望停时是 \(ab\)"</td><td>❌ 错</td><td>仅从 0；从 \(x\) 出发是 \((a-x)(b+x)\)</td></tr>
+    </tbody>
+  </table>
+
+  <div class="note">
+    <strong>从 \(x\) 出发，边界在 \(+a\) 和 \(-b\) 的通用期望停时：</strong>
+    \[\mathbb{E}[\tau \mid S_0=x] = (a-x)(b+x)\]
+    验证：\(x=0\) 时 \(=ab\) ✓；\(x=a\) 时 \(=0\) ✓；\(x=-b\) 时 \(=0\) ✓。
+  </div>
+
+</section>
+
+</div><!-- /.container -->
+
+<footer>
+  随机过程 & Markov Chains — Princeton MFin Quant Interview Prep · Vol. I<br>
+  DTMC · CTMC · Poisson过程 · 竞争指数 · 鞅方法 · Cover Time
+</footer>
+
+<script>
+function toggle(btn) {
+  const ans = btn.nextElementSibling;
+  if (ans.style.display === 'block') {
+    ans.style.display = 'none';
+    btn.textContent = '显示答案';
+  } else {
+    ans.style.display = 'block';
+    btn.textContent = '隐藏答案';
+  }
+}
+window.MathJax = {
+  tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+  options: { skipHtmlTags: ['script','noscript','style','textarea'] },
+  startup: { typeset: true }
+};
+</script>
+</body>
+</html>

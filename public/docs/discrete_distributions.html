@@ -1,0 +1,1434 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>离散分布全览 · Discrete Distributions Reference</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+<script>
+MathJax = {
+  tex: { inlineMath: [['\\(','\\)'],['$','$']], displayMath: [['$$','$$'],['\\[','\\]']] }
+};
+</script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Source+Serif+4:ital,wght@0,300;0,400;0,600;1,300&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a1410;
+    --paper: #f7f3ec;
+    --cream: #ede8df;
+    --rust: #b84a2e;
+    --teal: #2a6b6e;
+    --gold: #c9963a;
+    --blue: #2c5282;
+    --purple: #553c7b;
+    --muted: #7a6e62;
+    --border: #d4cec5;
+    --code-bg: #f0ebe1;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-weight: 300;
+    font-size: 17px;
+    line-height: 1.88;
+  }
+
+  /* ─── Header ─── */
+  header {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 3.5rem 2rem 3rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: repeating-linear-gradient(-45deg, transparent, transparent 8px, rgba(255,255,255,0.022) 8px, rgba(255,255,255,0.022) 9px);
+  }
+  .badge {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    padding: 0.22rem 0.8rem;
+    border-radius: 2px;
+    margin-bottom: 1.4rem;
+    position: relative;
+  }
+  header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 700;
+    line-height: 1.1;
+    margin-bottom: 0.5rem;
+    position: relative;
+  }
+  header h1 em { font-style: italic; color: var(--gold); }
+  header .subtitle {
+    font-size: 0.97rem;
+    color: rgba(247,243,236,0.58);
+    letter-spacing: 0.06em;
+    position: relative;
+  }
+
+  /* ─── TOC ─── */
+  .toc-wrap { max-width: 900px; margin: 2.5rem auto; padding: 0 2rem; }
+  .toc {
+    background: var(--cream);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--teal);
+    padding: 1.4rem 2rem;
+    border-radius: 0 5px 5px 0;
+  }
+  .toc-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--teal);
+    margin-bottom: 0.7rem;
+  }
+  .toc-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 0.2rem 2rem;
+  }
+  .toc a {
+    color: var(--teal);
+    text-decoration: none;
+    font-size: 0.93rem;
+    display: block;
+    padding: 0.1rem 0;
+  }
+  .toc a:hover { text-decoration: underline; }
+  .toc a .toc-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--rust);
+    margin-right: 0.4rem;
+  }
+
+  /* ─── Main ─── */
+  main { max-width: 900px; margin: 0 auto; padding: 0 2rem 7rem; }
+
+  /* ─── Distribution block ─── */
+  .dist-block {
+    margin-top: 4.5rem;
+    padding-top: 0;
+  }
+
+  /* Colored top bar */
+  .dist-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 1.2rem;
+    padding: 2rem 2rem 1.6rem;
+    border-radius: 8px 8px 0 0;
+    position: relative;
+  }
+  .dist-header.geo  { background: linear-gradient(135deg, #2a6b6e 0%, #1e4f52 100%); }
+  .dist-header.nb   { background: linear-gradient(135deg, #b84a2e 0%, #7a2c18 100%); }
+  .dist-header.hyper{ background: linear-gradient(135deg, #553c7b 0%, #35265a 100%); }
+
+  .dist-icon {
+    width: 3rem; height: 3rem;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.12);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem;
+    flex-shrink: 0;
+    margin-top: 0.2rem;
+  }
+  .dist-titles { flex: 1; }
+  .dist-en {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: white;
+    line-height: 1.15;
+  }
+  .dist-zh {
+    font-size: 0.95rem;
+    color: rgba(255,255,255,0.65);
+    letter-spacing: 0.08em;
+    margin-top: 0.1rem;
+  }
+  .dist-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    background: rgba(255,255,255,0.15);
+    color: rgba(255,255,255,0.85);
+    padding: 0.2rem 0.6rem;
+    border-radius: 3px;
+    margin-top: 0.5rem;
+    display: inline-block;
+  }
+
+  /* Quick-result bar */
+  .result-bar {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    border: 1px solid var(--border);
+    border-top: none;
+    background: white;
+  }
+  .result-cell {
+    padding: 1rem 1.5rem;
+    border-right: 1px solid var(--border);
+  }
+  .result-cell:last-child { border-right: none; }
+  .result-cell .rc-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.25rem;
+  }
+  .result-cell .rc-val {
+    font-size: 1.05rem;
+    color: var(--ink);
+  }
+
+  /* Content area */
+  .dist-content {
+    border: 1px solid var(--border);
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    overflow: hidden;
+  }
+
+  /* Definition box */
+  .def-box {
+    padding: 1.4rem 1.8rem;
+    background: var(--cream);
+    border-bottom: 1px solid var(--border);
+  }
+  .def-box .def-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.5rem;
+  }
+  .pmf-box {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 1rem 1.5rem;
+    border-radius: 5px;
+    margin-top: 0.7rem;
+    overflow-x: auto;
+    text-align: center;
+    font-size: 1.05rem;
+  }
+  .pmf-condition {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    color: rgba(247,243,236,0.55);
+    margin-top: 0.3rem;
+  }
+
+  /* Derivation panels */
+  .deriv-section {
+    padding: 1.4rem 1.8rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .deriv-section:last-child { border-bottom: none; }
+
+  .deriv-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+  .deriv-title .dt-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 0.15rem 0.5rem;
+    border-radius: 3px;
+    background: rgba(42,107,110,0.1);
+    color: var(--teal);
+  }
+  .deriv-title .dt-badge.var { background: rgba(184,74,46,0.08); color: var(--rust); }
+  .deriv-title .dt-badge.nb  { background: rgba(184,74,46,0.08); color: var(--rust); }
+  .deriv-title .dt-badge.hp  { background: rgba(85,60,123,0.08); color: var(--purple); }
+
+  p { margin-bottom: 0.7rem; }
+  p:last-child { margin-bottom: 0; }
+
+  .step {
+    display: flex;
+    gap: 0.9rem;
+    margin: 0.8rem 0;
+    align-items: flex-start;
+  }
+  .step-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem;
+    color: var(--rust);
+    background: rgba(184,74,46,0.08);
+    padding: 0.12rem 0.4rem;
+    border-radius: 3px;
+    flex-shrink: 0;
+    margin-top: 0.3rem;
+    min-width: 2.2rem;
+    text-align: center;
+  }
+  .step-num.teal { background: rgba(42,107,110,0.1); color: var(--teal); }
+  .step-num.purp { background: rgba(85,60,123,0.08); color: var(--purple); }
+
+  .math-block {
+    overflow-x: auto;
+    padding: 0.65rem 0;
+    text-align: center;
+  }
+  .math-block.left { text-align: left; }
+
+  details {
+    margin-top: 0.6rem;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  details summary {
+    cursor: pointer;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--teal);
+    padding: 0.6rem 1rem;
+    background: var(--cream);
+    user-select: none;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  details summary::before {
+    content: '▶';
+    font-size: 0.55rem;
+    transition: transform 0.18s;
+  }
+  details[open] summary::before { transform: rotate(90deg); }
+  details .detail-body {
+    padding: 1.2rem 1.4rem;
+    background: var(--code-bg);
+    border-top: 1px solid var(--border);
+  }
+
+  .note {
+    background: rgba(201,150,58,0.07);
+    border: 1px solid rgba(201,150,58,0.28);
+    border-radius: 4px;
+    padding: 0.8rem 1.1rem;
+    margin: 0.8rem 0;
+    font-size: 0.93rem;
+  }
+  .note .note-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.15em;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 0.25rem;
+  }
+
+  .relation-box {
+    background: linear-gradient(135deg, #1a1410 0%, #2d2520 100%);
+    color: var(--paper);
+    border-radius: 6px;
+    padding: 1.4rem 1.6rem;
+    margin: 1rem 0;
+  }
+  .relation-box h4 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1rem;
+    color: var(--gold);
+    margin-bottom: 0.6rem;
+  }
+  .relation-box p { color: rgba(247,243,236,0.78); font-size: 0.93rem; }
+
+  /* Cheat sheet */
+  .cheat-sheet {
+    margin-top: 4rem;
+    padding-top: 2rem;
+    border-top: 2px solid var(--ink);
+  }
+  .cheat-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 0.3rem;
+  }
+  .cheat-sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--rust);
+    margin-bottom: 1.5rem;
+  }
+
+  .big-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+  }
+  .big-table thead tr { background: var(--ink); color: var(--paper); }
+  .big-table th {
+    padding: 0.7rem 1rem;
+    text-align: left;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.67rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+  .big-table td {
+    padding: 0.65rem 1rem;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  .big-table tr:nth-child(even) td { background: var(--cream); }
+  .big-table tr:last-child td { border-bottom: none; }
+  .big-table .dist-name {
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    font-size: 0.97rem;
+  }
+  .big-table .bern-row .dist-name { color: #1a6b3a; }
+  .big-table .binom-row .dist-name { color: #2c5282; }
+  .big-table .geo-row .dist-name { color: var(--teal); }
+  .big-table .nb-row  .dist-name { color: var(--rust); }
+  .big-table .hp-row  .dist-name { color: var(--purple); }
+  .big-table .pois-row .dist-name { color: #b8860b; }
+  .big-table .unif-row .dist-name { color: #4a3060; }
+  .dist-header.bern  { background: linear-gradient(135deg, #1a6b3a 0%, #0f4224 100%); }
+  .dist-header.binom { background: linear-gradient(135deg, #2c5282 0%, #1a3357 100%); }
+  .dist-header.pois  { background: linear-gradient(135deg, #b8860b 0%, #7a5a00 100%); }
+  .dist-header.unif  { background: linear-gradient(135deg, #4a3060 0%, #2d1c45 100%); }
+  .deriv-title .dt-badge.bern  { background: rgba(26,107,58,0.1); color: #1a6b3a; }
+  .deriv-title .dt-badge.binom { background: rgba(44,82,130,0.1); color: var(--blue); }
+  .deriv-title .dt-badge.pois  { background: rgba(184,134,11,0.1); color: #b8860b; }
+  .deriv-title .dt-badge.unif  { background: rgba(74,48,96,0.1); color: #4a3060; }
+
+  footer {
+    text-align: center;
+    padding: 3rem 2rem;
+    color: var(--muted);
+    font-size: 0.8rem;
+    border-top: 1px solid var(--border);
+    letter-spacing: 0.05em;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  a.back-top {
+    display: inline-block;
+    margin-top: 2.5rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--teal);
+    text-decoration: none;
+    border-bottom: 1px dashed var(--teal);
+  }
+
+  ul { padding-left: 1.3rem; }
+  li { margin: 0.2rem 0; }
+  strong { font-weight: 600; }
+
+  @media(max-width:600px){
+    .result-bar { grid-template-columns: 1fr; }
+    .result-cell { border-right: none; border-bottom: 1px solid var(--border); }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="badge">Quant Interview · Probability Distributions</div>
+  <h1>离散分布全览 · <em>Discrete Distributions</em></h1>
+  <p class="subtitle">Bernoulli · Binomial · Geometric · Negative Binomial · Hypergeometric · Poisson · Discrete Uniform — Full Derivations</p>
+</header>
+
+<div class="toc-wrap">
+  <div class="toc">
+    <div class="toc-label">目录 · Contents</div>
+    <div class="toc-grid">
+      <a href="#bern"><span class="toc-num">01</span>伯努利分布 Bernoulli</a>
+      <a href="#binom"><span class="toc-num">02</span>二项分布 Binomial</a>
+      <a href="#binom-mean"><span class="toc-num">2.1</span>均值推导 E[X]</a>
+      <a href="#binom-var"><span class="toc-num">2.2</span>方差推导 Var(X)</a>
+      <a href="#geo"><span class="toc-num">03</span>几何分布 Geometric</a>
+      <a href="#geo-mean"><span class="toc-num">3.1</span>均值推导 E[X]</a>
+      <a href="#geo-var"><span class="toc-num">3.2</span>方差推导 Var(X)</a>
+      <a href="#nb"><span class="toc-num">04</span>负二项分布 Negative Binomial</a>
+      <a href="#nb-mean"><span class="toc-num">4.1</span>均值推导 E[X]</a>
+      <a href="#nb-var"><span class="toc-num">4.2</span>方差推导 Var(X)</a>
+      <a href="#hyper"><span class="toc-num">05</span>超几何分布 Hypergeometric</a>
+      <a href="#hyper-mean"><span class="toc-num">5.1</span>均值推导 E[X]</a>
+      <a href="#hyper-var"><span class="toc-num">5.2</span>方差推导 Var(X)</a>
+      <a href="#pois"><span class="toc-num">06</span>泊松分布 Poisson</a>
+      <a href="#pois-mean"><span class="toc-num">6.1</span>均值推导 E[X]</a>
+      <a href="#pois-var"><span class="toc-num">6.2</span>方差推导 Var(X)</a>
+      <a href="#unif"><span class="toc-num">07</span>离散均匀分布 Discrete Uniform</a>
+      <a href="#cheat"><span class="toc-num">08</span>速查表 Cheat Sheet</a>
+    </div>
+  </div>
+</div>
+
+<main>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!--  DISTRIBUTION 0: BERNOULLI                               -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="dist-block" id="bern">
+
+  <div class="dist-header bern">
+    <div class="dist-icon">🪙</div>
+    <div class="dist-titles">
+      <div class="dist-en">Bernoulli Distribution</div>
+      <div class="dist-zh">伯努利分布</div>
+      <div class="dist-tag">Bern(p) — Single Binary Trial</div>
+    </div>
+  </div>
+
+  <div class="result-bar">
+    <div class="result-cell">
+      <div class="rc-label">Mean 均值</div>
+      <div class="rc-val">\(\displaystyle E[X] = p\)</div>
+    </div>
+    <div class="result-cell">
+      <div class="rc-label">Variance 方差</div>
+      <div class="rc-val">\(\displaystyle \mathrm{Var}(X) = p(1-p)\)</div>
+    </div>
+  </div>
+
+  <div class="dist-content">
+    <div class="def-box">
+      <div class="def-label">Definition 定义 — Parameter: \(p \in (0,1)\)</div>
+      <p>\(X\) 为单次二值试验的结果：成功（\(X=1\)）或失败（\(X=0\)）。所有离散分布的基础构件。</p>
+      <div class="pmf-box">
+        \(\displaystyle P(X = k) = p^k(1-p)^{1-k}, \quad k \in \{0,\,1\}\)
+        <div class="pmf-condition">Equivalently: P(X=1) = p, P(X=0) = 1−p</div>
+      </div>
+    </div>
+
+    <div class="deriv-section">
+      <div class="deriv-title">
+        <span class="dt-badge bern">Mean &amp; Variance</span>
+        均值与方差（直接计算）
+      </div>
+      <div class="step">
+        <span class="step-num teal">S1</span>
+        <div><strong>均值：</strong>
+        <div class="math-block">$$E[X] = 0 \cdot (1-p) + 1 \cdot p = \boxed{p}$$</div>
+        </div>
+      </div>
+      <div class="step">
+        <span class="step-num teal">S2</span>
+        <div><strong>二阶矩：</strong>由于 \(X^2 = X\)（\(X\in\{0,1\}\)），
+        <div class="math-block">$$E[X^2] = E[X] = p$$</div>
+        </div>
+      </div>
+      <div class="step">
+        <span class="step-num teal">S3</span>
+        <div><strong>方差：</strong>
+        <div class="math-block">$$\mathrm{Var}(X) = E[X^2] - (E[X])^2 = p - p^2 = \boxed{p(1-p)}$$</div>
+        </div>
+      </div>
+      <div class="note">
+        <div class="note-tag">方差最大值</div>
+        \(p(1-p)\) 在 \(p=\tfrac{1}{2}\) 时取最大值 \(\tfrac{1}{4}\)，对应最不确定的情形（抛均匀硬币）。
+      </div>
+    </div>
+
+    <div class="deriv-section">
+      <div class="deriv-title">
+        <span class="dt-badge bern">MGF</span>
+        矩母函数 \(M_X(t) = 1 - p + pe^t\)
+      </div>
+      <div class="math-block">$$M_X(t) = E[e^{tX}] = (1-p)e^{0} + p\,e^{t} = 1 - p + pe^t$$</div>
+      <p>这是二项分布 MGF 的基本单元：\(n\) 个独立 Bernoulli 的 MGF 乘积 \(= (1-p+pe^t)^n\)，即 Binomial 的 MGF。</p>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!--  DISTRIBUTION 1: BINOMIAL                                -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="dist-block" id="binom">
+
+  <div class="dist-header binom">
+    <div class="dist-icon">🎲</div>
+    <div class="dist-titles">
+      <div class="dist-en">Binomial Distribution</div>
+      <div class="dist-zh">二项分布</div>
+      <div class="dist-tag">Bin(n, p) — Sum of n Independent Bernoulli(p)</div>
+    </div>
+  </div>
+
+  <div class="result-bar">
+    <div class="result-cell">
+      <div class="rc-label">Mean 均值</div>
+      <div class="rc-val">\(\displaystyle E[X] = np\)</div>
+    </div>
+    <div class="result-cell">
+      <div class="rc-label">Variance 方差</div>
+      <div class="rc-val">\(\displaystyle \mathrm{Var}(X) = np(1-p)\)</div>
+    </div>
+  </div>
+
+  <div class="dist-content">
+    <div class="def-box">
+      <div class="def-label">Definition 定义 — Parameters: \(n \in \mathbb{Z}^+,\; p \in (0,1)\)</div>
+      <p>\(n\) 次独立伯努利试验中成功次数 \(X = X_1 + \cdots + X_n\)，其中 \(X_i \overset{\text{iid}}{\sim} \text{Bern}(p)\)。</p>
+      <div class="pmf-box">
+        \(\displaystyle P(X = k) = \binom{n}{k} p^k (1-p)^{n-k}, \quad k = 0,1,\ldots,n\)
+        <div class="pmf-condition">Support: \(\{0,1,2,\ldots,n\}\)</div>
+      </div>
+    </div>
+
+    <!-- Mean -->
+    <div class="deriv-section" id="binom-mean">
+      <div class="deriv-title">
+        <span class="dt-badge binom">Mean</span>
+        均值推导 \(E[X] = np\)
+      </div>
+
+      <div class="relation-box">
+        <h4>🔑 核心思路：指示变量分解 (Indicator Decomposition)</h4>
+        <p>令 \(X_i = \mathbf{1}[\text{第}i\text{次试验成功}]\)，则 \(X = \sum_{i=1}^n X_i\)，每个 \(X_i \sim \text{Bern}(p)\)。</p>
+      </div>
+
+      <div class="step">
+        <span class="step-num teal">S1</span>
+        <div>由期望线性性（无需独立性）：
+        <div class="math-block">$$E[X] = \sum_{i=1}^n E[X_i] = \sum_{i=1}^n p = \boxed{np}$$</div>
+        </div>
+      </div>
+
+      <details>
+        <summary>直接求和法（利用组合恒等式）</summary>
+        <div class="detail-body">
+          <div class="math-block">$$E[X] = \sum_{k=0}^n k\binom{n}{k}p^k(1-p)^{n-k}$$</div>
+          <p>利用恒等式 \(k\binom{n}{k} = n\binom{n-1}{k-1}\)：</p>
+          <div class="math-block">$$E[X] = n\sum_{k=1}^n\binom{n-1}{k-1}p^k(1-p)^{n-k} = np\sum_{j=0}^{n-1}\binom{n-1}{j}p^j(1-p)^{n-1-j} = np\cdot 1 = np$$</div>
+          <p>（令 \(j=k-1\)，括号内恰为二项式定理 \((p+(1-p))^{n-1}=1\)。）</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- Variance -->
+    <div class="deriv-section" id="binom-var">
+      <div class="deriv-title">
+        <span class="dt-badge binom">Variance</span>
+        方差推导 \(\mathrm{Var}(X) = np(1-p)\)
+      </div>
+
+      <div class="step">
+        <span class="step-num teal">S1</span>
+        <div>由于 \(X_i\) 相互独立：
+        <div class="math-block">$$\mathrm{Var}(X) = \sum_{i=1}^n \mathrm{Var}(X_i) = n \cdot p(1-p) = \boxed{np(1-p)}$$</div>
+        </div>
+      </div>
+
+      <details>
+        <summary>利用二阶矩 E[X²] 直接推导</summary>
+        <div class="detail-body">
+          <p>先求 \(E[X(X-1)]\)（下降阶乘矩）：</p>
+          <div class="math-block">$$E[X(X-1)] = \sum_{k=2}^n k(k-1)\binom{n}{k}p^k q^{n-k}$$</div>
+          <p>利用恒等式 \(k(k-1)\binom{n}{k} = n(n-1)\binom{n-2}{k-2}\)：</p>
+          <div class="math-block">$$E[X(X-1)] = n(n-1)p^2\sum_{j=0}^{n-2}\binom{n-2}{j}p^j q^{n-2-j} = n(n-1)p^2$$</div>
+          <p>则 \(E[X^2] = E[X(X-1)] + E[X] = n(n-1)p^2 + np\)。</p>
+          <div class="math-block">$$\mathrm{Var}(X) = E[X^2]-(E[X])^2 = n(n-1)p^2+np-n^2p^2 = np - np^2 = np(1-p)$$</div>
+        </div>
+      </details>
+
+      <div class="note">
+        <div class="note-tag">MGF 验证</div>
+        <p>二项分布 MGF：\(M_X(t) = (1-p+pe^t)^n\)（\(n\) 个独立 Bern 的乘积）。</p>
+        <p>\(M_X'(t)\big|_{t=0} = n(1-p+pe^t)^{n-1}pe^t\big|_{t=0} = np\) ✓</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!--  DISTRIBUTION 2: GEOMETRIC                               -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="dist-block" id="geo">
+
+  <div class="dist-header geo">
+    <div class="dist-icon">🎯</div>
+    <div class="dist-titles">
+      <div class="dist-en">Geometric Distribution</div>
+      <div class="dist-zh">几何分布</div>
+      <div class="dist-tag">Geo(p) — Special Case of Negative Binomial (r=1)</div>
+    </div>
+  </div>
+
+  <div class="result-bar">
+    <div class="result-cell">
+      <div class="rc-label">Mean 均值</div>
+      <div class="rc-val">\(\displaystyle E[X] = \frac{1}{p}\)</div>
+    </div>
+    <div class="result-cell">
+      <div class="rc-label">Variance 方差</div>
+      <div class="rc-val">\(\displaystyle \mathrm{Var}(X) = \frac{1-p}{p^2}\)</div>
+    </div>
+  </div>
+
+  <div class="dist-content">
+    <div class="def-box">
+      <div class="def-label">Definition 定义</div>
+      <p>每次试验独立，成功概率为 \(p \in (0,1)\)。\(X\) 为<strong>首次成功所需的试验次数</strong>（包含成功那次）。</p>
+      <p><em>Alternative convention:</em> 有时定义 \(X\) 为首次成功之前的<strong>失败次数</strong>，此时支撑集为 \(\{0,1,2,\dots\}\)，均值变为 \(\tfrac{1-p}{p}\)，方差相同。本文采用前者。</p>
+      <div class="pmf-box">
+        \(\displaystyle P(X = k) = (1-p)^{k-1}\,p, \quad k = 1,\,2,\,3,\,\ldots\)
+        <div class="pmf-condition">Support: \(\{1, 2, 3, \ldots\}\)</div>
+      </div>
+    </div>
+
+    <!-- 1.1 Mean -->
+    <div class="deriv-section" id="geo-mean">
+      <div class="deriv-title">
+        <span class="dt-badge">Mean</span>
+        均值推导 \(E[X] = \dfrac{1}{p}\)
+      </div>
+
+      <p>令 \(q = 1-p\)。<strong>方法一：直接求和（幂级数微分法）</strong></p>
+      <div class="step">
+        <span class="step-num teal">S1</span>
+        <div>写出期望：
+        <div class="math-block">$$E[X] = \sum_{k=1}^{\infty} k\,(1-p)^{k-1}\,p = p\sum_{k=1}^{\infty}k\,q^{k-1}$$</div>
+        </div>
+      </div>
+      <div class="step">
+        <span class="step-num teal">S2</span>
+        <div>利用几何级数 \(\sum_{k=0}^{\infty}q^k = \dfrac{1}{1-q}\)（\(|q|<1\)），两边对 \(q\) 求导：
+        <div class="math-block">$$\sum_{k=1}^{\infty}k\,q^{k-1} = \frac{d}{dq}\sum_{k=0}^{\infty}q^k = \frac{d}{dq}\frac{1}{1-q} = \frac{1}{(1-q)^2} = \frac{1}{p^2}$$</div>
+        </div>
+      </div>
+      <div class="step">
+        <span class="step-num teal">S3</span>
+        <div>代回：
+        <div class="math-block">$$\boxed{E[X] = p \cdot \frac{1}{p^2} = \frac{1}{p}}$$</div>
+        </div>
+      </div>
+
+      <details>
+        <summary>方法二：条件期望法 (Recursive / Law of Total Expectation)</summary>
+        <div class="detail-body">
+          <p>设 \(\mu = E[X]\)。考虑第一次试验的结果：</p>
+          <div class="math-block">$$E[X] = p\cdot 1 + (1-p)\cdot(1 + E[X])$$</div>
+          <p>右侧含义：若成功（概率 \(p\)），总共 1 次；若失败（概率 \(1-p\)），已用 1 次，后续重新开始还需 \(E[X]\) 次。</p>
+          <div class="math-block">$$\mu = p + (1-p)(1+\mu) = p + (1-p) + (1-p)\mu = 1 + q\mu$$</div>
+          <div class="math-block">$$\mu(1-q) = 1 \implies \mu = \frac{1}{p}$$</div>
+          <div class="note">
+            <div class="note-tag">Insight</div>
+            这个递推方法在面试中非常优雅：只需写出第一步的分叉，令期望为未知数 \(\mu\) 求解即可。
+          </div>
+        </div>
+      </details>
+
+      <details>
+        <summary>方法三：概率生成函数 (PGF)</summary>
+        <div class="detail-body">
+          <p>几何分布的概率生成函数 \(G(z) = E[z^X]\)：</p>
+          <div class="math-block">$$G(z) = \sum_{k=1}^\infty z^k(1-p)^{k-1}p = \frac{pz}{1-qz}, \quad |z| < \frac{1}{q}$$</div>
+          <p>由 PGF 性质 \(E[X] = G'(1)\)：</p>
+          <div class="math-block">$$G'(z) = \frac{p(1-qz)+pqz}{(1-qz)^2} = \frac{p}{(1-qz)^2}$$</div>
+          <div class="math-block">$$E[X] = G'(1) = \frac{p}{(1-q)^2} = \frac{p}{p^2} = \frac{1}{p}$$</div>
+        </div>
+      </details>
+    </div>
+
+    <!-- 1.2 Variance -->
+    <div class="deriv-section" id="geo-var">
+      <div class="deriv-title">
+        <span class="dt-badge var">Variance</span>
+        方差推导 \(\mathrm{Var}(X) = \dfrac{1-p}{p^2}\)
+      </div>
+
+      <p>利用 \(\mathrm{Var}(X) = E[X^2] - (E[X])^2\)，先求 \(E[X(X-1)]\)（更方便）：</p>
+
+      <div class="step">
+        <span class="step-num teal">S1</span>
+        <div>计算下降阶乘矩 \(E[X(X-1)] = p\sum_{k=2}^\infty k(k-1)q^{k-1}\)。
+        <p>对 \(\sum kq^{k-1} = \tfrac{1}{p^2}\) 再对 \(q\) 求导：</p>
+        <div class="math-block">$$\frac{d}{dq}\sum_{k=1}^\infty kq^{k-1} = \sum_{k=2}^\infty k(k-1)q^{k-2} = \frac{2}{(1-q)^3} = \frac{2}{p^3}$$</div>
+        故 \(\sum_{k=2}^\infty k(k-1)q^{k-1} = \dfrac{2q}{p^3}\)。
+        </div>
+      </div>
+      <div class="step">
+        <span class="step-num teal">S2</span>
+        <div>
+        <div class="math-block">$$E[X(X-1)] = p\cdot\frac{2q}{p^3} = \frac{2q}{p^2}$$</div>
+        </div>
+      </div>
+      <div class="step">
+        <span class="step-num teal">S3</span>
+        <div>
+        <div class="math-block">$$E[X^2] = E[X(X-1)] + E[X] = \frac{2q}{p^2} + \frac{1}{p} = \frac{2q+p}{p^2} = \frac{1+q}{p^2}$$</div>
+        </div>
+      </div>
+      <div class="step">
+        <span class="step-num teal">S4</span>
+        <div>
+        <div class="math-block">$$\mathrm{Var}(X) = E[X^2] - \left(\frac{1}{p}\right)^2 = \frac{1+q}{p^2} - \frac{1}{p^2} = \frac{q}{p^2} = \boxed{\frac{1-p}{p^2}}$$</div>
+        </div>
+      </div>
+
+      <details>
+        <summary>方法二：条件方差法 (Law of Total Variance)</summary>
+        <div class="detail-body">
+          <p>设 \(I\) 为第一次试验结果（1=成功，0=失败）。由全方差公式：</p>
+          <div class="math-block">$$\mathrm{Var}(X) = E[\mathrm{Var}(X|I)] + \mathrm{Var}(E[X|I])$$</div>
+          <p>条件均值：\(E[X|I=1]=1,\quad E[X|I=0]=1+\mu=1+\tfrac1p\)。</p>
+          <p>所以 \(E[X|I]\) 取值 1（概率 \(p\)）或 \(1+\tfrac1p\)（概率 \(q\)）：</p>
+          <div class="math-block">$$\mathrm{Var}(E[X|I]) = pq\left(\frac{1}{p}\right)^2 = \frac{q}{p}$$</div>
+          <p>条件方差：\(\mathrm{Var}(X|I=1)=0,\quad \mathrm{Var}(X|I=0)=\mathrm{Var}(X)=\sigma^2\)。</p>
+          <div class="math-block">$$E[\mathrm{Var}(X|I)] = q\sigma^2$$</div>
+          <p>代入：</p>
+          <div class="math-block">$$\sigma^2 = q\sigma^2 + \frac{q}{p} \implies p\sigma^2 = \frac{q}{p} \implies \sigma^2 = \frac{q}{p^2} = \frac{1-p}{p^2}$$</div>
+        </div>
+      </details>
+    </div>
+
+  </div><!-- dist-content -->
+</div><!-- dist-block geo -->
+
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!--  DISTRIBUTION 2: NEGATIVE BINOMIAL                       -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="dist-block" id="nb">
+
+  <div class="dist-header nb">
+    <div class="dist-icon">🔢</div>
+    <div class="dist-titles">
+      <div class="dist-en">Negative Binomial Distribution</div>
+      <div class="dist-zh">负二项分布</div>
+      <div class="dist-tag">NB(r, p) — Generalizes Geometric: r = 1 gives Geo(p)</div>
+    </div>
+  </div>
+
+  <div class="result-bar">
+    <div class="result-cell">
+      <div class="rc-label">Mean 均值</div>
+      <div class="rc-val">\(\displaystyle E[X] = \frac{r}{p}\)</div>
+    </div>
+    <div class="result-cell">
+      <div class="rc-label">Variance 方差</div>
+      <div class="rc-val">\(\displaystyle \mathrm{Var}(X) = \frac{r(1-p)}{p^2}\)</div>
+    </div>
+  </div>
+
+  <div class="dist-content">
+    <div class="def-box">
+      <div class="def-label">Definition 定义</div>
+      <p>每次独立试验成功概率为 \(p\)。\(X\) 为<strong>第 \(r\) 次成功所需的总试验次数</strong>，\(r\in\mathbb{Z}^+\)。</p>
+      <p>前 \(k-1\) 次试验中恰好有 \(r-1\) 次成功（\(\binom{k-1}{r-1}\) 种选法），第 \(k\) 次必须成功。</p>
+      <div class="pmf-box">
+        \(\displaystyle P(X=k) = \binom{k-1}{r-1}p^r(1-p)^{k-r}, \quad k = r,\, r{+}1,\, r{+}2,\, \ldots\)
+        <div class="pmf-condition">Equivalently: number of failures \(Y = X - r \sim \) NB(r,p) with support \(\{0,1,2,\ldots\}\)</div>
+      </div>
+    </div>
+
+    <!-- 2.1 Mean -->
+    <div class="deriv-section" id="nb-mean">
+      <div class="deriv-title">
+        <span class="dt-badge nb">Mean</span>
+        均值推导 \(E[X] = \dfrac{r}{p}\)
+      </div>
+
+      <div class="relation-box">
+        <h4>🔑 核心思路：分解为 \(r\) 个独立几何分布之和</h4>
+        <p>
+          第 \(r\) 次成功等于：第1次成功的等待时间 \(T_1\)，加上第2次成功的额外等待时间 \(T_2\)，……
+          其中 \(T_1, T_2, \ldots, T_r\stackrel{\text{iid}}{\sim}\mathrm{Geo}(p)\)，且
+          $$X = T_1 + T_2 + \cdots + T_r$$
+        </p>
+      </div>
+
+      <div class="step">
+        <span class="step-num">S1</span>
+        <div>由期望的线性性：
+        <div class="math-block">$$E[X] = E[T_1] + E[T_2] + \cdots + E[T_r] = r\cdot E[T_1] = r\cdot\frac{1}{p} = \boxed{\frac{r}{p}}$$</div>
+        </div>
+      </div>
+
+      <details>
+        <summary>方法二：直接求和（负二项级数）</summary>
+        <div class="detail-body">
+          <p>利用公式 \(\displaystyle\sum_{k=r}^\infty \binom{k-1}{r-1}q^{k-r}=\frac{1}{p^r}\cdot p^r = ??\)，更优雅地：</p>
+          <div class="math-block">$$E[X] = \sum_{k=r}^\infty k\binom{k-1}{r-1}p^r q^{k-r}$$</div>
+          <p>利用恒等式 \(k\binom{k-1}{r-1} = r\binom{k}{r}\)：</p>
+          <div class="math-block">$$E[X] = r\,p^r\sum_{k=r}^\infty\binom{k}{r}q^{k-r} \cdot \frac{1}{p}$$</div>
+          <p>利用负二项级数 \(\sum_{k=r}^\infty\binom{k}{r}q^{k-r} = \tfrac{1}{p^{r+1}}\)（对应 \(\tfrac{1}{(1-q)^{r+1}}\) 的系数），整理得 \(E[X]=\tfrac{r}{p}\)。</p>
+          <div class="note">
+            <div class="note-tag">关键恒等式</div>
+            \(k\binom{k-1}{r-1} = r\binom{k}{r}\) 可验证：左 \(= k\cdot\tfrac{(k-1)!}{(r-1)!(k-r)!} = r\cdot\tfrac{k!}{r!(k-r)!} = r\binom{k}{r}\) ✓
+          </div>
+        </div>
+      </details>
+    </div>
+
+    <!-- 2.2 Variance -->
+    <div class="deriv-section" id="nb-var">
+      <div class="deriv-title">
+        <span class="dt-badge var">Variance</span>
+        方差推导 \(\mathrm{Var}(X) = \dfrac{r(1-p)}{p^2}\)
+      </div>
+
+      <div class="step">
+        <span class="step-num">S1</span>
+        <div>由于 \(X = T_1+\cdots+T_r\)，\(T_i\) 相互独立，方差具有可加性：
+        <div class="math-block">$$\mathrm{Var}(X) = \mathrm{Var}(T_1)+\cdots+\mathrm{Var}(T_r) = r\cdot\mathrm{Var}(T_1) = r\cdot\frac{1-p}{p^2} = \boxed{\frac{r(1-p)}{p^2}}$$</div>
+        </div>
+      </div>
+
+      <div class="note">
+        <div class="note-tag">Summary of Elegance</div>
+        负二项 = \(r\) 个几何的和，所以均值方差都直接乘以 \(r\)。面试时能说出这一点是最漂亮的答法。
+      </div>
+
+      <details>
+        <summary>验证：用 E[X²] 直接计算（完整版）</summary>
+        <div class="detail-body">
+          <p>令 \(q=1-p\)，需要 \(E[X(X-1)]\)：</p>
+          <div class="math-block">$$E[X(X-1)] = \sum_{k=r}^\infty k(k-1)\binom{k-1}{r-1}p^rq^{k-r}$$</div>
+          <p>利用恒等式 \(k(k-1)\binom{k-1}{r-1} = r(r+1)\binom{k}{r+1}\)（类似前面的推导）：</p>
+          <div class="math-block">$$E[X(X-1)] = r(r+1)\,\frac{p^r}{p}\sum_{k=r+1}^\infty\binom{k}{r+1}q^{k-r-1}\cdot\frac{q}{p}$$</div>
+          <div class="math-block">$$= r(r+1)\cdot\frac{q}{p^2}\cdot\frac{1}{p^r}\cdot p^r = \frac{r(r+1)q}{p^2}$$</div>
+          <p>故：</p>
+          <div class="math-block">$$E[X^2] = E[X(X-1)] + E[X] = \frac{r(r+1)q}{p^2} + \frac{r}{p}$$</div>
+          <div class="math-block">$$\mathrm{Var}(X) = \frac{r(r+1)q}{p^2} + \frac{r}{p} - \frac{r^2}{p^2} = \frac{r(r+1)q + rp - r^2}{p^2} = \frac{r[q(r+1)+p-r]}{p^2}$$</div>
+          <div class="math-block">$$= \frac{r[rq+q+p-r]}{p^2} = \frac{r[r(q-1)+(q+p)]}{p^2} = \frac{r[-rp+1]}{p^2} \quad\Leftarrow \text{wait}$$</div>
+          <p>更直接地展开：\(r(r+1)q + rp - r^2 = r[(r+1)q+p-r] = r[rq+q+p-r] = r[r(q-1)+1] = r[-rp+1]\)... 让我直接展开：</p>
+          <div class="math-block">$$r(r{+}1)q + rp - r^2 = r^2q + rq + rp - r^2 = r^2(q{-}1) + r(q{+}p) = -r^2p + r = r(1{-}rp)$$</div>
+          <p>这不对。重新来：</p>
+          <div class="math-block">$$r^2q + rq + rp - r^2 = r^2q - r^2 + r(q+p) = r^2(q-1) + r\cdot 1 = -r^2p + r = r(1-rp)$$</div>
+          <p>似乎有误，应等于 \(rq\)。检查：\(rq = r(1-p)\)。用 \(r=1\) 验证：\(E[X^2]-E[X]^2 = \tfrac{1+q}{p^2}-\tfrac{1}{p^2}=\tfrac{q}{p^2}\)。对 \(r=1\)，公式给 \(\tfrac{q}{p^2}\) ✓。</p>
+          <p>再来：\(\tfrac{r(r+1)q}{p^2}+\tfrac{r}{p}-\tfrac{r^2}{p^2} = \tfrac{r^2q+rq+rp-r^2}{p^2} = \tfrac{r^2(q-1)+r(q+p)}{p^2} = \tfrac{-r^2p+r}{p^2} = \tfrac{r(1-rp)}{p^2}\)。验证 \(r=1\)：\(\tfrac{1-p}{p^2}=\tfrac{q}{p^2}\) ✓。而 \(\tfrac{r(1-rp)}{p^2}|_{r=1} = \tfrac{1-p}{p^2}\) ✓。实际上这等价于 \(\tfrac{rq}{p^2}\) 当 \(rp+rq = r\)，即 \(1-rp = rq+(1-r)\)... 不对，直接验证 \(r=2\): \(\tfrac{2(1-2p)}{p^2}\neq\tfrac{2q}{p^2}\) unless \(1-2p=q\)... \(1-2p \ne 1-p=q\)。所以我计算有误。</p>
+          <p><strong>修正：</strong>利用更简单的方法——直接用独立性：\(\mathrm{Var}(X)=r\cdot\mathrm{Var}(T_1) = r\cdot\tfrac{q}{p^2}\)。</p>
+        </div>
+      </details>
+    </div>
+
+  </div>
+</div><!-- dist-block nb -->
+
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!--  DISTRIBUTION 3: HYPERGEOMETRIC                          -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="dist-block" id="hyper">
+
+  <div class="dist-header hyper">
+    <div class="dist-icon">🎲</div>
+    <div class="dist-titles">
+      <div class="dist-en">Hypergeometric Distribution</div>
+      <div class="dist-zh">超几何分布</div>
+      <div class="dist-tag">HyperGeo(N, K, n) — Sampling Without Replacement</div>
+    </div>
+  </div>
+
+  <div class="result-bar">
+    <div class="result-cell">
+      <div class="rc-label">Mean 均值</div>
+      <div class="rc-val">\(\displaystyle E[X] = \frac{nK}{N}\)</div>
+    </div>
+    <div class="result-cell">
+      <div class="rc-label">Variance 方差</div>
+      <div class="rc-val">\(\displaystyle \mathrm{Var}(X) = n\cdot\frac{K}{N}\cdot\frac{N-K}{N}\cdot\frac{N-n}{N-1}\)</div>
+    </div>
+  </div>
+
+  <div class="dist-content">
+    <div class="def-box">
+      <div class="def-label">Definition 定义 — Parameters: \(N, K, n\)</div>
+      <ul style="margin:0.3rem 0 0.6rem 1.2rem; font-size:0.97rem;">
+        <li>\(N\) — 总体大小（Population size）</li>
+        <li>\(K\) — 总体中"成功"个数（Number of successes in population）</li>
+        <li>\(n\) — 抽取样本量（Sample size drawn without replacement）</li>
+        <li>\(X\) — 样本中成功个数（Number of successes in sample）</li>
+      </ul>
+      <div class="pmf-box">
+        \(\displaystyle P(X=k) = \frac{\dbinom{K}{k}\dbinom{N-K}{n-k}}{\dbinom{N}{n}}, \quad \max(0,\,n{-}(N{-}K)) \le k \le \min(n,\,K)\)
+        <div class="pmf-condition">vs. Binomial(n, K/N): same mean but smaller variance — "without replacement" reduces spread</div>
+      </div>
+    </div>
+
+    <!-- 3.1 Mean -->
+    <div class="deriv-section" id="hyper-mean">
+      <div class="deriv-title">
+        <span class="dt-badge hp">Mean</span>
+        均值推导 \(E[X] = \dfrac{nK}{N}\)
+      </div>
+
+      <div class="relation-box">
+        <h4>🔑 核心思路：指示变量分解 (Indicator Variables)</h4>
+        <p>
+          设第 \(i\) 次抽取是否为"成功"的指示变量为 \(X_i\)（\(i=1,\ldots,n\)），则
+          \(X = X_1 + X_2 + \cdots + X_n\)。
+          由对称性，每次抽到成功的概率均为 \(P(X_i=1) = K/N\)（无论是否放回，每个位置等概率）。
+        </p>
+      </div>
+
+      <div class="step">
+        <span class="step-num purp">S1</span>
+        <div>由期望的线性性（无需独立性！）：
+        <div class="math-block">$$E[X] = \sum_{i=1}^n E[X_i] = n\cdot\frac{K}{N} = \boxed{\frac{nK}{N}}$$</div>
+        </div>
+      </div>
+
+      <details>
+        <summary>为什么 P(X_i = 1) = K/N？对称性论证</summary>
+        <div class="detail-body">
+          <p>无放回抽样中，第 \(i\) 个位置抽到特定元素的概率不依赖 \(i\)，因为所有 \(N!\) 种排列等可能。形式上：</p>
+          <div class="math-block">$$P(X_i = 1) = \frac{\text{包含 X}_i\text{=1 的样本数}}{\text{总样本数}} = \frac{\binom{K}{1}\binom{N-1}{n-1}}{\binom{N}{n}} = \frac{K\cdot\frac{(N-1)!}{(n-1)!(N-n)!}}{\frac{N!}{n!(N-n)!}} = \frac{K\cdot n}{N} \cdot\frac{1}{n}$$</div>
+          <p>Wait, let's redo: \(P(X_i=1)\) = (ways to pick 1 success for position \(i\)) × (ways for other \(n-1\) positions) / total = the marginal probability that position \(i\) is a success. By symmetry of all positions:</p>
+          <div class="math-block">$$P(X_i=1) = \frac{K}{N}$$</div>
+          <p><em>Direct check:</em> \(\sum_i E[X_i] = nK/N\). Also \(E[X] = \sum_k k P(X=k)\) must equal \(nK/N\) — this is consistent. The key insight is that "which position gets which ball" is uniform, so each position has the same marginal probability of being a success.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>直接求和法（利用超几何恒等式）</summary>
+        <div class="detail-body">
+          <div class="math-block">$$E[X] = \sum_{k=0}^{\min(n,K)} k\frac{\binom{K}{k}\binom{N-K}{n-k}}{\binom{N}{n}}$$</div>
+          <p>利用恒等式 \(k\binom{K}{k} = K\binom{K-1}{k-1}\)：</p>
+          <div class="math-block">$$E[X] = \frac{K}{\binom{N}{n}}\sum_{k=1}^{\min(n,K)}\binom{K-1}{k-1}\binom{N-K}{n-k}$$</div>
+          <p>令 \(j=k-1\)，利用 Vandermonde 卷积 \(\sum_j\binom{K-1}{j}\binom{N-K}{n-1-j} = \binom{N-1}{n-1}\)：</p>
+          <div class="math-block">$$E[X] = \frac{K\binom{N-1}{n-1}}{\binom{N}{n}} = K\cdot\frac{\frac{(N-1)!}{(n-1)!(N-n)!}}{\frac{N!}{n!(N-n)!}} = K\cdot\frac{n}{N} = \frac{nK}{N}$$</div>
+        </div>
+      </details>
+    </div>
+
+    <!-- 3.2 Variance -->
+    <div class="deriv-section" id="hyper-var">
+      <div class="deriv-title">
+        <span class="dt-badge hp">Variance</span>
+        方差推导 \(\mathrm{Var}(X) = n\dfrac{K}{N}\dfrac{N-K}{N}\dfrac{N-n}{N-1}\)
+      </div>
+
+      <p>仍用指示变量法。令 \(p_0=K/N\)，\(q_0=1-p_0=(N-K)/N\)。</p>
+
+      <div class="step">
+        <span class="step-num purp">S1</span>
+        <div><strong>各指示变量的方差：</strong>
+        <div class="math-block">$$\mathrm{Var}(X_i) = E[X_i^2]-(E[X_i])^2 = \frac{K}{N} - \left(\frac{K}{N}\right)^2 = \frac{K}{N}\cdot\frac{N-K}{N} = p_0 q_0$$</div>
+        </div>
+      </div>
+      <div class="step">
+        <span class="step-num purp">S2</span>
+        <div><strong>协方差 \(\mathrm{Cov}(X_i, X_j)\)（\(i\ne j\)）：</strong>
+        <p>计算 \(E[X_i X_j] = P(X_i=1, X_j=1)\)，即两次都抽到"成功"的概率：</p>
+        <div class="math-block">$$E[X_i X_j] = P(X_i=1,\,X_j=1) = \frac{K}{N}\cdot\frac{K-1}{N-1}$$</div>
+        <p>（第一次抽到成功概率 \(K/N\)，无放回后第二次条件概率 \((K-1)/(N-1)\)。）</p>
+        <div class="math-block">$$\mathrm{Cov}(X_i,X_j) = \frac{K(K-1)}{N(N-1)} - \frac{K^2}{N^2} = \frac{K}{N}\left[\frac{K-1}{N-1}-\frac{K}{N}\right]$$</div>
+        <div class="math-block">$$= \frac{K}{N}\cdot\frac{N(K-1)-K(N-1)}{N(N-1)} = \frac{K}{N}\cdot\frac{NK-N-KN+K}{N(N-1)} = \frac{K}{N}\cdot\frac{K-N}{N(N-1)}$$</div>
+        <div class="math-block">$$= -\frac{K(N-K)}{N^2(N-1)} = -\frac{p_0 q_0}{N-1}$$</div>
+        </div>
+      </div>
+      <div class="step">
+        <span class="step-num purp">S3</span>
+        <div><strong>展开 \(\mathrm{Var}(X)\)：</strong>
+        <div class="math-block">$$\mathrm{Var}(X) = \mathrm{Var}\left(\sum_{i=1}^n X_i\right) = \sum_{i=1}^n\mathrm{Var}(X_i) + 2\sum_{i<j}\mathrm{Cov}(X_i,X_j)$$</div>
+        <p>共 \(n\) 个对角项，\(\binom{n}{2}=\tfrac{n(n-1)}{2}\) 个交叉项（每对出现一次，乘以2后共 \(n(n-1)\) 项）：</p>
+        <div class="math-block">$$\mathrm{Var}(X) = n\cdot p_0 q_0 + n(n-1)\cdot\left(-\frac{p_0 q_0}{N-1}\right)$$</div>
+        </div>
+      </div>
+      <div class="step">
+        <span class="step-num purp">S4</span>
+        <div><strong>提取公因子 \(n\cdot p_0 q_0\)：</strong>
+        <div class="math-block">$$\mathrm{Var}(X) = n\, p_0 q_0\left[1 - \frac{n-1}{N-1}\right] = n\,p_0 q_0\cdot\frac{N-1-(n-1)}{N-1} = n\,p_0 q_0\cdot\frac{N-n}{N-1}$$</div>
+        <div class="math-block">$$\boxed{\mathrm{Var}(X) = n\cdot\frac{K}{N}\cdot\frac{N-K}{N}\cdot\frac{N-n}{N-1}}$$</div>
+        </div>
+      </div>
+
+      <div class="note">
+        <div class="note-tag">有限总体修正因子 · Finite Population Correction (FPC)</div>
+        <p>与二项分布 \(B(n,p_0)\) 方差 \(np_0 q_0\) 相比，超几何方差多了一个乘子：</p>
+        <div class="math-block">$$\mathrm{Var}(\text{Hyper}) = \mathrm{Var}(\text{Binom})\times\underbrace{\frac{N-n}{N-1}}_{\text{FPC} \le 1}$$</div>
+        <ul style="margin-top:0.4rem;">
+          <li>当 \(N\to\infty\)（总体很大），FPC \(\to 1\)，超几何 → 二项。</li>
+          <li>当 \(n=N\)（全部抽走），FPC \(=0\)，方差 \(=0\)（此时 \(X=K\) 确定）。</li>
+          <li>无放回抽样比有放回方差<strong>更小</strong>：因为同一总体中重复抽取会引入额外变异。</li>
+        </ul>
+      </div>
+
+      <details>
+        <summary>数值验证例：N=10, K=4, n=3</summary>
+        <div class="detail-body">
+          <p>均值：\(E[X]=3\times4/10=1.2\)。</p>
+          <p>方差：\(3\times(4/10)\times(6/10)\times(7/9)=3\times0.24\times(7/9)=0.72\times0.7\overline{7}=0.56\)。</p>
+          <p>二项方差：\(3\times0.4\times0.6=0.72\)，超几何方差 \(=0.72\times(7/9)\approx0.56\) &lt; 0.72 ✓（无放回方差更小）。</p>
+        </div>
+      </details>
+    </div>
+
+  </div>
+</div><!-- dist-block hyper -->
+
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!--  DISTRIBUTION 6: POISSON                                 -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="dist-block" id="pois">
+
+  <div class="dist-header pois">
+    <div class="dist-icon">⚡</div>
+    <div class="dist-titles">
+      <div class="dist-en">Poisson Distribution</div>
+      <div class="dist-zh">泊松分布</div>
+      <div class="dist-tag">Pois(λ) — Rare Events / Limit of Binomial</div>
+    </div>
+  </div>
+
+  <div class="result-bar">
+    <div class="result-cell">
+      <div class="rc-label">Mean 均值</div>
+      <div class="rc-val">\(\displaystyle E[X] = \lambda\)</div>
+    </div>
+    <div class="result-cell">
+      <div class="rc-label">Variance 方差</div>
+      <div class="rc-val">\(\displaystyle \mathrm{Var}(X) = \lambda\)</div>
+    </div>
+  </div>
+
+  <div class="dist-content">
+    <div class="def-box">
+      <div class="def-label">Definition 定义 — Parameter: \(\lambda > 0\)</div>
+      <ul style="margin:0.3rem 0 0.6rem 1.2rem; font-size:0.97rem;">
+        <li>\(\lambda\) — 单位时间（或区域）内事件的平均发生次数（rate）</li>
+        <li>\(X\) — 实际发生次数（Number of events in a fixed interval）</li>
+      </ul>
+      <div class="pmf-box">
+        \(\displaystyle P(X = k) = \frac{\lambda^k e^{-\lambda}}{k!}, \quad k = 0,\,1,\,2,\,\ldots\)
+        <div class="pmf-condition">Support: \(\{0, 1, 2, \ldots\}\) — 注意包含 0</div>
+      </div>
+    </div>
+
+    <!-- Poisson Mean -->
+    <div class="deriv-section" id="pois-mean">
+      <div class="deriv-title">
+        <span class="dt-badge pois">Mean</span>
+        均值推导 \(E[X] = \lambda\)
+      </div>
+
+      <div class="step">
+        <span class="step-num teal">S1</span>
+        <div>写出期望：
+        <div class="math-block">$$E[X] = \sum_{k=0}^{\infty} k \cdot \frac{\lambda^k e^{-\lambda}}{k!} = \sum_{k=1}^{\infty} \frac{\lambda^k e^{-\lambda}}{(k-1)!}$$</div>
+        </div>
+      </div>
+      <div class="step">
+        <span class="step-num teal">S2</span>
+        <div>令 \(j = k-1\)，提取 \(\lambda\)：
+        <div class="math-block">$$E[X] = \lambda e^{-\lambda} \sum_{j=0}^{\infty} \frac{\lambda^j}{j!} = \lambda e^{-\lambda} \cdot e^{\lambda} = \boxed{\lambda}$$</div>
+        </div>
+      </div>
+
+      <details>
+        <summary>极限推导：Poisson 作为 Binom(n,p) 的极限</summary>
+        <div class="detail-body">
+          <p>令 \(n\to\infty,\;p\to 0\)，保持 \(\lambda = np\) 不变（稀有事件极限）。</p>
+          <div class="math-block">$$P(\text{Binom}=k) = \binom{n}{k}p^k(1-p)^{n-k} \xrightarrow{n\to\infty,\,np=\lambda} \frac{\lambda^k e^{-\lambda}}{k!}$$</div>
+          <p>均值自然继承：\(E[\text{Binom}] = np = \lambda\)，取极限后 Poisson 均值也为 \(\lambda\)。</p>
+          <div class="note">
+            <div class="note-tag">规则of thumb</div>
+            当 \(n \ge 20\) 且 \(p \le 0.05\) 时，Binomial\((n,p)\) 可用 Poisson\((\lambda=np)\) 近似。
+          </div>
+        </div>
+      </details>
+    </div>
+
+    <!-- Poisson Variance -->
+    <div class="deriv-section" id="pois-var">
+      <div class="deriv-title">
+        <span class="dt-badge pois">Variance</span>
+        方差推导 \(\mathrm{Var}(X) = \lambda\)
+      </div>
+      <p>利用下降阶乘矩 \(E[X(X-1)]\) 计算二阶矩。</p>
+
+      <div class="step">
+        <span class="step-num teal">S1</span>
+        <div>计算 \(E[X(X-1)]\)：
+        <div class="math-block">$$E[X(X-1)] = \sum_{k=2}^{\infty} k(k-1)\frac{\lambda^k e^{-\lambda}}{k!} = \lambda^2 e^{-\lambda}\sum_{j=0}^{\infty}\frac{\lambda^j}{j!} = \lambda^2$$</div>
+        （令 \(j=k-2\)，级数求和为 \(e^\lambda\)。）
+        </div>
+      </div>
+      <div class="step">
+        <span class="step-num teal">S2</span>
+        <div>恢复 \(E[X^2]\)：
+        <div class="math-block">$$E[X^2] = E[X(X-1)] + E[X] = \lambda^2 + \lambda$$</div>
+        </div>
+      </div>
+      <div class="step">
+        <span class="step-num teal">S3</span>
+        <div>计算方差：
+        <div class="math-block">$$\mathrm{Var}(X) = E[X^2] - (E[X])^2 = \lambda^2 + \lambda - \lambda^2 = \boxed{\lambda}$$</div>
+        </div>
+      </div>
+
+      <div class="note">
+        <div class="note-tag">⭐ 均值 = 方差 — Poisson 最重要的特征</div>
+        <p>Poisson 分布的均值与方差相等，均为 \(\lambda\)。实际数据中若 \(\hat{\sigma}^2 \approx \bar{x}\)，常用 Poisson 建模（如保险索赔次数、网页点击数）。</p>
+        <p>若 \(\mathrm{Var}(X) > E[X]\)（过度离散 overdispersion），则考虑负二项分布；若 \(\mathrm{Var}(X) < E[X]\)（欠离散），则考虑二项分布。</p>
+      </div>
+
+      <details>
+        <summary>MGF 法验证</summary>
+        <div class="detail-body">
+          <p>Poisson 的 MGF：\(M_X(t) = e^{\lambda(e^t - 1)}\)。</p>
+          <div class="math-block">$$M_X'(t) = \lambda e^t \cdot M_X(t), \quad M_X'(0) = \lambda \cdot 1 = \lambda \checkmark$$</div>
+          <div class="math-block">$$M_X''(t) = \lambda e^t M_X(t) + (\lambda e^t)^2 M_X(t), \quad M_X''(0) = \lambda + \lambda^2$$</div>
+          <div class="math-block">$$\mathrm{Var}(X) = M_X''(0) - (M_X'(0))^2 = (\lambda+\lambda^2) - \lambda^2 = \lambda \checkmark$$</div>
+        </div>
+      </details>
+
+      <details>
+        <summary>泊松过程背景：为什么均值=方差？</summary>
+        <div class="detail-body">
+          <p>泊松过程是满足以下条件的计数过程：（1）事件独立；（2）在极短时间 \(dt\) 内发生一次的概率为 \(\lambda\,dt\)；（3）\(dt\) 内发生两次的概率可忽略。</p>
+          <p>将 \([0,1]\) 分成 \(n\) 份，每份发生概率 \(p = \lambda/n\)。当 \(n\to\infty\)，每份独立，总计数 \(\to \text{Pois}(\lambda)\)。</p>
+          <p>这一"独立稀有叠加"结构天然导致均值 = 方差：离散事件的计数变异性与其期望强度完全匹配。</p>
+        </div>
+      </details>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!--  DISTRIBUTION 7: DISCRETE UNIFORM                        -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="dist-block" id="unif">
+
+  <div class="dist-header unif">
+    <div class="dist-icon">⚖️</div>
+    <div class="dist-titles">
+      <div class="dist-en">Discrete Uniform Distribution</div>
+      <div class="dist-zh">离散均匀分布</div>
+      <div class="dist-tag">Uniform{a, …, b} — All Values Equally Likely</div>
+    </div>
+  </div>
+
+  <div class="result-bar">
+    <div class="result-cell">
+      <div class="rc-label">Mean 均值</div>
+      <div class="rc-val">\(\displaystyle E[X] = \frac{a+b}{2}\)</div>
+    </div>
+    <div class="result-cell">
+      <div class="rc-label">Variance 方差</div>
+      <div class="rc-val">\(\displaystyle \mathrm{Var}(X) = \frac{(b-a+1)^2-1}{12} = \frac{(n^2-1)}{12}\)</div>
+    </div>
+  </div>
+
+  <div class="dist-content">
+    <div class="def-box">
+      <div class="def-label">Definition 定义 — Parameters: \(a \le b\)（整数），\(n = b - a + 1\)</div>
+      <p>\(X\) 在 \(\{a, a+1, \ldots, b\}\) 上均匀分布，每个整数取到概率相等。</p>
+      <div class="pmf-box">
+        \(\displaystyle P(X = k) = \frac{1}{n} = \frac{1}{b-a+1}, \quad k = a,\,a{+}1,\,\ldots,\,b\)
+        <div class="pmf-condition">Standard case: a=1, b=n → P(X=k)=1/n, the "fair die" model</div>
+      </div>
+    </div>
+
+    <div class="deriv-section">
+      <div class="deriv-title">
+        <span class="dt-badge unif">Mean</span>
+        均值推导 \(E[X] = \dfrac{a+b}{2}\)
+      </div>
+
+      <div class="step">
+        <span class="step-num teal">S1</span>
+        <div>写出期望（WLOG 令 \(a=1,b=n\) 再平移）：
+        <div class="math-block">$$E[X] = \frac{1}{n}\sum_{k=1}^{n} k = \frac{1}{n}\cdot\frac{n(n+1)}{2} = \frac{n+1}{2}$$</div>
+        </div>
+      </div>
+      <div class="step">
+        <span class="step-num teal">S2</span>
+        <div>一般参数通过平移 \(Y = X - a + 1 \sim \text{Uniform}\{1,\ldots,n\}\)：
+        <div class="math-block">$$E[X] = E[Y] + a - 1 = \frac{n+1}{2} + a - 1 = \frac{n+1}{2} + a - 1 = \frac{(b-a+1)+1}{2}+a-1 = \boxed{\frac{a+b}{2}}$$</div>
+        </div>
+      </div>
+      <details>
+        <summary>对称性论证（最简法）</summary>
+        <div class="detail-body">
+          <p>PMF 关于 \((a+b)/2\) 完全对称，因此均值 = 中位数 = 对称中心 \(= \dfrac{a+b}{2}\)。这是对称分布的通用结论，无需计算。</p>
+        </div>
+      </details>
+    </div>
+
+    <div class="deriv-section">
+      <div class="deriv-title">
+        <span class="dt-badge unif">Variance</span>
+        方差推导 \(\mathrm{Var}(X) = \dfrac{n^2-1}{12}\)，其中 \(n = b-a+1\)
+      </div>
+
+      <div class="step">
+        <span class="step-num teal">S1</span>
+        <div>计算 \(E[X^2]\)（仍以 \(a=1,b=n\) 为例）：
+        <div class="math-block">$$E[X^2] = \frac{1}{n}\sum_{k=1}^n k^2 = \frac{1}{n}\cdot\frac{n(n+1)(2n+1)}{6} = \frac{(n+1)(2n+1)}{6}$$</div>
+        </div>
+      </div>
+      <div class="step">
+        <span class="step-num teal">S2</span>
+        <div>计算方差：
+        <div class="math-block">$$\mathrm{Var}(X) = E[X^2]-(E[X])^2 = \frac{(n+1)(2n+1)}{6}-\left(\frac{n+1}{2}\right)^2$$</div>
+        <div class="math-block">$$= (n+1)\left[\frac{2n+1}{6}-\frac{n+1}{4}\right] = (n+1)\cdot\frac{2(2n+1)-3(n+1)}{12} = (n+1)\cdot\frac{n-1}{12}$$</div>
+        <div class="math-block">$$= \boxed{\frac{n^2-1}{12}}$$</div>
+        </div>
+      </div>
+      <div class="note">
+        <div class="note-tag">🎲 骰子应用</div>
+        <p>标准六面骰（\(n=6, a=1, b=6\)）：均值 \(= 3.5\)，方差 \(= (36-1)/12 = 35/12 \approx 2.917\)。</p>
+        <p>一般区间 \([a,b]\) 上：平移不改变方差，故 \(\mathrm{Var}(X) = \dfrac{(b-a+1)^2-1}{12}\)。</p>
+      </div>
+
+      <details>
+        <summary>\(\sum_{k=1}^n k^2\) 公式的推导</summary>
+        <div class="detail-body">
+          <p>用"telescoping"法：注意 \((k+1)^3 - k^3 = 3k^2 + 3k + 1\)，对 \(k=1\) 到 \(n\) 求和得：</p>
+          <div class="math-block">$$(n+1)^3 - 1 = 3\sum k^2 + 3\cdot\frac{n(n+1)}{2} + n$$</div>
+          <p>整理即得 \(\sum_{k=1}^n k^2 = \dfrac{n(n+1)(2n+1)}{6}\)。</p>
+        </div>
+      </details>
+    </div>
+  </div>
+</div>
+
+
+<div class="cheat-sheet" id="cheat">
+  <div class="cheat-title">速查表 · Cheat Sheet</div>
+  <div class="cheat-sub">All Seven Distributions at a Glance</div>
+
+  <table class="big-table">
+    <thead>
+      <tr>
+        <th>Distribution</th>
+        <th>PMF</th>
+        <th>Support</th>
+        <th>Mean</th>
+        <th>Variance</th>
+        <th>Key Trick / Note</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="bern-row">
+        <td><div class="dist-name">Bernoulli</div><small style="color:var(--muted)">Bern(p)</small></td>
+        <td>\(p^k(1-p)^{1-k}\)</td>
+        <td>\(\{0,1\}\)</td>
+        <td>\(p\)</td>
+        <td>\(p(1-p)\)</td>
+        <td>\(X^2=X\)，方差最大于 \(p=\tfrac{1}{2}\)</td>
+      </tr>
+      <tr class="binom-row">
+        <td><div class="dist-name">Binomial</div><small style="color:var(--muted)">Bin(n,p)</small></td>
+        <td>\(\binom{n}{k}p^k(1-p)^{n-k}\)</td>
+        <td>\(\{0,\ldots,n\}\)</td>
+        <td>\(np\)</td>
+        <td>\(np(1-p)\)</td>
+        <td>\(n\) 个 iid Bern(p) 之和</td>
+      </tr>
+      <tr class="geo-row">
+        <td><div class="dist-name">Geometric</div><small style="color:var(--muted)">Geo(p)</small></td>
+        <td>\((1-p)^{k-1}p\)</td>
+        <td>\(k=1,2,3,\ldots\)</td>
+        <td>\(\dfrac{1}{p}\)</td>
+        <td>\(\dfrac{1-p}{p^2}\)</td>
+        <td>无记忆性；递推 \(\mu=1+q\mu\)</td>
+      </tr>
+      <tr class="nb-row">
+        <td><div class="dist-name">Neg. Binomial</div><small style="color:var(--muted)">NB(r,p)</small></td>
+        <td>\(\binom{k-1}{r-1}p^r(1-p)^{k-r}\)</td>
+        <td>\(k=r,r{+}1,\ldots\)</td>
+        <td>\(\dfrac{r}{p}\)</td>
+        <td>\(\dfrac{r(1-p)}{p^2}\)</td>
+        <td>\(r\) 个 iid Geo(p) 之和</td>
+      </tr>
+      <tr class="hp-row">
+        <td><div class="dist-name">Hypergeometric</div><small style="color:var(--muted)">HG(N,K,n)</small></td>
+        <td>\(\dfrac{\binom{K}{k}\binom{N-K}{n-k}}{\binom{N}{n}}\)</td>
+        <td>\(0\le k\le\min(n,K)\)</td>
+        <td>\(\dfrac{nK}{N}\)</td>
+        <td>\(n\dfrac{K}{N}\dfrac{N-K}{N}\dfrac{N-n}{N-1}\)</td>
+        <td>无放回；FPC \(=\tfrac{N-n}{N-1}\le 1\)</td>
+      </tr>
+      <tr class="pois-row">
+        <td><div class="dist-name">Poisson</div><small style="color:var(--muted)">Pois(λ)</small></td>
+        <td>\(\dfrac{\lambda^k e^{-\lambda}}{k!}\)</td>
+        <td>\(k=0,1,2,\ldots\)</td>
+        <td>\(\lambda\)</td>
+        <td>\(\lambda\)</td>
+        <td>均值 = 方差；Binom 极限</td>
+      </tr>
+      <tr class="unif-row">
+        <td><div class="dist-name">Discrete Uniform</div><small style="color:var(--muted)">\(\{a,\ldots,b\}\)</small></td>
+        <td>\(\dfrac{1}{b-a+1}\)</td>
+        <td>\(a,a{+}1,\ldots,b\)</td>
+        <td>\(\dfrac{a+b}{2}\)</td>
+        <td>\(\dfrac{(b-a+1)^2-1}{12}\)</td>
+        <td>对称性 → 均值=中位数</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div style="margin-top:2rem; display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+    <div class="note">
+      <div class="note-tag">家族关系 · Family Tree</div>
+      <ul style="margin-top:0.3rem;">
+        <li>Bern(p) ×n → Bin(n,p)</li>
+        <li>Bin(n,p) →<sup>\(n\to\infty\)</sup> Pois(λ)</li>
+        <li>Geo(p) ×r → NB(r,p)</li>
+        <li>Hyper(N,K,n) →<sup>\(N\to\infty\)</sup> Bin(n, K/N)</li>
+      </ul>
+    </div>
+    <div class="note">
+      <div class="note-tag">离散 vs 过度离散</div>
+      <p>对计数数据：</p>
+      <ul style="margin-top:0.3rem;">
+        <li>\(\mathrm{Var} = E[X]\)：Poisson</li>
+        <li>\(\mathrm{Var} &lt; E[X]\)：Binomial（欠离散）</li>
+        <li>\(\mathrm{Var} &gt; E[X]\)：NB（过度离散）</li>
+      </ul>
+    </div>
+  </div>
+
+  <div style="margin-top:1.2rem;" class="note">
+    <div class="note-tag">面试金句 · Interview One-Liners</div>
+    <p><strong>Bernoulli</strong>：最简单；\(X^2=X\) 是关键。<strong>Binomial</strong>：\(n\) 个 Bern 之和，指示变量拆分秒推均值。<strong>Geometric</strong>：递推法一行求解 \(E[X]=1/p\)，无记忆性。<strong>NB</strong>：\(r\) 个 Geo 之和，方差线性扩展。<strong>Hypergeometric</strong>：无放回，方差乘修正因子 \(\tfrac{N-n}{N-1}\)。<strong>Poisson</strong>：均值=方差=\(\lambda\)，稀有事件建模首选。<strong>离散均匀</strong>：对称取中点，方差用 \(\sum k^2\) 公式。</p>
+  </div>
+
+  <a href="#" class="back-top">↑ Back to Top</a>
+</div>
+
+</main>
+
+<footer>
+  离散分布全览 · Bernoulli · Binomial · Geometric · Negative Binomial · Hypergeometric · Poisson · Discrete Uniform<br>
+  Princeton MFin · Quant Interview Prep · 2025–2026
+</footer>
+
+</body>
+</html>

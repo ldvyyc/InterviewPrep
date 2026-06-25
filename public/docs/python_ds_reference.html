@@ -1,0 +1,1834 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Python 数据结构速查手册</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Syne:wght@400;600;800&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --py-blue: #306998;
+    --py-yellow: #FFD43B;
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface2: #1f2937;
+    --border: #30363d;
+    --text: #e6edf3;
+    --text-muted: #8b949e;
+    --accent-red: #ff6b6b;
+    --accent-green: #56d364;
+    --accent-purple: #bc8cff;
+    --accent-orange: #f0883e;
+    --code-bg: #0d1117;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-weight: 300;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* Header */
+  header {
+    background: linear-gradient(135deg, #0d1117 0%, #161b22 50%, #1a2332 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 48px 40px 40px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -10%;
+    width: 60%;
+    height: 200%;
+    background: radial-gradient(ellipse, rgba(48,105,152,0.15) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  header::after {
+    content: '';
+    position: absolute;
+    bottom: -30%;
+    right: -5%;
+    width: 40%;
+    height: 150%;
+    background: radial-gradient(ellipse, rgba(255,212,59,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .header-inner {
+    max-width: 1400px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+  }
+
+  .header-tag {
+    display: inline-block;
+    background: rgba(48,105,152,0.2);
+    border: 1px solid rgba(48,105,152,0.4);
+    color: #79b8ff;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    margin-bottom: 16px;
+    letter-spacing: 0.05em;
+  }
+
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: clamp(28px, 5vw, 52px);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    margin-bottom: 10px;
+  }
+
+  h1 span.highlight { color: var(--py-yellow); }
+
+  .header-sub {
+    color: var(--text-muted);
+    font-size: 15px;
+    letter-spacing: 0.02em;
+  }
+
+  .badge-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+  }
+
+  .badge {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 4px 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  /* Layout */
+  .container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 40px;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+
+  .grid-3 {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+
+  .span-2 { grid-column: span 2; }
+
+  /* Section titles */
+  .section-label {
+    font-family: 'Syne', sans-serif;
+    font-weight: 600;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--py-yellow);
+    margin-bottom: 16px;
+    margin-top: 40px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, var(--border), transparent);
+  }
+
+  /* Cards */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+
+  .card:hover {
+    border-color: rgba(48,105,152,0.5);
+    transform: translateY(-2px);
+  }
+
+  .card-accent {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+  }
+
+  .accent-blue  { background: linear-gradient(to right, var(--py-blue), #79b8ff); }
+  .accent-yellow { background: linear-gradient(to right, var(--py-yellow), #f0883e); }
+  .accent-green  { background: linear-gradient(to right, var(--accent-green), #56d364aa); }
+  .accent-purple { background: linear-gradient(to right, var(--accent-purple), #bc8cff88); }
+  .accent-red    { background: linear-gradient(to right, var(--accent-red), #ff6b6b88); }
+  .accent-orange { background: linear-gradient(to right, var(--accent-orange), #f0883e88); }
+
+  .card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    gap: 12px;
+  }
+
+  .card-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 18px;
+    font-weight: 600;
+    color: #fff;
+  }
+
+  .card-subtitle {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 3px;
+    font-style: italic;
+  }
+
+  .impl-tag {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 3px 8px;
+    font-size: 10px;
+    color: var(--text-muted);
+    font-family: 'JetBrains Mono', monospace;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  /* Code blocks */
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    line-height: 1.7;
+    overflow-x: auto;
+    margin: 12px 0;
+  }
+
+  .kw { color: #ff7b72; }       /* keywords */
+  .fn { color: #d2a8ff; }       /* functions */
+  .st { color: #a5d6ff; }       /* strings */
+  .cm { color: #8b949e; }       /* comments */
+  .nm { color: var(--py-yellow); } /* numbers */
+  .op { color: #56d364; }       /* operators */
+  .bi { color: #79b8ff; }       /* builtins */
+  .id { color: #e6edf3; }       /* identifiers */
+
+  /* Tables */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    margin-top: 12px;
+  }
+
+  th {
+    background: rgba(48,105,152,0.15);
+    color: #79b8ff;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    padding: 8px 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    font-size: 11px;
+    letter-spacing: 0.05em;
+  }
+
+  td {
+    padding: 7px 12px;
+    border-bottom: 1px solid rgba(48,53,61,0.5);
+    color: var(--text-muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+  }
+
+  td:first-child { color: var(--text); }
+
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+
+  .complexity {
+    display: inline-block;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .o1   { background: rgba(86,211,100,0.15); color: #56d364; border: 1px solid rgba(86,211,100,0.3); }
+  .ologn{ background: rgba(255,212,59,0.15); color: #FFD43B; border: 1px solid rgba(255,212,59,0.3); }
+  .on   { background: rgba(255,107,107,0.15); color: #ff6b6b; border: 1px solid rgba(255,107,107,0.3); }
+
+  /* Note box */
+  .note {
+    background: rgba(255,212,59,0.07);
+    border: 1px solid rgba(255,212,59,0.25);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 12px;
+    color: #f0c040;
+    margin-top: 12px;
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+  }
+
+  .note::before { content: '⚠'; flex-shrink: 0; }
+
+  .tip {
+    background: rgba(86,211,100,0.07);
+    border: 1px solid rgba(86,211,100,0.25);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 12px;
+    color: #56d364;
+    margin-top: 12px;
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+  }
+
+  .tip::before { content: '⚡'; flex-shrink: 0; }
+
+  /* Big summary table */
+  .summary-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px;
+    margin-top: 20px;
+  }
+
+  .summary-card h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    color: #fff;
+  }
+
+  .big-table th { font-size: 12px; padding: 10px 14px; }
+  .big-table td { font-size: 12px; padding: 9px 14px; }
+
+  /* Footer */
+  footer {
+    text-align: center;
+    padding: 30px;
+    color: var(--text-muted);
+    font-size: 12px;
+    border-top: 1px solid var(--border);
+    margin-top: 40px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .container { padding: 20px; }
+    header { padding: 30px 20px; }
+    .grid, .grid-3 { grid-template-columns: 1fr; }
+    .span-2 { grid-column: span 1; }
+  }
+
+  /* === NEW SECTIONS STYLES === */
+
+  /* Size bar */
+  .size-bar-wrap { height: 5px; background: rgba(255,255,255,0.06); border-radius: 3px; margin: 8px 0; overflow: hidden; }
+  .size-bar { height: 100%; border-radius: 3px; transition: width 0.3s; }
+  .bar-blue   { background: #306998; }
+  .bar-yellow { background: #FFD43B; }
+  .bar-green  { background: #56d364; }
+  .bar-red    { background: #ff6b6b; }
+  .bar-purple { background: #bc8cff; }
+  .bar-orange { background: #f0883e; }
+
+  /* Byte breakdown */
+  .byte-row { display: flex; gap: 3px; margin: 10px 0; flex-wrap: wrap; }
+  .byte-cell { height: 28px; display: flex; align-items: center; justify-content: center;
+               font-size: 9px; font-family: 'JetBrains Mono', monospace;
+               border-radius: 3px; white-space: nowrap; padding: 0 5px; }
+  .byte-overhead { background: rgba(255,107,107,0.15); border: 1px solid rgba(255,107,107,0.3); color: #ff6b6b; }
+  .byte-data     { background: rgba(48,105,152,0.2);   border: 1px solid rgba(48,105,152,0.4); color: #79b8ff; }
+  .byte-padding  { background: rgba(139,148,158,0.12); border: 1px solid rgba(139,148,158,0.25); color: #8b949e; }
+
+  /* Size comparison grid */
+  .size-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
+  .size-item { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; }
+  .size-item-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
+  .size-name { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #fff; }
+  .size-bytes { font-size: 20px; font-weight: 600; font-family: 'Syne', sans-serif; }
+  .size-bits { font-size: 10px; color: var(--text-muted); }
+  .size-note { font-size: 10px; color: var(--text-muted); line-height: 1.4; margin-top: 4px; }
+  .overhead-tag { display: inline-block; font-size: 9px; padding: 1px 5px; border-radius: 3px;
+                  font-family: 'JetBrains Mono', monospace; margin-right: 3px; }
+  .tag-oh  { background: rgba(255,107,107,0.15); color: #ff6b6b; border: 1px solid rgba(255,107,107,0.3); }
+  .tag-dat { background: rgba(48,105,152,0.2);   color: #79b8ff; border: 1px solid rgba(48,105,152,0.4); }
+
+  /* Probing vis */
+  .probe-slots { display: flex; gap: 3px; flex-wrap: wrap; margin: 10px 0; }
+  .probe-slot { width: 50px; height: 46px; border-radius: 5px; display: flex; flex-direction: column;
+                align-items: center; justify-content: center; gap: 2px;
+                border: 1px solid var(--border); font-family: 'JetBrains Mono', monospace; }
+  .ps-idx  { font-size: 9px; color: var(--text-muted); }
+  .ps-key  { font-size: 11px; font-weight: 600; }
+  .ps-empty   { background: var(--surface2); }
+  .ps-used    { background: rgba(48,105,152,0.15); border-color: rgba(48,105,152,0.4); color: #79b8ff; }
+  .ps-target  { background: rgba(86,211,100,0.12); border-color: rgba(86,211,100,0.4); color: #56d364; }
+  .ps-probe   { background: rgba(255,212,59,0.1);  border-color: rgba(255,212,59,0.3);  color: #FFD43B; }
+  .ps-tomb    { background: rgba(255,107,107,0.1); border-color: rgba(255,107,107,0.3); color: #ff6b6b; }
+
+  /* Two-col layout for probing strategies */
+  .probe-compare { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-top: 12px; }
+  @media (max-width: 900px) { .probe-compare { grid-template-columns: 1fr; } }
+  .probe-box { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 12px; }
+  .probe-box-title { font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 600;
+                     color: #fff; margin-bottom: 6px; }
+  .probe-formula { background: var(--code-bg); border: 1px solid var(--border); border-radius: 5px;
+                   padding: 6px 10px; font-family: 'JetBrains Mono', monospace; font-size: 11px;
+                   color: #79b8ff; margin: 8px 0; }
+  .probe-pro  { font-size: 11px; color: #56d364; line-height: 1.5; }
+  .probe-con  { font-size: 11px; color: #ff6b6b; line-height: 1.5; margin-top: 4px; }
+
+  /* Sorted structures comparison */
+  .struct-compare { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 12px; }
+  @media (max-width: 900px) { .struct-compare { grid-template-columns: 1fr; } }
+  .struct-box { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 14px; }
+  .struct-title { font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 600; color: #fff; margin-bottom: 4px; }
+  .struct-subtitle { font-size: 10px; color: var(--text-muted); margin-bottom: 10px; font-style: italic; }
+  .struct-row { display: flex; justify-content: space-between; padding: 4px 0;
+                border-bottom: 1px solid rgba(48,53,61,0.5); font-size: 11px; }
+  .struct-row:last-child { border-bottom: none; }
+  .struct-key { color: var(--text-muted); font-family: 'JetBrains Mono', monospace; }
+  .struct-val { font-weight: 500; }
+
+  /* Bisect deep-dive */
+  .bisect-vis { display: flex; gap: 0; margin: 10px 0; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+  .bisect-cell { flex: 1; text-align: center; padding: 8px 4px; border-right: 1px solid var(--border);
+                 font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+  .bisect-cell:last-child { border-right: none; }
+  .bc-normal  { background: var(--surface2); color: var(--text); }
+  .bc-target  { background: rgba(86,211,100,0.15); color: #56d364; }
+  .bc-left    { background: rgba(48,105,152,0.15); color: #79b8ff; }
+  .bc-right   { background: rgba(255,212,59,0.12); color: #FFD43B; }
+  .bisect-label { font-size: 9px; color: var(--text-muted); margin-top: 2px; }
+
+  /* dynamic array growth table */
+  .growth-table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 10px; }
+  .growth-table th { background: rgba(48,105,152,0.15); color: #79b8ff; padding: 6px 10px;
+                     font-family: 'JetBrains Mono', monospace; font-weight: 600; font-size: 10px;
+                     text-align: left; border-bottom: 1px solid var(--border); }
+  .growth-table td { padding: 5px 10px; border-bottom: 1px solid rgba(48,53,61,0.5);
+                     color: var(--text-muted); font-family: 'JetBrains Mono', monospace; }
+  .growth-table td:first-child { color: var(--text); }
+  .growth-table tr:last-child td { border-bottom: none; }
+  .grow-bar-cell { width: 120px; }
+  .grow-bar-bg { background: rgba(255,255,255,0.05); border-radius: 2px; height: 8px; overflow: hidden; }
+  .grow-bar-fill { height: 100%; border-radius: 2px; background: linear-gradient(to right, #306998, #79b8ff); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="header-tag">// Python Reference Sheet</div>
+    <h1>Python <span class="highlight">数据结构</span><br>速查手册</h1>
+    <p class="header-sub">Built-in Types · collections · heapq · bisect · itertools — 底层实现 · 常用方法 · 时间复杂度 · 内存占用 · 碰撞策略 · 有序结构</p>
+    <div class="badge-row">
+      <span class="badge">Python 3.11+</span>
+      <span class="badge">CPython Implementation</span>
+      <span class="badge">collections module</span>
+      <span class="badge">heapq module</span>
+      <span class="badge">bisect module</span>
+      <span class="badge">itertools module</span>
+      <span class="badge">Big-O Reference</span>
+      <span class="badge">Object Memory Sizes</span>
+      <span class="badge">Hash Collision Probing</span>
+      <span class="badge">Sorted Structures</span>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- BUILT-IN PRIMITIVES -->
+  <div class="section-label">内置基础类型</div>
+  <div class="grid">
+
+    <!-- int -->
+    <div class="card">
+      <div class="card-accent accent-blue"></div>
+      <div class="card-header">
+        <div>
+          <div class="card-title">int</div>
+          <div class="card-subtitle">任意精度大整数</div>
+        </div>
+        <span class="impl-tag">大整数数组</span>
+      </div>
+      <p style="font-size:12px;color:var(--text-muted);margin-bottom:10px;">每块存30位，支持无限精度。小整数 <code style="color:#79b8ff">-5~256</code> 预缓存单例，不重复分配内存。</p>
+      <pre><span class="id">x</span> <span class="op">=</span> <span class="nm">10</span> <span class="op">**</span> <span class="nm">100</span>         <span class="cm"># 任意精度，无溢出</span>
+<span class="bi">abs</span>(<span class="op">-</span><span class="nm">5</span>)               <span class="cm"># 5</span>
+<span class="bi">bin</span>(<span class="nm">10</span>)              <span class="cm"># '0b1010'</span>
+<span class="bi">int</span>(<span class="st">"1010"</span>, <span class="nm">2</span>)       <span class="cm"># 10，二进制转换</span>
+<span class="bi">divmod</span>(<span class="nm">17</span>, <span class="nm">5</span>)        <span class="cm"># (3, 2)</span>
+<span class="bi">pow</span>(<span class="nm">2</span>, <span class="nm">10</span>, <span class="nm">1000</span>)    <span class="cm"># 24，模幂运算</span></pre>
+    </div>
+
+    <!-- float -->
+    <div class="card">
+      <div class="card-accent accent-yellow"></div>
+      <div class="card-header">
+        <div>
+          <div class="card-title">float</div>
+          <div class="card-subtitle">IEEE 754 双精度浮点</div>
+        </div>
+        <span class="impl-tag">C double 64位</span>
+      </div>
+      <p style="font-size:12px;color:var(--text-muted);margin-bottom:10px;">直接封装 C double，有空闲列表缓存已释放对象。精度与 C/Java double 完全一致。</p>
+      <pre><span class="kw">import</span> <span class="id">math</span>
+<span class="bi">round</span>(<span class="nm">3.14159</span>, <span class="nm">2</span>)             <span class="cm"># 3.14</span>
+<span class="id">math</span>.<span class="fn">isclose</span>(<span class="nm">0.1</span><span class="op">+</span><span class="nm">0.2</span>, <span class="nm">0.3</span>)   <span class="cm"># True ✅</span>
+<span class="nm">0.1</span> <span class="op">+</span> <span class="nm">0.2</span> <span class="op">==</span> <span class="nm">0.3</span>             <span class="cm"># False ❌</span>
+<span class="bi">float</span>(<span class="st">'inf'</span>)                  <span class="cm"># 正无穷</span>
+<span class="id">math</span>.<span class="fn">isnan</span>(<span class="bi">float</span>(<span class="st">'nan'</span>))     <span class="cm"># True</span></pre>
+      <div class="note">0.1+0.2 ≠ 0.3，二进制无法精确表示十进制小数，永远用 math.isclose() 比较浮点数</div>
+    </div>
+
+    <!-- str -->
+    <div class="card">
+      <div class="card-accent accent-green"></div>
+      <div class="card-header">
+        <div>
+          <div class="card-title">str</div>
+          <div class="card-subtitle">紧凑编码不可变字符串</div>
+        </div>
+        <span class="impl-tag">Latin-1/UCS-2/UCS-4</span>
+      </div>
+      <p style="font-size:12px;color:var(--text-muted);margin-bottom:10px;">按字符范围自动选最小编码，哈希值缓存（第二次O(1)），短字符串自动驻留（interning）。</p>
+      <pre><span class="id">s</span> <span class="op">=</span> <span class="st">"Hello, 世界"</span>
+<span class="id">s</span>.<span class="fn">upper</span>() / <span class="id">s</span>.<span class="fn">lower</span>()         <span class="cm"># 大小写</span>
+<span class="id">s</span>.<span class="fn">strip</span>() / <span class="id">s</span>.<span class="fn">split</span>(<span class="st">","</span>)      <span class="cm"># 去空白/分割</span>
+<span class="id">s</span>.<span class="fn">startswith</span>(<span class="st">"He"</span>)            <span class="cm"># True</span>
+<span class="id">s</span>.<span class="fn">find</span>(<span class="st">"世"</span>)                   <span class="cm"># 返回索引</span>
+<span class="st">","</span>.<span class="fn">join</span>([<span class="st">"a"</span>,<span class="st">"b"</span>,<span class="st">"c"</span>])      <span class="cm"># "a,b,c"</span>
+<span class="id">f</span><span class="st">"value={</span><span class="nm">42</span><span class="st">:.2f}"</span>              <span class="cm"># f-string</span>
+<span class="id">s</span>[<span class="nm">1</span>:<span class="nm">4</span>] / <span class="id">s</span>[::<span class="op">-</span><span class="nm">1</span>]               <span class="cm"># 切片/反转</span></pre>
+      <div class="tip">大量拼接用 "".join(list) 而非 += 循环，避免 O(n²)</div>
+    </div>
+
+  </div>
+
+  <!-- SEQUENCES -->
+  <div class="section-label">序列类型</div>
+  <div class="grid">
+
+    <!-- list -->
+    <div class="card">
+      <div class="card-accent accent-blue"></div>
+      <div class="card-header">
+        <div>
+          <div class="card-title">list</div>
+          <div class="card-subtitle">动态数组（最常用）</div>
+        </div>
+        <span class="impl-tag">指针数组 + 过度分配</span>
+      </div>
+      <p style="font-size:12px;color:var(--text-muted);margin-bottom:10px;">存储 PyObject 指针，扩容策略约 <code style="color:#79b8ff">n*9//8+6</code>，均摊 O(1) append。</p>
+      <pre><span class="id">lst</span> <span class="op">=</span> [<span class="nm">3</span>, <span class="nm">1</span>, <span class="nm">4</span>, <span class="nm">1</span>, <span class="nm">5</span>]
+<span class="id">lst</span>.<span class="fn">append</span>(<span class="nm">9</span>)           <span class="cm"># 末尾添加 O(1)均摊</span>
+<span class="id">lst</span>.<span class="fn">extend</span>([<span class="nm">2</span>, <span class="nm">6</span>])      <span class="cm"># 批量添加</span>
+<span class="id">lst</span>.<span class="fn">insert</span>(<span class="nm">0</span>, <span class="nm">0</span>)        <span class="cm"># 头部插入 O(n)!</span>
+<span class="id">lst</span>.<span class="fn">pop</span>()               <span class="cm"># 末尾删除 O(1)</span>
+<span class="id">lst</span>.<span class="fn">pop</span>(<span class="nm">0</span>)              <span class="cm"># 头部删除 O(n)!</span>
+<span class="id">lst</span>.<span class="fn">sort</span>(<span class="id">key</span><span class="op">=</span><span class="kw">lambda</span> <span class="id">x</span>:<span class="id">x</span>, <span class="id">reverse</span><span class="op">=</span><span class="kw">True</span>)
+[<span class="id">x</span><span class="op">**</span><span class="nm">2</span> <span class="kw">for</span> <span class="id">x</span> <span class="kw">in</span> <span class="id">lst</span> <span class="kw">if</span> <span class="id">x</span><span class="op">></span><span class="nm">2</span>] <span class="cm"># 推导式</span></pre>
+      <table>
+        <tr><th>操作</th><th>方法</th><th>复杂度</th></tr>
+        <tr><td>末尾添加</td><td><code>append(x)</code></td><td><span class="complexity o1">O(1)*</span></td></tr>
+        <tr><td>头部插入</td><td><code>insert(0,x)</code></td><td><span class="complexity on">O(n)</span></td></tr>
+        <tr><td>末尾删除</td><td><code>pop()</code></td><td><span class="complexity o1">O(1)</span></td></tr>
+        <tr><td>随机访问</td><td><code>lst[i]</code></td><td><span class="complexity o1">O(1)</span></td></tr>
+        <tr><td>排序</td><td><code>sort()</code></td><td><span class="complexity ologn">O(n log n)</span></td></tr>
+      </table>
+    </div>
+
+    <!-- tuple -->
+    <div class="card">
+      <div class="card-accent accent-purple"></div>
+      <div class="card-header">
+        <div>
+          <div class="card-title">tuple</div>
+          <div class="card-subtitle">静态数组（不可变）</div>
+        </div>
+        <span class="impl-tag">固定指针数组</span>
+      </div>
+      <p style="font-size:12px;color:var(--text-muted);margin-bottom:10px;">无 allocated 字段，比 list 省内存。小 tuple（≤20元素）有空闲列表缓存，创建极快。可哈希，可作为 dict key。</p>
+      <pre><span class="id">t</span> <span class="op">=</span> (<span class="nm">1</span>, <span class="nm">2</span>, <span class="nm">3</span>)
+<span class="id">t</span> <span class="op">=</span> <span class="nm">1</span>, <span class="nm">2</span>, <span class="nm">3</span>            <span class="cm"># 省略括号</span>
+<span class="id">a</span>, <span class="id">b</span>, <span class="id">c</span> <span class="op">=</span> <span class="id">t</span>           <span class="cm"># 解包</span>
+<span class="id">a</span>, <span class="op">*</span><span class="id">rest</span> <span class="op">=</span> <span class="id">t</span>          <span class="cm"># 星号解包，rest=[2,3]</span>
+<span class="id">t</span>.<span class="fn">count</span>(<span class="nm">1</span>)            <span class="cm"># 计数</span>
+<span class="id">t</span>.<span class="fn">index</span>(<span class="nm">2</span>)            <span class="cm"># 查找索引</span>
+<span class="id">t</span> <span class="op">+</span> (<span class="nm">4</span>, <span class="nm">5</span>)            <span class="cm"># 拼接返回新tuple</span>
+<span class="id">d</span> <span class="op">=</span> {(<span class="nm">1</span>,<span class="nm">2</span>): <span class="st">"val"</span>}    <span class="cm"># 可作dict key</span></pre>
+      <div class="tip">用途：函数多值返回、不可变配置、作为dict key、比list省内存</div>
+    </div>
+
+  </div>
+
+  <!-- MAPPING & SET -->
+  <div class="section-label">映射与集合</div>
+  <div class="grid">
+
+    <!-- dict -->
+    <div class="card">
+      <div class="card-accent accent-yellow"></div>
+      <div class="card-header">
+        <div>
+          <div class="card-title">dict</div>
+          <div class="card-subtitle">紧凑哈希表（Python 3.6+）</div>
+        </div>
+        <span class="impl-tag">indices + entries 分离</span>
+      </div>
+      <p style="font-size:12px;color:var(--text-muted);margin-bottom:10px;">稀疏 indices 数组 + 紧凑 entries 数组，负载因子 2/3 触发扩容，自动保持插入顺序，开放寻址解决冲突。</p>
+      <pre><span class="id">d</span> <span class="op">=</span> {<span class="st">"a"</span>: <span class="nm">1</span>, <span class="st">"b"</span>: <span class="nm">2</span>}
+<span class="id">d</span>[<span class="st">"c"</span>] <span class="op">=</span> <span class="nm">3</span>             <span class="cm"># 添加/修改 O(1)</span>
+<span class="id">d</span>.<span class="fn">get</span>(<span class="st">"x"</span>, <span class="nm">0</span>)         <span class="cm"># 安全获取，默认0</span>
+<span class="id">d</span>.<span class="fn">pop</span>(<span class="st">"a"</span>)            <span class="cm"># 删除并返回</span>
+<span class="id">d</span>.<span class="fn">update</span>({<span class="st">"d"</span>: <span class="nm">4</span>})   <span class="cm"># 批量更新</span>
+<span class="id">d</span>.<span class="fn">keys</span>() / <span class="id">d</span>.<span class="fn">values</span>() / <span class="id">d</span>.<span class="fn">items</span>()
+<span class="st">"b"</span> <span class="kw">in</span> <span class="id">d</span>              <span class="cm"># 成员检测 O(1)</span>
+{<span class="id">k</span>:<span class="id">v</span> <span class="kw">for</span> <span class="id">k</span>,<span class="id">v</span> <span class="kw">in</span> <span class="id">d</span>.<span class="fn">items</span>() <span class="kw">if</span> <span class="id">v</span><span class="op">></span><span class="nm">1</span>}
+<span class="id">d1</span> <span class="op">|</span> <span class="id">d2</span>               <span class="cm"># 合并 Python 3.9+</span></pre>
+    </div>
+
+    <!-- set -->
+    <div class="card">
+      <div class="card-accent accent-red"></div>
+      <div class="card-header">
+        <div>
+          <div class="card-title">set / frozenset</div>
+          <div class="card-subtitle">哈希集合</div>
+        </div>
+        <span class="impl-tag">无value的哈希表</span>
+      </div>
+      <p style="font-size:12px;color:var(--text-muted);margin-bottom:10px;">与 dict 结构相似但不存 value，负载因子 2/3 扩容。frozenset 不可变可哈希，可作 dict key。</p>
+      <pre><span class="id">s</span> <span class="op">=</span> {<span class="nm">1</span>, <span class="nm">2</span>, <span class="nm">3</span>}
+<span class="id">s</span>.<span class="fn">add</span>(<span class="nm">4</span>)              <span class="cm"># O(1)</span>
+<span class="id">s</span>.<span class="fn">discard</span>(<span class="nm">99</span>)         <span class="cm"># 删除，不存在不报错</span>
+<span class="id">s1</span> <span class="op">|</span> <span class="id">s2</span>               <span class="cm"># 并集</span>
+<span class="id">s1</span> <span class="op">&</span> <span class="id">s2</span>               <span class="cm"># 交集</span>
+<span class="id">s1</span> <span class="op">-</span> <span class="id">s2</span>               <span class="cm"># 差集</span>
+<span class="id">s1</span> <span class="op">^</span> <span class="id">s2</span>               <span class="cm"># 对称差集</span>
+<span class="nm">1</span> <span class="kw">in</span> <span class="id">s</span>                <span class="cm"># 成员检测 O(1)</span>
+<span class="bi">frozenset</span>(<span class="id">s</span>)          <span class="cm"># 不可变版本</span></pre>
+    </div>
+
+  </div>
+
+  <!-- COLLECTIONS MODULE -->
+  <div class="section-label">collections 模块</div>
+  <div class="grid">
+
+    <!-- deque -->
+    <div class="card">
+      <div class="card-accent accent-blue"></div>
+      <div class="card-header">
+        <div>
+          <div class="card-title">deque</div>
+          <div class="card-subtitle">双端队列</div>
+        </div>
+        <span class="impl-tag">块状双向链表(C)</span>
+      </div>
+      <p style="font-size:12px;color:var(--text-muted);margin-bottom:10px;">每块64元素的双向链表，两端 O(1) 操作，比 list 头部操作快得多。maxlen 实现有界缓冲区。</p>
+      <pre><span class="kw">from</span> <span class="id">collections</span> <span class="kw">import</span> <span class="id">deque</span>
+<span class="id">d</span> <span class="op">=</span> <span class="fn">deque</span>([<span class="nm">1</span>,<span class="nm">2</span>,<span class="nm">3</span>], <span class="id">maxlen</span><span class="op">=</span><span class="nm">5</span>)
+<span class="id">d</span>.<span class="fn">appendleft</span>(<span class="nm">0</span>)    <span class="cm"># 左端添加 O(1)</span>
+<span class="id">d</span>.<span class="fn">popleft</span>()        <span class="cm"># 左端删除 O(1)</span>
+<span class="id">d</span>.<span class="fn">append</span>(<span class="nm">4</span>)        <span class="cm"># 右端添加 O(1)</span>
+<span class="id">d</span>.<span class="fn">pop</span>()            <span class="cm"># 右端删除 O(1)</span>
+<span class="id">d</span>.<span class="fn">rotate</span>(<span class="nm">2</span>)        <span class="cm"># 右旋2步</span></pre>
+      <div class="tip">适用：滑动窗口、BFS队列、LRU缓存、有界日志缓冲区</div>
+    </div>
+
+    <!-- defaultdict -->
+    <div class="card">
+      <div class="card-accent accent-green"></div>
+      <div class="card-header">
+        <div>
+          <div class="card-title">defaultdict</div>
+          <div class="card-subtitle">带默认值的字典</div>
+        </div>
+        <span class="impl-tag">dict子类 + __missing__</span>
+      </div>
+      <p style="font-size:12px;color:var(--text-muted);margin-bottom:10px;">底层哈希表与 dict 完全相同，仅重写 <code style="color:#79b8ff">__missing__</code> 方法，访问不存在的 key 时自动调用 default_factory。</p>
+      <pre><span class="kw">from</span> <span class="id">collections</span> <span class="kw">import</span> <span class="id">defaultdict</span>
+<span class="id">d</span> <span class="op">=</span> <span class="fn">defaultdict</span>(<span class="bi">int</span>)    <span class="cm"># 默认0</span>
+<span class="id">d</span> <span class="op">=</span> <span class="fn">defaultdict</span>(<span class="bi">list</span>)   <span class="cm"># 默认[]</span>
+<span class="id">d</span>[<span class="st">"missing"</span>] <span class="op">+=</span> <span class="nm">1</span>       <span class="cm"># 不报KeyError</span>
+<span class="cm"># 分组经典用法</span>
+<span class="id">groups</span> <span class="op">=</span> <span class="fn">defaultdict</span>(<span class="bi">list</span>)
+<span class="kw">for</span> <span class="id">k</span>, <span class="id">v</span> <span class="kw">in</span> <span class="id">pairs</span>:
+    <span class="id">groups</span>[<span class="id">k</span>].<span class="fn">append</span>(<span class="id">v</span>)</pre>
+    </div>
+
+    <!-- Counter -->
+    <div class="card">
+      <div class="card-accent accent-orange"></div>
+      <div class="card-header">
+        <div>
+          <div class="card-title">Counter</div>
+          <div class="card-subtitle">计数器</div>
+        </div>
+        <span class="impl-tag">dict子类 + heapq</span>
+      </div>
+      <p style="font-size:12px;color:var(--text-muted);margin-bottom:10px;">dict 子类，missing 返回0但不写入。most_common() 内部用 heapq.nlargest，时间 O(n log k)。</p>
+      <pre><span class="kw">from</span> <span class="id">collections</span> <span class="kw">import</span> <span class="id">Counter</span>
+<span class="id">c</span> <span class="op">=</span> <span class="fn">Counter</span>(<span class="st">"aabbbc"</span>)
+<span class="cm"># Counter({'b':3,'a':2,'c':1})</span>
+<span class="id">c</span>.<span class="fn">most_common</span>(<span class="nm">2</span>)    <span class="cm"># [('b',3),('a',2)]</span>
+<span class="id">c</span>[<span class="st">"z"</span>]              <span class="cm"># 0，不报错</span>
+<span class="id">c</span>.<span class="fn">update</span>(<span class="st">"aaa"</span>)     <span class="cm"># 增量更新</span>
+<span class="id">c1</span> <span class="op">+</span> <span class="id">c2</span>             <span class="cm"># 合并（过滤<=0）</span>
+<span class="id">c1</span> <span class="op">&</span> <span class="id">c2</span>             <span class="cm"># 取最小计数</span>
+<span class="bi">list</span>(<span class="id">c</span>.<span class="fn">elements</span>())  <span class="cm"># 展开为列表</span></pre>
+    </div>
+
+    <!-- OrderedDict -->
+    <div class="card">
+      <div class="card-accent accent-purple"></div>
+      <div class="card-header">
+        <div>
+          <div class="card-title">OrderedDict</div>
+          <div class="card-subtitle">有序字典</div>
+        </div>
+        <span class="impl-tag">dict + 双向链表</span>
+      </div>
+      <p style="font-size:12px;color:var(--text-muted);margin-bottom:10px;">在 dict 哈希表之外额外维护双向链表，每个 key 对应链表节点，支持 O(1) 的 move_to_end。Python 3.7+ 普通 dict 已有序但不支持此操作。</p>
+      <pre><span class="kw">from</span> <span class="id">collections</span> <span class="kw">import</span> <span class="id">OrderedDict</span>
+<span class="id">od</span> <span class="op">=</span> <span class="fn">OrderedDict</span>()
+<span class="id">od</span>[<span class="st">"a"</span>] <span class="op">=</span> <span class="nm">1</span>
+<span class="id">od</span>.<span class="fn">move_to_end</span>(<span class="st">"a"</span>)            <span class="cm"># 移到末尾 O(1)</span>
+<span class="id">od</span>.<span class="fn">move_to_end</span>(<span class="st">"b"</span>, <span class="id">last</span><span class="op">=</span><span class="kw">False</span>) <span class="cm"># 移到开头</span>
+<span class="id">od</span>.<span class="fn">popitem</span>(<span class="id">last</span><span class="op">=</span><span class="kw">True</span>)          <span class="cm"># 删除最后一个</span>
+<span class="cm"># LRU Cache 核心实现基础</span></pre>
+      <div class="tip">核心用途：实现 LRU Cache（配合 dict 的 O(1) 查找 + move_to_end）</div>
+    </div>
+
+    <!-- namedtuple -->
+    <div class="card">
+      <div class="card-accent accent-yellow"></div>
+      <div class="card-header">
+        <div>
+          <div class="card-title">namedtuple</div>
+          <div class="card-subtitle">命名元组</div>
+        </div>
+        <span class="impl-tag">代码生成 + tuple</span>
+      </div>
+      <p style="font-size:12px;color:var(--text-muted);margin-bottom:10px;">动态生成 tuple 子类代码（exec），属性访问通过 __slots__ + property 实现为下标访问，内存极省。</p>
+      <pre><span class="kw">from</span> <span class="id">collections</span> <span class="kw">import</span> <span class="id">namedtuple</span>
+<span class="id">Point</span> <span class="op">=</span> <span class="fn">namedtuple</span>(<span class="st">"Point"</span>, [<span class="st">"x"</span>,<span class="st">"y"</span>])
+<span class="id">p</span> <span class="op">=</span> <span class="fn">Point</span>(<span class="nm">1</span>, <span class="nm">2</span>)
+<span class="id">p</span>.<span class="id">x</span>              <span class="cm"># 1，属性访问</span>
+<span class="id">p</span>[<span class="nm">0</span>]             <span class="cm"># 1，下标访问</span>
+<span class="id">p</span>.<span class="fn">_replace</span>(<span class="id">x</span><span class="op">=</span><span class="nm">10</span>) <span class="cm"># 返回新对象</span>
+<span class="cm"># 推荐现代写法</span>
+<span class="kw">from</span> <span class="id">typing</span> <span class="kw">import</span> <span class="id">NamedTuple</span>
+<span class="kw">class</span> <span class="id">Point</span>(<span class="id">NamedTuple</span>):
+    <span class="id">x</span>: <span class="bi">int</span>; <span class="id">y</span>: <span class="bi">int</span>; <span class="id">z</span>: <span class="bi">int</span> <span class="op">=</span> <span class="nm">0</span></pre>
+    </div>
+
+    <!-- ChainMap -->
+    <div class="card">
+      <div class="card-accent accent-red"></div>
+      <div class="card-header">
+        <div>
+          <div class="card-title">ChainMap</div>
+          <div class="card-subtitle">链式映射</div>
+        </div>
+        <span class="impl-tag">纯Python list of dicts</span>
+      </div>
+      <p style="font-size:12px;color:var(--text-muted);margin-bottom:10px;">内部仅是 list 持有原 dict 引用，零复制，查找按顺序线性扫描。写操作只写入第一个 dict。</p>
+      <pre><span class="kw">from</span> <span class="id">collections</span> <span class="kw">import</span> <span class="id">ChainMap</span>
+<span class="id">defaults</span> <span class="op">=</span> {<span class="st">"color"</span>:<span class="st">"red"</span>, <span class="st">"size"</span>:<span class="nm">10</span>}
+<span class="id">overrides</span> <span class="op">=</span> {<span class="st">"color"</span>:<span class="st">"blue"</span>}
+<span class="id">cm</span> <span class="op">=</span> <span class="fn">ChainMap</span>(<span class="id">overrides</span>, <span class="id">defaults</span>)
+<span class="id">cm</span>[<span class="st">"color"</span>]      <span class="cm"># "blue"（优先第一个）</span>
+<span class="id">cm</span>[<span class="st">"size"</span>]       <span class="cm"># 10（fallback）</span>
+<span class="id">cm</span>.<span class="fn">new_child</span>()   <span class="cm"># 添加最高优先级层</span>
+<span class="id">cm</span>.<span class="id">parents</span>       <span class="cm"># 去掉第一层的视图</span></pre>
+      <div class="tip">适用：多层配置覆盖、模板变量作用域、命令行参数合并</div>
+    </div>
+
+  </div>
+
+  <!-- HEAPQ MODULE -->
+  <div class="section-label">heapq 模块 — 堆队列</div>
+  <div class="grid">
+
+    <!-- heapq basics -->
+    <div class="card">
+      <div class="card-accent accent-green"></div>
+      <div class="card-header">
+        <div>
+          <div class="card-title">heapq</div>
+          <div class="card-subtitle">最小堆（优先队列）</div>
+        </div>
+        <span class="impl-tag">list + 完全二叉树</span>
+      </div>
+      <p style="font-size:12px;color:var(--text-muted);margin-bottom:10px;">基于普通 list 实现的最小堆，满足 <code style="color:#79b8ff">heap[k] &lt;= heap[2*k+1]</code>。所有操作维护堆不变量，不是独立类，直接操作 list。</p>
+      <pre><span class="kw">import</span> <span class="id">heapq</span>
+
+<span class="cm"># 建堆：O(n)</span>
+<span class="id">h</span> <span class="op">=</span> [<span class="nm">3</span>, <span class="nm">1</span>, <span class="nm">4</span>, <span class="nm">1</span>, <span class="nm">5</span>]
+<span class="id">heapq</span>.<span class="fn">heapify</span>(<span class="id">h</span>)         <span class="cm"># [1,1,4,3,5] O(n)</span>
+
+<span class="cm"># 入堆 / 出堆：O(log n)</span>
+<span class="id">heapq</span>.<span class="fn">heappush</span>(<span class="id">h</span>, <span class="nm">2</span>)     <span class="cm"># 推入 O(log n)</span>
+<span class="id">heapq</span>.<span class="fn">heappop</span>(<span class="id">h</span>)        <span class="cm"># 弹出最小值 O(log n)</span>
+<span class="id">h</span>[<span class="nm">0</span>]                     <span class="cm"># 查看堆顶 O(1)</span>
+
+<span class="cm"># 替换操作（更高效）</span>
+<span class="id">heapq</span>.<span class="fn">heapreplace</span>(<span class="id">h</span>, <span class="nm">9</span>) <span class="cm"># 弹出+推入 O(log n)</span>
+<span class="id">heapq</span>.<span class="fn">heappushpop</span>(<span class="id">h</span>, <span class="nm">0</span>)<span class="cm"># 推入后弹出 O(log n)</span></pre>
+      <table>
+        <tr><th>操作</th><th>函数</th><th>复杂度</th></tr>
+        <tr><td>建堆</td><td><code>heapify(x)</code></td><td><span class="complexity o1">O(n)</span></td></tr>
+        <tr><td>入堆</td><td><code>heappush(h,x)</code></td><td><span class="complexity ologn">O(log n)</span></td></tr>
+        <tr><td>出堆</td><td><code>heappop(h)</code></td><td><span class="complexity ologn">O(log n)</span></td></tr>
+        <tr><td>查堆顶</td><td><code>h[0]</code></td><td><span class="complexity o1">O(1)</span></td></tr>
+      </table>
+    </div>
+
+    <!-- heapq advanced -->
+    <div class="card">
+      <div class="card-accent accent-blue"></div>
+      <div class="card-header">
+        <div>
+          <div class="card-title">heapq 进阶用法</div>
+          <div class="card-subtitle">Top K · 最大堆 · 自定义优先级</div>
+        </div>
+        <span class="impl-tag">nlargest/nsmallest</span>
+      </div>
+      <p style="font-size:12px;color:var(--text-muted);margin-bottom:10px;">nlargest/nsmallest 内部用 heapq 实现，比全排序快（O(n log k) vs O(n log n)）。最大堆用负值技巧，自定义顺序用元组。</p>
+      <pre><span class="kw">import</span> <span class="id">heapq</span>
+
+<span class="cm"># Top K 问题</span>
+<span class="id">heapq</span>.<span class="fn">nlargest</span>(<span class="nm">3</span>, <span class="id">data</span>)          <span class="cm"># 最大3个 O(n log k)</span>
+<span class="id">heapq</span>.<span class="fn">nsmallest</span>(<span class="nm">3</span>, <span class="id">data</span>)         <span class="cm"># 最小3个 O(n log k)</span>
+<span class="id">heapq</span>.<span class="fn">nlargest</span>(<span class="nm">3</span>, <span class="id">data</span>, <span class="id">key</span><span class="op">=</span><span class="bi">abs</span>) <span class="cm"># 自定义key</span>
+
+<span class="cm"># 最大堆：取负值</span>
+<span class="id">maxh</span> <span class="op">=</span> []
+<span class="id">heapq</span>.<span class="fn">heappush</span>(<span class="id">maxh</span>, <span class="op">-</span><span class="nm">5</span>)         <span class="cm"># 推入-5</span>
+<span class="op">-</span><span class="id">heapq</span>.<span class="fn">heappop</span>(<span class="id">maxh</span>)             <span class="cm"># 取出5</span>
+
+<span class="cm"># 自定义优先级（元组排序）</span>
+<span class="id">heapq</span>.<span class="fn">heappush</span>(<span class="id">h</span>, (<span class="nm">1</span>, <span class="st">"任务A"</span>))   <span class="cm"># (优先级, 数据)</span>
+<span class="id">heapq</span>.<span class="fn">heappush</span>(<span class="id">h</span>, (<span class="nm">3</span>, <span class="st">"任务B"</span>))
+<span class="id">pri</span>, <span class="id">task</span> <span class="op">=</span> <span class="id">heapq</span>.<span class="fn">heappop</span>(<span class="id">h</span>)
+
+<span class="cm"># 合并多个有序迭代器</span>
+<span class="id">heapq</span>.<span class="fn">merge</span>([<span class="nm">1</span>,<span class="nm">3</span>], [<span class="nm">2</span>,<span class="nm">4</span>])        <span class="cm"># 懒惰合并 O(n log k)</span></pre>
+      <div class="tip">经典场景：Dijkstra、Prim、任务调度、数据流Top K、合并K个有序链表</div>
+    </div>
+
+  </div>
+
+  <!-- BISECT MODULE -->
+  <div class="section-label">bisect 模块 — 有序序列二分</div>
+  <div class="grid">
+
+    <!-- bisect basics -->
+    <div class="card">
+      <div class="card-accent accent-purple"></div>
+      <div class="card-header">
+        <div>
+          <div class="card-title">bisect</div>
+          <div class="card-subtitle">有序列表二分查找与插入</div>
+        </div>
+        <span class="impl-tag">纯C二分搜索</span>
+      </div>
+      <p style="font-size:12px;color:var(--text-muted);margin-bottom:10px;">针对已排序 list 的二分操作，时间 O(log n)，但插入仍需 O(n) 移位。<code style="color:#79b8ff">bisect_left</code> 和 <code style="color:#79b8ff">bisect_right</code> 的区别在于等值元素插到左侧还是右侧。</p>
+      <pre><span class="kw">import</span> <span class="id">bisect</span>
+
+<span class="id">a</span> <span class="op">=</span> [<span class="nm">1</span>, <span class="nm">3</span>, <span class="nm">5</span>, <span class="nm">7</span>, <span class="nm">9</span>]
+
+<span class="cm"># 查找插入位置 O(log n)</span>
+<span class="id">bisect</span>.<span class="fn">bisect_left</span>(<span class="id">a</span>, <span class="nm">5</span>)    <span class="cm"># 2 (左边界)</span>
+<span class="id">bisect</span>.<span class="fn">bisect_right</span>(<span class="id">a</span>, <span class="nm">5</span>)   <span class="cm"># 3 (右边界)</span>
+<span class="id">bisect</span>.<span class="fn">bisect</span>(<span class="id">a</span>, <span class="nm">5</span>)          <span class="cm"># 同 bisect_right</span>
+
+<span class="cm"># 插入并保持有序 O(n)</span>
+<span class="id">bisect</span>.<span class="fn">insort_left</span>(<span class="id">a</span>, <span class="nm">4</span>)    <span class="cm"># 插入4，保持升序</span>
+<span class="id">bisect</span>.<span class="fn">insort</span>(<span class="id">a</span>, <span class="nm">6</span>)         <span class="cm"># 同 insort_right</span>
+
+<span class="cm"># 支持 lo/hi 限定范围</span>
+<span class="id">bisect</span>.<span class="fn">bisect_left</span>(<span class="id">a</span>, <span class="nm">5</span>, <span class="nm">0</span>, <span class="nm">3</span>) <span class="cm"># 只搜索 a[0:3]</span></pre>
+      <table>
+        <tr><th>操作</th><th>函数</th><th>复杂度</th></tr>
+        <tr><td>查找位置</td><td><code>bisect_left/right</code></td><td><span class="complexity ologn">O(log n)</span></td></tr>
+        <tr><td>插入保序</td><td><code>insort_left/right</code></td><td><span class="complexity on">O(n)</span></td></tr>
+        <tr><td>精确查找</td><td>自行验证位置值</td><td><span class="complexity ologn">O(log n)</span></td></tr>
+      </table>
+    </div>
+
+    <!-- bisect advanced -->
+    <div class="card">
+      <div class="card-accent accent-orange"></div>
+      <div class="card-header">
+        <div>
+          <div class="card-title">bisect 进阶用法</div>
+          <div class="card-subtitle">区间统计 · 排名 · 分段映射</div>
+        </div>
+        <span class="impl-tag">二分搜索应用</span>
+      </div>
+      <p style="font-size:12px;color:var(--text-muted);margin-bottom:10px;">bisect 的真正价值在于将 O(n) 的线性搜索优化为 O(log n)，常用于有序数组的范围查询、排名计算和分段函数映射。</p>
+      <pre><span class="kw">import</span> <span class="id">bisect</span>
+
+<span class="id">a</span> <span class="op">=</span> [<span class="nm">1</span>, <span class="nm">3</span>, <span class="nm">5</span>, <span class="nm">7</span>, <span class="nm">9</span>]
+
+<span class="cm"># 精确查找（是否存在）</span>
+<span class="kw">def</span> <span class="fn">find</span>(<span class="id">a</span>, <span class="id">x</span>):
+    <span class="id">i</span> <span class="op">=</span> <span class="id">bisect</span>.<span class="fn">bisect_left</span>(<span class="id">a</span>, <span class="id">x</span>)
+    <span class="kw">return</span> <span class="id">i</span> <span class="op">&lt;</span> <span class="bi">len</span>(<span class="id">a</span>) <span class="kw">and</span> <span class="id">a</span>[<span class="id">i</span>] <span class="op">==</span> <span class="id">x</span>
+
+<span class="cm"># 统计区间内元素数量</span>
+<span class="kw">def</span> <span class="fn">count_range</span>(<span class="id">a</span>, <span class="id">lo</span>, <span class="id">hi</span>):
+    <span class="kw">return</span> <span class="id">bisect</span>.<span class="fn">bisect_right</span>(<span class="id">a</span>, <span class="id">hi</span>) <span class="op">-</span> <span class="id">bisect</span>.<span class="fn">bisect_left</span>(<span class="id">a</span>, <span class="id">lo</span>)
+
+<span class="cm"># 分段函数（成绩等级映射）</span>
+<span class="id">breakpoints</span> <span class="op">=</span> [<span class="nm">60</span>, <span class="nm">70</span>, <span class="nm">80</span>, <span class="nm">90</span>]
+<span class="id">grades</span>      <span class="op">=</span> [<span class="st">"F"</span>,<span class="st">"D"</span>,<span class="st">"C"</span>,<span class="st">"B"</span>,<span class="st">"A"</span>]
+<span class="kw">def</span> <span class="fn">grade</span>(<span class="id">score</span>):
+    <span class="kw">return</span> <span class="id">grades</span>[<span class="id">bisect</span>.<span class="fn">bisect</span>(<span class="id">breakpoints</span>, <span class="id">score</span>)]
+
+<span class="cm"># 查找小于等于x的最大元素（floor）</span>
+<span class="kw">def</span> <span class="fn">floor_val</span>(<span class="id">a</span>, <span class="id">x</span>):
+    <span class="id">i</span> <span class="op">=</span> <span class="id">bisect</span>.<span class="fn">bisect_right</span>(<span class="id">a</span>, <span class="id">x</span>)
+    <span class="kw">return</span> <span class="id">a</span>[<span class="id">i</span><span class="op">-</span><span class="nm">1</span>] <span class="kw">if</span> <span class="id">i</span> <span class="kw">else</span> <span class="kw">None</span></pre>
+      <div class="tip">经典场景：有序数组区间查询、LIS（最长递增子序列）、坐标压缩、近似搜索</div>
+    </div>
+
+  </div>
+
+  <!-- ITERTOOLS MODULE -->
+  <div class="section-label">itertools 模块 — 迭代器工具</div>
+  <div class="grid">
+
+    <!-- itertools combinatorics -->
+    <div class="card">
+      <div class="card-accent accent-yellow"></div>
+      <div class="card-header">
+        <div>
+          <div class="card-title">itertools 组合工具</div>
+          <div class="card-subtitle">排列 · 组合 · 笛卡尔积</div>
+        </div>
+        <span class="impl-tag">惰性迭代器(C)</span>
+      </div>
+      <p style="font-size:12px;color:var(--text-muted);margin-bottom:10px;">所有 itertools 函数返回惰性迭代器，不提前计算全部结果，内存友好。组合数学相关函数等价于数学定义但更高效。</p>
+      <pre><span class="kw">from</span> <span class="id">itertools</span> <span class="kw">import</span> <span class="op">*</span>
+
+<span class="cm"># 笛卡尔积</span>
+<span class="bi">list</span>(<span class="fn">product</span>(<span class="st">"AB"</span>, <span class="nm">2</span><span class="op">**</span><span class="nm">0</span>, [<span class="nm">0</span>,<span class="nm">1</span>]))   <span class="cm"># repeat参数</span>
+<span class="bi">list</span>(<span class="fn">product</span>([<span class="nm">0</span>,<span class="nm">1</span>], <span class="id">repeat</span><span class="op">=</span><span class="nm">3</span>))     <span class="cm"># 二进制枚举</span>
+
+<span class="cm"># 排列（有序，不重复抽取）</span>
+<span class="bi">list</span>(<span class="fn">permutations</span>(<span class="st">"ABC"</span>))          <span class="cm"># 全排列 3!</span>
+<span class="bi">list</span>(<span class="fn">permutations</span>(<span class="st">"ABC"</span>, <span class="nm">2</span>))       <span class="cm"># A(3,2)=6</span>
+
+<span class="cm"># 组合（无序，不重复抽取）</span>
+<span class="bi">list</span>(<span class="fn">combinations</span>(<span class="st">"ABCD"</span>, <span class="nm">2</span>))     <span class="cm"># C(4,2)=6</span>
+
+<span class="cm"># 组合（允许重复）</span>
+<span class="bi">list</span>(<span class="fn">combinations_with_replacement</span>(<span class="st">"AB"</span>, <span class="nm">2</span>))
+<span class="cm"># [AA, AB, BB]</span></pre>
+      <div class="tip">组合爆炸警告：permutations("ABCDEFGHIJ") 有 10! = 3628800 个元素，务必按需消费</div>
+    </div>
+
+    <!-- itertools infinite & grouping -->
+    <div class="card">
+      <div class="card-accent accent-red"></div>
+      <div class="card-header">
+        <div>
+          <div class="card-title">itertools 无限 & 聚合</div>
+          <div class="card-subtitle">count · cycle · groupby · chain</div>
+        </div>
+        <span class="impl-tag">惰性迭代器(C)</span>
+      </div>
+      <p style="font-size:12px;color:var(--text-muted);margin-bottom:10px;">无限迭代器需配合 islice/takewhile 截断。groupby 要求输入已按 key 排序，否则不会合并不相邻的相同组。chain 零复制拼接多个迭代器。</p>
+      <pre><span class="kw">from</span> <span class="id">itertools</span> <span class="kw">import</span> <span class="op">*</span>
+
+<span class="cm"># 无限迭代器</span>
+<span class="fn">count</span>(<span class="nm">10</span>, <span class="nm">2</span>)              <span class="cm"># 10,12,14,... 步长2</span>
+<span class="fn">cycle</span>([<span class="nm">1</span>,<span class="nm">2</span>,<span class="nm">3</span>])           <span class="cm"># 1,2,3,1,2,3,...</span>
+<span class="fn">repeat</span>(<span class="nm">0</span>, <span class="nm">5</span>)             <span class="cm"># 0,0,0,0,0</span>
+
+<span class="cm"># 截取无限迭代器</span>
+<span class="bi">list</span>(<span class="fn">islice</span>(<span class="fn">count</span>(<span class="nm">1</span>), <span class="nm">5</span>)) <span class="cm"># [1,2,3,4,5]</span>
+
+<span class="cm"># 分组（需先排序）</span>
+<span class="id">data</span> <span class="op">=</span> <span class="fn">sorted</span>([(<span class="st">"A"</span>,<span class="nm">1</span>),(<span class="st">"B"</span>,<span class="nm">2</span>),(<span class="st">"A"</span>,<span class="nm">3</span>)], <span class="id">key</span><span class="op">=</span><span class="kw">lambda</span> <span class="id">x</span>:<span class="id">x</span>[<span class="nm">0</span>])
+<span class="kw">for</span> <span class="id">k</span>, <span class="id">g</span> <span class="kw">in</span> <span class="fn">groupby</span>(<span class="id">data</span>, <span class="id">key</span><span class="op">=</span><span class="kw">lambda</span> <span class="id">x</span>:<span class="id">x</span>[<span class="nm">0</span>]):
+    <span class="bi">print</span>(<span class="id">k</span>, <span class="bi">list</span>(<span class="id">g</span>))
+
+<span class="cm"># 链式拼接（零复制）</span>
+<span class="bi">list</span>(<span class="fn">chain</span>([<span class="nm">1</span>,<span class="nm">2</span>],[<span class="nm">3</span>,<span class="nm">4</span>],[<span class="nm">5</span>]))  <span class="cm"># [1,2,3,4,5]</span>
+<span class="bi">list</span>(<span class="fn">chain.from_iterable</span>([[<span class="nm">1</span>,<span class="nm">2</span>],[<span class="nm">3</span>]])) <span class="cm"># 同上</span>
+
+<span class="cm"># 累积</span>
+<span class="bi">list</span>(<span class="fn">accumulate</span>([<span class="nm">1</span>,<span class="nm">2</span>,<span class="nm">3</span>,<span class="nm">4</span>]))   <span class="cm"># [1,3,6,10] 前缀和</span></pre>
+      <div class="note">groupby 仅合并连续相邻的相同 key，使用前必须先 sorted(data, key=keyfunc)</div>
+    </div>
+
+  </div>
+
+  <!-- FUNCTOOLS MODULE -->
+  <div class="section-label">functools 模块 — 函数工具</div>
+  <div class="grid">
+
+    <!-- functools -->
+    <div class="card">
+      <div class="card-accent accent-blue"></div>
+      <div class="card-header">
+        <div>
+          <div class="card-title">functools</div>
+          <div class="card-subtitle">lru_cache · reduce · partial</div>
+        </div>
+        <span class="impl-tag">缓存 + 高阶函数</span>
+      </div>
+      <p style="font-size:12px;color:var(--text-muted);margin-bottom:10px;"><code style="color:#79b8ff">lru_cache</code> 内部用字典 + 双向链表实现 LRU，参数须可哈希。<code style="color:#79b8ff">cache</code>（3.9+）等价于 maxsize=None 的无界缓存。</p>
+      <pre><span class="kw">from</span> <span class="id">functools</span> <span class="kw">import</span> <span class="id">lru_cache</span>, <span class="id">cache</span>, <span class="id">reduce</span>, <span class="id">partial</span>
+
+<span class="cm"># 记忆化缓存（DFS/DP利器）</span>
+<span class="op">@</span><span class="fn">lru_cache</span>(<span class="id">maxsize</span><span class="op">=</span><span class="nm">128</span>)
+<span class="kw">def</span> <span class="fn">fib</span>(<span class="id">n</span>):
+    <span class="kw">return</span> <span class="id">n</span> <span class="kw">if</span> <span class="id">n</span> <span class="op">&lt;</span> <span class="nm">2</span> <span class="kw">else</span> <span class="fn">fib</span>(<span class="id">n</span><span class="op">-</span><span class="nm">1</span>) <span class="op">+</span> <span class="fn">fib</span>(<span class="id">n</span><span class="op">-</span><span class="nm">2</span>)
+
+<span class="op">@</span><span class="id">cache</span>                       <span class="cm"># 无界版本，Python 3.9+</span>
+<span class="kw">def</span> <span class="fn">dp</span>(<span class="id">i</span>, <span class="id">j</span>): ...
+
+<span class="id">fib</span>.<span class="fn">cache_info</span>()             <span class="cm"># hits, misses, maxsize</span>
+<span class="id">fib</span>.<span class="fn">cache_clear</span>()            <span class="cm"># 清空缓存</span>
+
+<span class="cm"># 归约</span>
+<span class="id">reduce</span>(<span class="kw">lambda</span> <span class="id">a</span>,<span class="id">b</span>: <span class="id">a</span><span class="op">*</span><span class="id">b</span>, [<span class="nm">1</span>,<span class="nm">2</span>,<span class="nm">3</span>,<span class="nm">4</span>]) <span class="cm"># 24</span>
+
+<span class="cm"># 偏函数：固定参数</span>
+<span class="id">double</span> <span class="op">=</span> <span class="fn">partial</span>(<span class="id">pow</span>, <span class="id">exp</span><span class="op">=</span><span class="nm">2</span>)
+<span class="fn">double</span>(<span class="nm">5</span>)                    <span class="cm"># 25</span></pre>
+      <div class="tip">LeetCode技巧：递归函数加 @cache 可直接将指数级 DFS 降到多项式时间</div>
+    </div>
+
+    <!-- sortedcontainers hint -->
+    <div class="card">
+      <div class="card-accent accent-purple"></div>
+      <div class="card-header">
+        <div>
+          <div class="card-title">SortedList / SortedDict</div>
+          <div class="card-subtitle">有序容器（第三方）</div>
+        </div>
+        <span class="impl-tag">sortedcontainers 库</span>
+      </div>
+      <p style="font-size:12px;color:var(--text-muted);margin-bottom:10px;">Python 标准库缺少平衡BST，<code style="color:#79b8ff">sortedcontainers</code> 用分块列表模拟，在竞赛环境（LeetCode/Codeforces）可用，性能接近 C++ <code style="color:#79b8ff">std::set</code>。</p>
+      <pre><span class="kw">from</span> <span class="id">sortedcontainers</span> <span class="kw">import</span> <span class="id">SortedList</span>, <span class="id">SortedDict</span>
+
+<span class="id">sl</span> <span class="op">=</span> <span class="fn">SortedList</span>([<span class="nm">3</span>,<span class="nm">1</span>,<span class="nm">4</span>,<span class="nm">2</span>])
+<span class="id">sl</span>.<span class="fn">add</span>(<span class="nm">5</span>)               <span class="cm"># 自动保持有序 O(log n)</span>
+<span class="id">sl</span>.<span class="fn">discard</span>(<span class="nm">3</span>)           <span class="cm"># 删除 O(log n)</span>
+<span class="id">sl</span>[<span class="nm">0</span>]                   <span class="cm"># 最小值 O(1)</span>
+<span class="id">sl</span>[<span class="op">-</span><span class="nm">1</span>]                  <span class="cm"># 最大值 O(1)</span>
+<span class="id">sl</span>.<span class="fn">bisect_left</span>(<span class="nm">3</span>)       <span class="cm"># 二分查找位置</span>
+<span class="id">sl</span>.<span class="fn">irange</span>(<span class="nm">2</span>, <span class="nm">4</span>)         <span class="cm"># 范围迭代 [2,3,4]</span>
+<span class="id">sl</span>.<span class="fn">count</span>(<span class="nm">3</span>)             <span class="cm"># 计数 O(log n)</span>
+
+<span class="id">sd</span> <span class="op">=</span> <span class="fn">SortedDict</span>({<span class="st">"b"</span>:<span class="nm">2</span>, <span class="st">"a"</span>:<span class="nm">1</span>})
+<span class="id">sd</span>.<span class="fn">peekitem</span>(<span class="nm">0</span>)          <span class="cm"># 最小key的(k,v)</span>
+<span class="id">sd</span>.<span class="fn">peekitem</span>(<span class="op">-</span><span class="nm">1</span>)         <span class="cm"># 最大key的(k,v)</span></pre>
+      <div class="note">标准库替代方案：bisect + list（插入O(n)）或 heapq（只支持弹最小值），无法完全替代有序集合</div>
+    </div>
+
+  </div>
+
+  <!-- SUMMARY TABLE (existing content continues)
+    <h2>📊 完整对比总览</h2>
+    <table class="big-table">
+      <tr>
+        <th>数据结构</th>
+        <th>底层实现</th>
+        <th>有序</th>
+        <th>可变</th>
+        <th>可哈希</th>
+        <th>查找</th>
+        <th>插入</th>
+        <th>主要用途</th>
+      </tr>
+      <tr>
+        <td><code>int</code></td>
+        <td>大整数数组(30bit/块)</td>
+        <td>—</td>
+        <td>❌</td>
+        <td>✅</td>
+        <td>—</td>
+        <td>—</td>
+        <td>数值计算，任意精度</td>
+      </tr>
+      <tr>
+        <td><code>float</code></td>
+        <td>C double (IEEE 754)</td>
+        <td>—</td>
+        <td>❌</td>
+        <td>✅</td>
+        <td>—</td>
+        <td>—</td>
+        <td>浮点运算，注意精度</td>
+      </tr>
+      <tr>
+        <td><code>str</code></td>
+        <td>紧凑编码数组</td>
+        <td>✅</td>
+        <td>❌</td>
+        <td>✅</td>
+        <td><span class="complexity on">O(n)</span></td>
+        <td>—</td>
+        <td>文本处理，dict key</td>
+      </tr>
+      <tr>
+        <td><code>list</code></td>
+        <td>动态指针数组</td>
+        <td>✅</td>
+        <td>✅</td>
+        <td>❌</td>
+        <td><span class="complexity on">O(n)</span></td>
+        <td><span class="complexity o1">O(1)*</span></td>
+        <td>通用序列，栈</td>
+      </tr>
+      <tr>
+        <td><code>tuple</code></td>
+        <td>静态指针数组</td>
+        <td>✅</td>
+        <td>❌</td>
+        <td>✅</td>
+        <td><span class="complexity on">O(n)</span></td>
+        <td>—</td>
+        <td>不可变序列，返回多值</td>
+      </tr>
+      <tr>
+        <td><code>dict</code></td>
+        <td>紧凑哈希表</td>
+        <td>✅(3.6+)</td>
+        <td>✅</td>
+        <td>❌</td>
+        <td><span class="complexity o1">O(1)</span></td>
+        <td><span class="complexity o1">O(1)</span></td>
+        <td>键值映射，计数</td>
+      </tr>
+      <tr>
+        <td><code>set</code></td>
+        <td>哈希表(无value)</td>
+        <td>❌</td>
+        <td>✅</td>
+        <td>❌</td>
+        <td><span class="complexity o1">O(1)</span></td>
+        <td><span class="complexity o1">O(1)</span></td>
+        <td>去重，集合运算</td>
+      </tr>
+      <tr>
+        <td><code>frozenset</code></td>
+        <td>哈希表(无value)</td>
+        <td>❌</td>
+        <td>❌</td>
+        <td>✅</td>
+        <td><span class="complexity o1">O(1)</span></td>
+        <td>—</td>
+        <td>不可变集合，dict key</td>
+      </tr>
+      <tr>
+        <td><code>deque</code></td>
+        <td>块状双向链表(C)</td>
+        <td>✅</td>
+        <td>✅</td>
+        <td>❌</td>
+        <td><span class="complexity on">O(n)</span></td>
+        <td><span class="complexity o1">O(1)两端</span></td>
+        <td>滑动窗口，BFS，LRU</td>
+      </tr>
+      <tr>
+        <td><code>defaultdict</code></td>
+        <td>dict子类(同dict)</td>
+        <td>✅</td>
+        <td>✅</td>
+        <td>❌</td>
+        <td><span class="complexity o1">O(1)</span></td>
+        <td><span class="complexity o1">O(1)</span></td>
+        <td>计数，分组，避免KeyError</td>
+      </tr>
+      <tr>
+        <td><code>Counter</code></td>
+        <td>dict子类 + heapq</td>
+        <td>✅</td>
+        <td>✅</td>
+        <td>❌</td>
+        <td><span class="complexity o1">O(1)</span></td>
+        <td><span class="complexity o1">O(1)</span></td>
+        <td>词频，Top K，集合运算</td>
+      </tr>
+      <tr>
+        <td><code>OrderedDict</code></td>
+        <td>dict + 双向链表</td>
+        <td>✅</td>
+        <td>✅</td>
+        <td>❌</td>
+        <td><span class="complexity o1">O(1)</span></td>
+        <td><span class="complexity o1">O(1)</span></td>
+        <td>LRU Cache实现</td>
+      </tr>
+      <tr>
+        <td><code>namedtuple</code></td>
+        <td>代码生成 + tuple</td>
+        <td>✅</td>
+        <td>❌</td>
+        <td>✅</td>
+        <td><span class="complexity o1">O(1)</span></td>
+        <td>—</td>
+        <td>轻量结构体，多值返回</td>
+      </tr>
+      <tr>
+        <td><code>ChainMap</code></td>
+        <td>list of dicts</td>
+        <td>✅</td>
+        <td>✅</td>
+        <td>❌</td>
+        <td><span class="complexity on">O(k)</span></td>
+        <td><span class="complexity o1">O(1)</span></td>
+        <td>多层配置，作用域</td>
+      </tr>
+      <tr>
+        <td><code>heapq</code></td>
+        <td>list(最小堆)</td>
+        <td>✅(堆序)</td>
+        <td>✅</td>
+        <td>❌</td>
+        <td><span class="complexity o1">O(1)堆顶</span></td>
+        <td><span class="complexity ologn">O(log n)</span></td>
+        <td>优先队列、Top K、Dijkstra</td>
+      </tr>
+      <tr>
+        <td><code>bisect</code></td>
+        <td>有序list(二分)</td>
+        <td>✅</td>
+        <td>✅</td>
+        <td>❌</td>
+        <td><span class="complexity ologn">O(log n)</span></td>
+        <td><span class="complexity on">O(n)</span></td>
+        <td>有序搜索、区间统计、LIS</td>
+      </tr>
+      <tr>
+        <td><code>itertools</code></td>
+        <td>惰性迭代器(C)</td>
+        <td>✅</td>
+        <td>❌</td>
+        <td>❌</td>
+        <td>—</td>
+        <td>—</td>
+        <td>排列组合、链式迭代、分组</td>
+      </tr>
+      <tr>
+        <td><code>lru_cache</code></td>
+        <td>dict + 双向链表</td>
+        <td>—</td>
+        <td>✅</td>
+        <td>❌</td>
+        <td><span class="complexity o1">O(1)</span></td>
+        <td><span class="complexity o1">O(1)</span></td>
+        <td>记忆化、DP加速、递归缓存</td>
+      </tr>
+      <tr>
+        <td><code>SortedList</code></td>
+        <td>分块列表(第三方)</td>
+        <td>✅</td>
+        <td>✅</td>
+        <td>❌</td>
+        <td><span class="complexity ologn">O(log n)</span></td>
+        <td><span class="complexity ologn">O(log n)</span></td>
+        <td>有序集合、范围查询、替代BST</td>
+      </tr>
+    </table>
+  </div>
+
+</div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       SECTION: OBJECT MEMORY SIZES
+       ═══════════════════════════════════════════════════════ -->
+  <div class="section-label">对象内存大小 — sys.getsizeof (CPython 3.11, 64-bit)</div>
+
+  <!-- PyObject header explanation -->
+  <div class="grid">
+    <div class="card">
+      <div class="card-accent accent-red"></div>
+      <div class="card-header">
+        <div>
+          <div class="card-title">PyObject 通用头</div>
+          <div class="card-subtitle">每个 Python 对象都背着这 16 bytes</div>
+        </div>
+        <span class="impl-tag">所有类型共有</span>
+      </div>
+      <p style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">Python 中"一切皆对象"的代价：每个对象无论多小，都必须携带两个 8 字节指针。这是动态类型 + 引用计数 GC 的根本开销。</p>
+      <div class="byte-row">
+        <div class="byte-cell byte-overhead" style="flex:2">ob_refcnt (8B) — 引用计数</div>
+        <div class="byte-cell byte-overhead" style="flex:2">ob_type (8B) — 类型指针</div>
+        <div class="byte-cell byte-data" style="flex:3">类型专属字段...</div>
+      </div>
+      <pre><span class="cm"># PyLongObject (int) 完整布局</span>
+<span class="cm"># ob_refcnt  8B  ← 引用计数，0时释放内存</span>
+<span class="cm"># ob_type    8B  ← 指向 &PyLong_Type</span>
+<span class="cm"># ob_size    4B  ← digit 个数（大整数）</span>
+<span class="cm"># padding    4B  ← 内存对齐</span>
+<span class="cm"># ob_digit   4B  ← 实际数值（30 bits/digit）</span>
+<span class="cm"># 合计 = 28 bytes，但只存了 4B 有效数据</span>
+
+<span class="kw">import</span> <span class="id">sys</span>
+<span class="id">sys</span>.<span class="fn">getsizeof</span>(<span class="nm">0</span>)       <span class="cm"># 28</span>
+<span class="id">sys</span>.<span class="fn">getsizeof</span>(<span class="nm">2</span><span class="op">**</span><span class="nm">30</span>)    <span class="cm"># 32  (2 digits)</span>
+<span class="id">sys</span>.<span class="fn">getsizeof</span>(<span class="nm">2</span><span class="op">**</span><span class="nm">100</span>)   <span class="cm"># 52  (4 digits)</span></pre>
+      <div class="note">getsizeof 只报对象本身大小，不递归。list 里的元素对象不计入。用 pympler.asizeof 获取递归总大小。</div>
+    </div>
+
+    <div class="card">
+      <div class="card-accent accent-blue"></div>
+      <div class="card-header">
+        <div>
+          <div class="card-title">小整数缓存 &amp; 字符串驻留</div>
+          <div class="card-subtitle">CPython 的内存优化</div>
+        </div>
+        <span class="impl-tag">对象池 / interning</span>
+      </div>
+      <p style="font-size:12px;color:var(--text-muted);margin-bottom:10px;">CPython 启动时预创建 <code style="color:#79b8ff">-5 ~ 256</code> 的所有整数对象，同范围整数赋值直接复用，不新建对象。字符串驻留对看起来像标识符的短字符串自动开启。</p>
+      <pre><span class="cm"># 小整数缓存</span>
+<span class="id">a</span> <span class="op">=</span> <span class="nm">256</span>; <span class="id">b</span> <span class="op">=</span> <span class="nm">256</span>
+<span class="id">a</span> <span class="kw">is</span> <span class="id">b</span>          <span class="cm"># True！同一对象，节省内存</span>
+
+<span class="id">a</span> <span class="op">=</span> <span class="nm">257</span>; <span class="id">b</span> <span class="op">=</span> <span class="nm">257</span>
+<span class="id">a</span> <span class="kw">is</span> <span class="id">b</span>          <span class="cm"># False，各自新建 28 bytes</span>
+
+<span class="cm"># 字符串驻留</span>
+<span class="id">s1</span> <span class="op">=</span> <span class="st">"hello"</span>; <span class="id">s2</span> <span class="op">=</span> <span class="st">"hello"</span>
+<span class="id">s1</span> <span class="kw">is</span> <span class="id">s2</span>        <span class="cm"># True（纯字母字符串自动驻留）</span>
+
+<span class="id">s1</span> <span class="op">=</span> <span class="st">"hello world"</span>  <span class="cm"># 有空格，不自动驻留</span>
+<span class="id">s2</span> <span class="op">=</span> <span class="st">"hello world"</span>
+<span class="id">s1</span> <span class="kw">is</span> <span class="id">s2</span>        <span class="cm"># False（取决于实现，不可依赖）</span>
+
+<span class="cm"># 强制驻留</span>
+<span class="kw">import</span> <span class="id">sys</span>
+<span class="id">s1</span> <span class="op">=</span> <span class="id">sys</span>.<span class="fn">intern</span>(<span class="st">"hello world"</span>)
+<span class="id">s2</span> <span class="op">=</span> <span class="id">sys</span>.<span class="fn">intern</span>(<span class="st">"hello world"</span>)
+<span class="id">s1</span> <span class="kw">is</span> <span class="id">s2</span>        <span class="cm"># True</span></pre>
+      <div class="tip">用 is 比较单例（None/True/False）；用 == 比较值。is 检查的是内存地址（id()），比 == 快但语义不同。</div>
+    </div>
+  </div>
+
+  <!-- Size reference grid -->
+  <div class="card" style="margin-bottom:20px">
+    <div class="card-accent accent-orange"></div>
+    <div class="card-header">
+      <div>
+        <div class="card-title">完整大小速查表</div>
+        <div class="card-subtitle">sys.getsizeof 实测值（64-bit CPython 3.11）</div>
+      </div>
+      <span class="impl-tag">仅对象本身，不含子对象</span>
+    </div>
+    <div class="size-grid">
+
+      <div class="size-item">
+        <div class="size-item-top">
+          <span class="size-name">int(0)</span>
+          <span><span class="size-bytes" style="color:#79b8ff">28</span> <span class="size-bits">B · 224 bits</span></span>
+        </div>
+        <div class="size-bar-wrap"><div class="size-bar bar-blue" style="width:28%"></div></div>
+        <div class="size-note"><span class="overhead-tag tag-oh">overhead</span>16B头 + 4B数值 + 8B padding<br>数值每增加30bit多4B</div>
+      </div>
+
+      <div class="size-item">
+        <div class="size-item-top">
+          <span class="size-name">int(2**100)</span>
+          <span><span class="size-bytes" style="color:#79b8ff">52</span> <span class="size-bits">B</span></span>
+        </div>
+        <div class="size-bar-wrap"><div class="size-bar bar-blue" style="width:52%"></div></div>
+        <div class="size-note">大整数每30bit需要一个digit(4B)，任意精度无溢出</div>
+      </div>
+
+      <div class="size-item">
+        <div class="size-item-top">
+          <span class="size-name">float</span>
+          <span><span class="size-bytes" style="color:#56d364">24</span> <span class="size-bits">B · 192 bits</span></span>
+        </div>
+        <div class="size-bar-wrap"><div class="size-bar bar-green" style="width:24%"></div></div>
+        <div class="size-note"><span class="overhead-tag tag-oh">overhead</span>16B头 <span class="overhead-tag tag-dat">data</span>C double 8B<br>IEEE 754 双精度，固定大小</div>
+      </div>
+
+      <div class="size-item">
+        <div class="size-item-top">
+          <span class="size-name">bool</span>
+          <span><span class="size-bytes" style="color:#ff6b6b">28</span> <span class="size-bits">B · 224 bits</span></span>
+        </div>
+        <div class="size-bar-wrap"><div class="size-bar bar-red" style="width:28%"></div></div>
+        <div class="size-note">int 子类，大小完全一样。28B 存 1bit 信息。True/False 全局单例</div>
+      </div>
+
+      <div class="size-item">
+        <div class="size-item-top">
+          <span class="size-name">None</span>
+          <span><span class="size-bytes" style="color:#8b949e">16</span> <span class="size-bits">B · 128 bits</span></span>
+        </div>
+        <div class="size-bar-wrap"><div class="size-bar" style="width:16%;background:#8b949e"></div></div>
+        <div class="size-note">纯头部，无数据字段。全局单例，整个进程唯一</div>
+      </div>
+
+      <div class="size-item">
+        <div class="size-item-top">
+          <span class="size-name">str("")</span>
+          <span><span class="size-bytes" style="color:#f0883e">49</span> <span class="size-bits">B起</span></span>
+        </div>
+        <div class="size-bar-wrap"><div class="size-bar bar-orange" style="width:49%"></div></div>
+        <div class="size-note">49B固定头 + 每字符1/2/4B<br>"hello"=54B · "你好"=74B(UCS-2)</div>
+      </div>
+
+      <div class="size-item">
+        <div class="size-item-top">
+          <span class="size-name">list []</span>
+          <span><span class="size-bytes" style="color:#ff6b6b">56</span> <span class="size-bits">B起</span></span>
+        </div>
+        <div class="size-bar-wrap"><div class="size-bar bar-red" style="width:56%"></div></div>
+        <div class="size-note">56B头 + 每元素8B（指针！）<br>[1,2,3]=88B，不含3个int对象</div>
+      </div>
+
+      <div class="size-item">
+        <div class="size-item-top">
+          <span class="size-name">tuple ()</span>
+          <span><span class="size-bytes" style="color:#bc8cff">40</span> <span class="size-bits">B起</span></span>
+        </div>
+        <div class="size-bar-wrap"><div class="size-bar bar-purple" style="width:40%"></div></div>
+        <div class="size-note">比list少16B（无allocated字段）<br>(1,2,3)=64B，可哈希</div>
+      </div>
+
+      <div class="size-item">
+        <div class="size-item-top">
+          <span class="size-name">dict {}</span>
+          <span><span class="size-bytes" style="color:#ff6b6b">232</span> <span class="size-bits">B起</span></span>
+        </div>
+        <div class="size-bar-wrap"><div class="size-bar bar-red" style="width:100%"></div></div>
+        <div class="size-note">最重！初始8槽×24B + 40B头<br>每槽=hash(8)+key*(8)+val*(8)</div>
+      </div>
+
+      <div class="size-item">
+        <div class="size-item-top">
+          <span class="size-name">set()</span>
+          <span><span class="size-bytes" style="color:#ff6b6b">216</span> <span class="size-bits">B起</span></span>
+        </div>
+        <div class="size-bar-wrap"><div class="size-bar bar-red" style="width:93%"></div></div>
+        <div class="size-note">类dict但无value<br>每槽=hash(8)+key*(8)=16B</div>
+      </div>
+
+      <div class="size-item">
+        <div class="size-item-top">
+          <span class="size-name">deque([])</span>
+          <span><span class="size-bytes" style="color:#ff6b6b">624</span> <span class="size-bits">B起</span></span>
+        </div>
+        <div class="size-bar-wrap"><div class="size-bar bar-red" style="width:100%"></div></div>
+        <div class="size-note">预分配1个block(64槽×8B=512B)<br>空deque比空list重10倍</div>
+      </div>
+
+    </div>
+
+    <pre style="margin-top:16px"><span class="cm"># 验证：list 存的是指针，不是对象本身</span>
+<span class="kw">import</span> <span class="id">sys</span>
+<span class="id">a</span> <span class="op">=</span> [<span class="nm">1</span>, <span class="nm">2</span>, <span class="nm">3</span>]
+<span class="id">sys</span>.<span class="fn">getsizeof</span>(<span class="id">a</span>)          <span class="cm"># 88  ← 只算list对象本身（3个指针）</span>
+<span class="cm"># 真实总内存 = 88 + 3×28 = 172 bytes</span>
+
+<span class="cm"># numpy 绕过 PyObject 开销，数值直接存在连续内存</span>
+<span class="kw">import</span> <span class="id">numpy</span> <span class="kw">as</span> <span class="id">np</span>
+<span class="id">arr</span> <span class="op">=</span> <span class="id">np</span>.<span class="fn">array</span>(<span class="bi">range</span>(<span class="nm">1000</span>), <span class="id">dtype</span><span class="op">=</span><span class="id">np</span>.<span class="id">int64</span>)
+<span class="id">sys</span>.<span class="fn">getsizeof</span>(<span class="id">arr</span>)          <span class="cm"># ≈8112  (112头 + 1000×8数据)</span>
+<span class="id">sys</span>.<span class="fn">getsizeof</span>(<span class="bi">list</span>(<span class="bi">range</span>(<span class="nm">1000</span>)))  <span class="cm"># ≈8056  (只是指针！int对象另计）</span>
+<span class="cm"># list真实总内存≈36056，numpy≈4.4倍节省</span></pre>
+
+    <div class="tip">numpy / array 模块将数值直接存为 C 类型，完全绕过 PyObject 开销，适合大规模数值计算。金融场景中存 tick 数据用 numpy 而非 list of float。</div>
+  </div>
+
+  <!-- dynamic array growth -->
+  <div class="card" style="margin-bottom:20px">
+    <div class="card-accent accent-blue"></div>
+    <div class="card-header">
+      <div>
+        <div class="card-title">list 动态扩容策略</div>
+        <div class="card-subtitle">CPython 真实增长序列（不是教科书的 ×2）</div>
+      </div>
+      <span class="impl-tag">Objects/listobject.c</span>
+    </div>
+    <p style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">
+      每次 append 时，若 <code style="color:#79b8ff">len == allocated</code> 则触发扩容。新容量公式：<code style="color:#56d364">new_cap = n + (n >> 3) + (3 if n &lt; 9 else 6)</code>，约增长 <strong style="color:#FFD43B">12.5%</strong>，而非教科书常说的 2 倍。这样大数组更省内存，均摊 append 仍是 O(1)。
+    </p>
+    <table class="growth-table">
+      <tr><th>元素数 n</th><th>触发扩容后新容量</th><th>增长量</th><th>增长率</th><th>可视化</th></tr>
+      <tr><td>0→1</td><td>4</td><td>+4</td><td>—</td><td class="grow-bar-cell"><div class="grow-bar-bg"><div class="grow-bar-fill" style="width:8%"></div></div></td></tr>
+      <tr><td>4→5</td><td>8</td><td>+4</td><td>80%</td><td class="grow-bar-cell"><div class="grow-bar-bg"><div class="grow-bar-fill" style="width:16%"></div></div></td></tr>
+      <tr><td>8→9</td><td>16</td><td>+8</td><td>78%</td><td class="grow-bar-cell"><div class="grow-bar-bg"><div class="grow-bar-fill" style="width:28%"></div></div></td></tr>
+      <tr><td>16→17</td><td>25</td><td>+9</td><td>47%</td><td class="grow-bar-cell"><div class="grow-bar-bg"><div class="grow-bar-fill" style="width:42%"></div></div></td></tr>
+      <tr><td>25→26</td><td>35</td><td>+10</td><td>35%</td><td class="grow-bar-cell"><div class="grow-bar-bg"><div class="grow-bar-fill" style="width:55%"></div></div></td></tr>
+      <tr><td>100→101</td><td>119</td><td>+19</td><td>18%</td><td class="grow-bar-cell"><div class="grow-bar-bg"><div class="grow-bar-fill" style="width:72%"></div></div></td></tr>
+      <tr><td>1000→1001</td><td>1126</td><td>+126</td><td>12.6%</td><td class="grow-bar-cell"><div class="grow-bar-bg"><div class="grow-bar-fill" style="width:90%"></div></div></td></tr>
+      <tr><td>10000→10001</td><td>11253</td><td>+1253</td><td>12.5%</td><td class="grow-bar-cell"><div class="grow-bar-bg"><div class="grow-bar-fill" style="width:100%"></div></div></td></tr>
+    </table>
+    <pre style="margin-top:12px"><span class="cm"># 用 list.__sizeof__ 观察底层分配容量</span>
+<span class="id">a</span> <span class="op">=</span> []
+<span class="kw">for</span> <span class="id">i</span> <span class="kw">in</span> <span class="bi">range</span>(<span class="nm">20</span>):
+    <span class="id">a</span>.<span class="fn">append</span>(<span class="id">i</span>)
+    <span class="cm"># getsizeof 反映已分配容量：56 → 88 → 120 → 184 → 248...</span>
+    <span class="cm"># 每次跳跃 = 扩容事件，步长约 n/8</span>
+
+<span class="cm"># 预分配避免多次扩容（已知大小时）</span>
+<span class="id">a</span> <span class="op">=</span> [<span class="kw">None</span>] <span class="op">*</span> <span class="nm">1000</span>   <span class="cm"># 一次性分配，无扩容开销</span>
+<span class="id">a</span> <span class="op">=</span> [<span class="nm">0</span>] <span class="op">*</span> <span class="id">n</span>         <span class="cm"># 同上，适合已知长度的DP数组</span></pre>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       SECTION: DICT COLLISION & PROBING
+       ═══════════════════════════════════════════════════════ -->
+  <div class="section-label">dict 碰撞处理 — 开放寻址 &amp; 扰动探针</div>
+
+  <div class="grid">
+
+    <!-- Two families -->
+    <div class="card">
+      <div class="card-accent accent-yellow"></div>
+      <div class="card-header">
+        <div>
+          <div class="card-title">链地址 vs 开放寻址</div>
+          <div class="card-subtitle">两大碰撞处理流派</div>
+        </div>
+        <span class="impl-tag">Python 选开放寻址</span>
+      </div>
+      <p style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">碰撞不可避免（鸽巢原理），关键是碰撞后怎么处理。Python 选开放寻址：所有数据存在同一块连续内存，CPU cache 命中率高，对小型 dict（Python 最常见场景）性能更好。</p>
+      <table>
+        <tr><th>特性</th><th>链地址法（Java HashMap）</th><th>开放寻址（Python dict）</th></tr>
+        <tr><td>碰撞处理</td><td>同槽挂链表/红黑树</td><td>在数组里找下一个空槽</td></tr>
+        <tr><td>内存布局</td><td>分散（链表指针跳跃）</td><td>连续（cache 友好）</td></tr>
+        <tr><td>负载因子上限</td><td>可>1（链可无限长）</td><td>通常 2/3（避免过多碰撞）</td></tr>
+        <tr><td>删除</td><td>直接从链表摘除</td><td>需要 tombstone（墓碑）</td></tr>
+        <tr><td>实际使用</td><td>Java HashMap, C++ unordered_map</td><td>Python dict, Go map</td></tr>
+      </table>
+    </div>
+
+    <!-- Tombstone -->
+    <div class="card">
+      <div class="card-accent accent-red"></div>
+      <div class="card-header">
+        <div>
+          <div class="card-title">删除的 Tombstone 问题</div>
+          <div class="card-subtitle">开放寻址的必要设计</div>
+        </div>
+        <span class="impl-tag">dummy 哨兵</span>
+      </div>
+      <p style="font-size:12px;color:var(--text-muted);margin-bottom:10px;">开放寻址删除元素<strong style="color:#ff6b6b">不能直接清空</strong>槽位，否则会截断探针链，导致后续查找失败。CPython 用 <code style="color:#79b8ff">dummy</code> 对象标记已删除槽。</p>
+      <div class="probe-slots">
+        <div class="probe-slot ps-used"><span class="ps-idx">slot 0</span><span class="ps-key ps-used">—</span></div>
+        <div class="probe-slot ps-used" style="background:rgba(48,105,152,0.15);border-color:rgba(48,105,152,0.4)"><span class="ps-idx">slot 1</span><span class="ps-key" style="color:#79b8ff">cat</span></div>
+        <div class="probe-slot ps-tomb"><span class="ps-idx">slot 2</span><span class="ps-key" style="color:#ff6b6b">DUMMY</span></div>
+        <div class="probe-slot ps-target"><span class="ps-idx">slot 3</span><span class="ps-key" style="color:#56d364">dog</span></div>
+        <div class="probe-slot ps-empty"><span class="ps-idx">slot 4</span><span class="ps-key">—</span></div>
+      </div>
+      <pre><span class="cm"># 场景：cat→slot1，dog→slot1碰撞→探针到slot3</span>
+<span class="cm"># 删除 slot1 的 cat，如果直接清空：</span>
+<span class="cm"># 查找 dog：hash→1，slot1为空 → 误判不存在！</span>
+
+<span class="cm"># 正确做法：slot1 放 DUMMY（墓碑）</span>
+<span class="cm"># 槽的三种状态：</span>
+<span class="cm">#   empty  → 从未用过，查找时停止探针</span>
+<span class="cm">#   dummy  → 已删除，查找时继续探针</span>
+<span class="cm">#   active → 有效数据，比较 key</span>
+<span class="cm"># 插入时：遇到 dummy 可复用（等同空槽）</span></pre>
+      <div class="note">大量删除会积累 dummy，降低查找效率。rehash 时 dummy 会被真正清除，同时表大小会调整。</div>
+    </div>
+
+  </div>
+
+  <!-- Three probing strategies -->
+  <div class="card" style="margin-bottom:20px">
+    <div class="card-accent accent-purple"></div>
+    <div class="card-header">
+      <div>
+        <div class="card-title">三种探针策略 + Python 的扰动探针</div>
+        <div class="card-subtitle">开放寻址的"找下一个槽"方式</div>
+      </div>
+      <span class="impl-tag">CPython 用扰动探针</span>
+    </div>
+    <div class="probe-compare">
+
+      <div class="probe-box">
+        <div class="probe-box-title" style="color:#ff6b6b">① 线性探针（Linear）</div>
+        <div class="probe-formula">idx = (h + i) % size</div>
+        <p class="probe-pro">+ 实现最简单，cache 最友好</p>
+        <p class="probe-con">− 初级聚集（primary clustering）：满槽连成片，越来越难插入</p>
+      </div>
+
+      <div class="probe-box">
+        <div class="probe-box-title" style="color:#FFD43B">② 二次探针（Quadratic）</div>
+        <div class="probe-formula">idx = (h + i²) % size</div>
+        <p class="probe-pro">+ 跳出密集区，避免初级聚集</p>
+        <p class="probe-con">− 次级聚集：同初始槽的key走相同路径<br>− size 须为素数才能覆盖所有槽</p>
+      </div>
+
+      <div class="probe-box">
+        <div class="probe-box-title" style="color:#56d364">③ 双重哈希（Double Hash）</div>
+        <div class="probe-formula">idx = (h1 + i·h2) % size</div>
+        <p class="probe-pro">+ 彻底消除次级聚集，最均匀</p>
+        <p class="probe-con">− 需计算两次哈希，实现更复杂<br>− h2 必须与 size 互质</p>
+      </div>
+
+    </div>
+
+    <p style="font-size:12px;color:var(--text-muted);margin:16px 0 8px;"><strong style="color:#bc8cff">Python 用的是第四种：扰动探针（Perturbation Probing）</strong>——双重哈希的变体，用哈希值自身的高位当第二个哈希函数，一次计算两用：</p>
+    <pre><span class="cm"># CPython Objects/dictobject.c 真实代码逻辑</span>
+<span class="id">idx</span>     <span class="op">=</span> <span class="fn">hash</span>(<span class="id">key</span>) <span class="op">&</span> <span class="id">mask</span>        <span class="cm"># 初始槽（取低位）</span>
+<span class="id">perturb</span> <span class="op">=</span> <span class="fn">hash</span>(<span class="id">key</span>)               <span class="cm"># perturb 保留完整哈希值</span>
+
+<span class="cm"># 每次碰撞后：</span>
+<span class="id">perturb</span> <span class="op">>>=</span> <span class="nm">5</span>                       <span class="cm"># 右移5位，逐步消耗高位信息</span>
+<span class="id">idx</span> <span class="op">=</span> (<span class="id">idx</span> <span class="op">*</span> <span class="nm">5</span> <span class="op">+</span> <span class="id">perturb</span> <span class="op">+</span> <span class="nm">1</span>) <span class="op">&</span> <span class="id">mask</span>  <span class="cm"># 伪随机跳跃</span>
+
+<span class="cm"># 为什么高位很重要？</span>
+<span class="cm"># hash(key) % size 只用低位，两个低位相同但高位不同的key</span>
+<span class="cm"># 初始槽相同，但 perturb 不同 → 第一次碰撞后路径立刻分叉</span>
+<span class="cm"># perturb 变为 0 后退化为 (idx*5+1)&mask（覆盖所有槽的线性同余序列）</span>
+
+<span class="cm"># dict 扩容阈值</span>
+<span class="cm"># used > size * 2/3 时触发 rehash</span>
+<span class="cm"># 新 size = 下一个 2 的幂，通常 used * 4（预留增长空间）</span>
+<span class="cm"># rehash 时 dummy 被清除，所有 active 条目重新计算槽位</span></pre>
+    <div class="tip">记住：Python dict 的 size 永远是 2 的幂，mask = size-1，用 & 代替 % 取模（位运算快得多）。这要求哈希函数的低位分布要均匀，这也是 Python 内置哈希函数精心设计的原因。</div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       SECTION: BISECT DEEP DIVE
+       ═══════════════════════════════════════════════════════ -->
+  <div class="section-label">bisect 深度解析 — left vs right vs insort</div>
+
+  <div class="grid">
+    <div class="card">
+      <div class="card-accent accent-green"></div>
+      <div class="card-header">
+        <div>
+          <div class="card-title">bisect_left vs bisect_right</div>
+          <div class="card-subtitle">唯一区别：遇到相等元素时往哪边走</div>
+        </div>
+        <span class="impl-tag">C 实现，≈手写快5-10倍</span>
+      </div>
+      <p style="font-size:12px;color:var(--text-muted);margin-bottom:10px;">两个函数都是标准左闭右开二分，唯一差别在比较条件：<code style="color:#79b8ff">bisect_left</code> 用 <code style="color:#56d364">&lt;</code>，<code style="color:#79b8ff">bisect_right</code> 用 <code style="color:#56d364">&lt;=</code>，决定碰到相等元素时是停在左边还是右边。</p>
+      <div style="margin-bottom:10px">
+        <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px">arr = [1, 3, <span style="color:#56d364">3</span>, <span style="color:#56d364">3</span>, 5, 7]　查找 target=3：</div>
+        <div class="bisect-vis">
+          <div class="bisect-cell bc-normal"><div>1</div><div class="bisect-label">idx 0</div></div>
+          <div class="bisect-cell bc-left"><div>3</div><div class="bisect-label">left→1</div></div>
+          <div class="bisect-cell bc-target"><div>3</div><div class="bisect-label">idx 2</div></div>
+          <div class="bisect-cell bc-right"><div>3</div><div class="bisect-label">right→4</div></div>
+          <div class="bisect-cell bc-normal"><div>5</div><div class="bisect-label">idx 4</div></div>
+          <div class="bisect-cell bc-normal"><div>7</div><div class="bisect-label">idx 5</div></div>
+        </div>
+      </div>
+      <pre><span class="kw">import</span> <span class="id">bisect</span>
+<span class="id">arr</span> <span class="op">=</span> [<span class="nm">1</span>, <span class="nm">3</span>, <span class="nm">3</span>, <span class="nm">3</span>, <span class="nm">5</span>, <span class="nm">7</span>]
+
+<span class="id">bisect</span>.<span class="fn">bisect_left</span>(<span class="id">arr</span>, <span class="nm">3</span>)    <span class="cm"># → 1  (第一个3的位置)</span>
+<span class="id">bisect</span>.<span class="fn">bisect_right</span>(<span class="id">arr</span>, <span class="nm">3</span>)   <span class="cm"># → 4  (最后一个3之后)</span>
+<span class="id">bisect</span>.<span class="fn">bisect</span>(<span class="id">arr</span>, <span class="nm">3</span>)         <span class="cm"># → 4  (bisect = bisect_right)</span>
+
+<span class="cm"># 手写等价（面试中可能要求）：</span>
+<span class="kw">def</span> <span class="fn">bisect_left</span>(<span class="id">arr</span>, <span class="id">target</span>):
+    <span class="id">lo</span>, <span class="id">hi</span> <span class="op">=</span> <span class="nm">0</span>, <span class="bi">len</span>(<span class="id">arr</span>)
+    <span class="kw">while</span> <span class="id">lo</span> <span class="op">&lt;</span> <span class="id">hi</span>:
+        <span class="id">mid</span> <span class="op">=</span> (<span class="id">lo</span> <span class="op">+</span> <span class="id">hi</span>) <span class="op">//</span> <span class="nm">2</span>
+        <span class="kw">if</span> <span class="id">arr</span>[<span class="id">mid</span>] <span class="op">&lt;</span> <span class="id">target</span>:   <span class="cm"># 严格小于 → 左边不够</span>
+            <span class="id">lo</span> <span class="op">=</span> <span class="id">mid</span> <span class="op">+</span> <span class="nm">1</span>
+        <span class="kw">else</span>:
+            <span class="id">hi</span> <span class="op">=</span> <span class="id">mid</span>
+    <span class="kw">return</span> <span class="id">lo</span>
+
+<span class="kw">def</span> <span class="fn">bisect_right</span>(<span class="id">arr</span>, <span class="id">target</span>):
+    <span class="id">lo</span>, <span class="id">hi</span> <span class="op">=</span> <span class="nm">0</span>, <span class="bi">len</span>(<span class="id">arr</span>)
+    <span class="kw">while</span> <span class="id">lo</span> <span class="op">&lt;</span> <span class="id">hi</span>:
+        <span class="id">mid</span> <span class="op">=</span> (<span class="id">lo</span> <span class="op">+</span> <span class="id">hi</span>) <span class="op">//</span> <span class="nm">2</span>
+        <span class="kw">if</span> <span class="id">arr</span>[<span class="id">mid</span>] <span class="op">&lt;=</span> <span class="id">target</span>:  <span class="cm"># 小于等于 → 继续往右</span>
+            <span class="id">lo</span> <span class="op">=</span> <span class="id">mid</span> <span class="op">+</span> <span class="nm">1</span>
+        <span class="kw">else</span>:
+            <span class="id">hi</span> <span class="op">=</span> <span class="id">mid</span>
+    <span class="kw">return</span> <span class="id">lo</span></pre>
+      <div class="note">bisect 返回的是插入位置，不是"找到了"的信号。目标不存在时返回它应该被插入的位置，arr[i] 不等于 target。务必做存在性校验：i &lt; len(arr) and arr[i] == target。</div>
+    </div>
+
+    <div class="card">
+      <div class="card-accent accent-orange"></div>
+      <div class="card-header">
+        <div>
+          <div class="card-title">bisect 金融场景用法</div>
+          <div class="card-subtitle">insort · floor · ceiling · 区间计数</div>
+        </div>
+        <span class="impl-tag">bisect + O(log n)查找</span>
+      </div>
+      <p style="font-size:12px;color:var(--text-muted);margin-bottom:10px;"><code style="color:#79b8ff">insort</code> 的复杂度陷阱：bisect 部分 O(log n)，但 list.insert 移位是 O(n)，整体 O(n)。需要真正 O(log n) 插入请用 SortedList。</p>
+      <pre><span class="kw">import</span> <span class="id">bisect</span>
+
+<span class="cm"># 1. 存在性查找</span>
+<span class="kw">def</span> <span class="fn">contains</span>(<span class="id">arr</span>, <span class="id">target</span>):
+    <span class="id">i</span> <span class="op">=</span> <span class="id">bisect</span>.<span class="fn">bisect_left</span>(<span class="id">arr</span>, <span class="id">target</span>)
+    <span class="kw">return</span> <span class="id">i</span> <span class="op">&lt;</span> <span class="bi">len</span>(<span class="id">arr</span>) <span class="kw">and</span> <span class="id">arr</span>[<span class="id">i</span>] <span class="op">==</span> <span class="id">target</span>
+
+<span class="cm"># 2. floor（最大的 ≤ target，金融：不超过某价格的最大档位）</span>
+<span class="kw">def</span> <span class="fn">floor_val</span>(<span class="id">arr</span>, <span class="id">target</span>):
+    <span class="id">i</span> <span class="op">=</span> <span class="id">bisect</span>.<span class="fn">bisect_right</span>(<span class="id">arr</span>, <span class="id">target</span>) <span class="op">-</span> <span class="nm">1</span>
+    <span class="kw">return</span> <span class="id">arr</span>[<span class="id">i</span>] <span class="kw">if</span> <span class="id">i</span> <span class="op">&gt;=</span> <span class="nm">0</span> <span class="kw">else</span> <span class="kw">None</span>
+
+<span class="cm"># 3. ceiling（最小的 ≥ target）</span>
+<span class="kw">def</span> <span class="fn">ceil_val</span>(<span class="id">arr</span>, <span class="id">target</span>):
+    <span class="id">i</span> <span class="op">=</span> <span class="id">bisect</span>.<span class="fn">bisect_left</span>(<span class="id">arr</span>, <span class="id">target</span>)
+    <span class="kw">return</span> <span class="id">arr</span>[<span class="id">i</span>] <span class="kw">if</span> <span class="id">i</span> <span class="op">&lt;</span> <span class="bi">len</span>(<span class="id">arr</span>) <span class="kw">else</span> <span class="kw">None</span>
+
+<span class="cm"># 4. 区间计数（[lo, hi] 内有多少元素，O(log n)）</span>
+<span class="kw">def</span> <span class="fn">count_range</span>(<span class="id">arr</span>, <span class="id">lo</span>, <span class="id">hi</span>):
+    <span class="kw">return</span> <span class="id">bisect</span>.<span class="fn">bisect_right</span>(<span class="id">arr</span>, <span class="id">hi</span>) <span class="op">-</span> <span class="id">bisect</span>.<span class="fn">bisect_left</span>(<span class="id">arr</span>, <span class="id">lo</span>)
+
+<span class="cm"># 5. 时间序列定位（tick数据按时间戳二分）</span>
+<span class="kw">import</span> <span class="id">bisect</span>
+<span class="id">timestamps</span> <span class="op">=</span> [<span class="nm">930100</span>, <span class="nm">930200</span>, <span class="nm">930305</span>, <span class="nm">930410</span>]  <span class="cm"># HHMMSS</span>
+<span class="id">idx</span> <span class="op">=</span> <span class="id">bisect</span>.<span class="fn">bisect_left</span>(<span class="id">timestamps</span>, <span class="nm">930300</span>)
+<span class="cm"># idx=2，即 930305 是第一个 >= 09:03:00 的tick</span>
+
+<span class="cm"># 6. insort 陷阱：O(n) 不是 O(log n)！</span>
+<span class="id">bisect</span>.<span class="fn">insort</span>(<span class="id">arr</span>, <span class="nm">6</span>)   <span class="cm"># bisect O(logn) + list.insert O(n) = O(n)</span>
+<span class="cm"># 需要真 O(log n) 插入 → 用 SortedList</span></pre>
+      <div class="tip">bisect 的正确使用姿势：查找 O(log n)，修改（insort）O(n)。它是有序 list 的查询加速器，不是平衡树的替代品。</div>
+    </div>
+
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       SECTION: SORTED STRUCTURES
+       ═══════════════════════════════════════════════════════ -->
+  <div class="section-label">有序结构对比 — 分块数组 · 跳表 · 红黑树</div>
+
+  <div class="card" style="margin-bottom:20px">
+    <div class="card-accent accent-purple"></div>
+    <div class="card-header">
+      <div>
+        <div class="card-title">三种有序数据结构横向对比</div>
+        <div class="card-subtitle">SortedList 底层 · Redis ZSet · Java TreeMap</div>
+      </div>
+      <span class="impl-tag">选型指南</span>
+    </div>
+
+    <div class="struct-compare">
+
+      <div class="struct-box" style="border-color:rgba(48,105,152,0.4)">
+        <div class="struct-title" style="color:#79b8ff">分块有序数组</div>
+        <div class="struct-subtitle">sortedcontainers.SortedList</div>
+        <div class="struct-row"><span class="struct-key">insert</span><span class="struct-val" style="color:#FFD43B">O(√n)</span></div>
+        <div class="struct-row"><span class="struct-key">remove</span><span class="struct-val" style="color:#FFD43B">O(√n)</span></div>
+        <div class="struct-row"><span class="struct-key">search</span><span class="struct-val" style="color:#56d364">O(log n)</span></div>
+        <div class="struct-row"><span class="struct-key">get_kth</span><span class="struct-val" style="color:#56d364">O(log n)</span></div>
+        <div class="struct-row"><span class="struct-key">range query</span><span class="struct-val" style="color:#56d364">O(k+√n)</span></div>
+        <div class="struct-row"><span class="struct-key">cache 友好</span><span class="struct-val" style="color:#56d364">极好</span></div>
+        <div class="struct-row"><span class="struct-key">实现难度</span><span class="struct-val">中</span></div>
+        <p style="font-size:10px;color:var(--text-muted);margin-top:8px;line-height:1.5">分成 √n 个有序块。块内二分查找，块间维护最大值索引。C 数组 cache 命中率极高，实践中比红黑树快。</p>
+      </div>
+
+      <div class="struct-box" style="border-color:rgba(86,211,100,0.4)">
+        <div class="struct-title" style="color:#56d364">跳表（Skip List）</div>
+        <div class="struct-subtitle">Redis ZSet, LevelDB</div>
+        <div class="struct-row"><span class="struct-key">insert</span><span class="struct-val" style="color:#56d364">O(log n) 期望</span></div>
+        <div class="struct-row"><span class="struct-key">remove</span><span class="struct-val" style="color:#56d364">O(log n) 期望</span></div>
+        <div class="struct-row"><span class="struct-key">search</span><span class="struct-val" style="color:#56d364">O(log n) 期望</span></div>
+        <div class="struct-row"><span class="struct-key">get_kth</span><span class="struct-val" style="color:#56d364">O(log n)*</span></div>
+        <div class="struct-row"><span class="struct-key">range query</span><span class="struct-val" style="color:#56d364">O(k+log n)</span></div>
+        <div class="struct-row"><span class="struct-key">并发友好</span><span class="struct-val" style="color:#56d364">好（局部锁）</span></div>
+        <div class="struct-row"><span class="struct-key">实现难度</span><span class="struct-val">中高</span></div>
+        <p style="font-size:10px;color:var(--text-muted);margin-top:8px;line-height:1.5">多层有序链表。底层完整，上层稀疏索引。Redis 选跳表而非红黑树：范围查询更简单，并发修改只需锁局部节点。</p>
+      </div>
+
+      <div class="struct-box" style="border-color:rgba(188,140,255,0.4)">
+        <div class="struct-title" style="color:#bc8cff">红黑树 / AVL 树</div>
+        <div class="struct-subtitle">Java TreeMap, C++ std::map</div>
+        <div class="struct-row"><span class="struct-key">insert</span><span class="struct-val" style="color:#56d364">O(log n) 最坏</span></div>
+        <div class="struct-row"><span class="struct-key">remove</span><span class="struct-val" style="color:#56d364">O(log n) 最坏</span></div>
+        <div class="struct-row"><span class="struct-key">search</span><span class="struct-val" style="color:#56d364">O(log n) 最坏</span></div>
+        <div class="struct-row"><span class="struct-key">get_kth</span><span class="struct-val" style="color:#56d364">O(log n)*</span></div>
+        <div class="struct-row"><span class="struct-key">range query</span><span class="struct-val" style="color:#56d364">O(k+log n)</span></div>
+        <div class="struct-row"><span class="struct-key">并发友好</span><span class="struct-val" style="color:#ff6b6b">差（旋转多节点）</span></div>
+        <div class="struct-row"><span class="struct-key">实现难度</span><span class="struct-val">高</span></div>
+        <p style="font-size:10px;color:var(--text-muted);margin-top:8px;line-height:1.5">5条颜色规则保证树高 ≤ 2log(n)。优势是最坏情况有保证（不像跳表是期望值）。红黑树旋转修改多个节点，并发加锁粒度粗。</p>
+      </div>
+
+    </div>
+
+    <pre style="margin-top:16px"><span class="cm"># Python 中用 SortedList 替代 dict 实现实时 Top-K</span>
+<span class="kw">from</span> <span class="id">sortedcontainers</span> <span class="kw">import</span> <span class="id">SortedList</span>
+
+<span class="kw">class</span> <span class="id">RealTimePriceTracker</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="id">self</span>):
+        <span class="id">self</span>.<span class="id">latest</span> <span class="op">=</span> {}                  <span class="cm"># ticker → price</span>
+        <span class="id">self</span>.<span class="id">sl</span> <span class="op">=</span> <span class="fn">SortedList</span>(<span class="id">key</span><span class="op">=</span><span class="kw">lambda</span> <span class="id">x</span>: <span class="id">x</span>[<span class="nm">0</span>])
+
+    <span class="kw">def</span> <span class="fn">on_tick</span>(<span class="id">self</span>, <span class="id">ticker</span>, <span class="id">price</span>):
+        <span class="kw">if</span> <span class="id">ticker</span> <span class="kw">in</span> <span class="id">self</span>.<span class="id">latest</span>:
+            <span class="id">self</span>.<span class="id">sl</span>.<span class="fn">discard</span>((<span class="op">-</span><span class="id">self</span>.<span class="id">latest</span>[<span class="id">ticker</span>], <span class="id">ticker</span>))
+        <span class="id">self</span>.<span class="id">latest</span>[<span class="id">ticker</span>] <span class="op">=</span> <span class="id">price</span>
+        <span class="id">self</span>.<span class="id">sl</span>.<span class="fn">add</span>((<span class="op">-</span><span class="id">price</span>, <span class="id">ticker</span>))         <span class="cm"># O(√n)</span>
+
+    <span class="kw">def</span> <span class="fn">top_k</span>(<span class="id">self</span>, <span class="id">k</span>):
+        <span class="kw">return</span> [(<span class="id">t</span>, <span class="op">-</span><span class="id">p</span>) <span class="kw">for</span> <span class="id">p</span>,<span class="id">t</span> <span class="kw">in</span> <span class="id">self</span>.<span class="id">sl</span>[:<span class="id">k</span>]]   <span class="cm"># O(k)</span>
+
+<span class="cm"># 对比 heapq.nlargest：每次调用需 O(n log k) 重新扫描全部</span>
+<span class="cm"># SortedList on_tick O(√n)，top_k O(k)，适合高频更新场景</span></pre>
+
+    <div style="font-size:11px;color:var(--text-muted);margin-top:8px">* get_kth 需在节点中额外维护 subtree size 或 span 字段（跳表中即为 span 数组）</div>
+    <div class="tip">面试加分点：Redis 用跳表不用红黑树，是因为跳表的范围查询实现更简单（底层链表直接遍历），并发修改时只需锁局部节点，而红黑树旋转操作会影响多个节点难以加细粒度锁。</div>
+  </div>
+
+<footer>Python Data Structures Reference &nbsp;·&nbsp; Built-in + collections + heapq + bisect + itertools + functools &nbsp;·&nbsp; CPython Implementation Details &nbsp;·&nbsp; Memory Sizes · Hash Collision · Sorted Structures</footer>
+
+</body>
+</html>

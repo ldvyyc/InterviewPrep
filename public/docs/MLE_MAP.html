@@ -1,0 +1,1741 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MLE & MAP — Quant Interview Prep</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@300;400;600&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+<style>
+  :root {
+    --bg: #0d0f14;
+    --bg2: #131720;
+    --bg3: #1a1f2e;
+    --bg4: #1e2538;
+    --gold: #c9a84c;
+    --gold2: #e8c96a;
+    --gold-dim: rgba(201,168,76,0.15);
+    --blue: #4a8fe8;
+    --blue-dim: rgba(74,143,232,0.12);
+    --green: #3ec98a;
+    --green-dim: rgba(62,201,138,0.1);
+    --red: #e85a6b;
+    --red-dim: rgba(232,90,107,0.1);
+    --purple: #9d6fe8;
+    --purple-dim: rgba(157,111,232,0.1);
+    --text: #d4cfc7;
+    --text-dim: #8a8580;
+    --text-bright: #f0ebe0;
+    --border: rgba(201,168,76,0.2);
+    --border-dim: rgba(255,255,255,0.06);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Crimson Pro', Georgia, serif;
+    font-size: 17px;
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  /* Noise texture overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.4;
+  }
+
+  /* ——— LAYOUT ——— */
+  .page-wrapper {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 2rem 6rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ——— HEADER ——— */
+  header {
+    padding: 4rem 0 2.5rem;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 3rem;
+    position: relative;
+  }
+  header::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 120px;
+    height: 2px;
+    background: linear-gradient(90deg, var(--gold), transparent);
+  }
+  .header-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 0.8rem;
+    opacity: 0.8;
+  }
+  h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(2.4rem, 5vw, 3.8rem);
+    color: var(--text-bright);
+    line-height: 1.1;
+    font-weight: 400;
+    letter-spacing: -0.02em;
+  }
+  h1 em {
+    color: var(--gold);
+    font-style: italic;
+  }
+  .header-sub {
+    margin-top: 1rem;
+    color: var(--text-dim);
+    font-size: 15px;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 300;
+  }
+
+  /* ——— TOC ——— */
+  .toc {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 1.5rem 2rem;
+    margin-bottom: 3rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.3rem 2rem;
+  }
+  .toc-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--gold);
+    margin-bottom: 0.8rem;
+    grid-column: 1 / -1;
+  }
+  .toc a {
+    color: var(--text-dim);
+    text-decoration: none;
+    font-size: 14px;
+    font-family: 'JetBrains Mono', monospace;
+    transition: color 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .toc a::before {
+    content: '→';
+    color: var(--gold);
+    font-size: 12px;
+    opacity: 0.6;
+  }
+  .toc a:hover { color: var(--gold2); }
+
+  /* ——— SECTIONS ——— */
+  section {
+    margin-bottom: 3.5rem;
+    animation: fadeUp 0.5s ease both;
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.8rem;
+    border-bottom: 1px solid var(--border-dim);
+  }
+  .section-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    background: var(--gold-dim);
+    border: 1px solid var(--border);
+    color: var(--gold);
+    padding: 3px 8px;
+    border-radius: 3px;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+  }
+  h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.7rem;
+    color: var(--text-bright);
+    font-weight: 400;
+  }
+
+  h3 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.2rem;
+    color: var(--gold2);
+    font-weight: 400;
+    margin: 1.8rem 0 0.8rem;
+  }
+
+  h4 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--blue);
+    margin: 1.5rem 0 0.6rem;
+  }
+
+  p { margin-bottom: 0.8rem; }
+
+  /* ——— MATH BLOCKS ——— */
+  .math-block {
+    background: var(--bg3);
+    border-left: 3px solid var(--gold);
+    border-radius: 0 6px 6px 0;
+    padding: 1.2rem 1.5rem;
+    margin: 1.2rem 0;
+    overflow-x: auto;
+    font-size: 1.05rem;
+  }
+  .math-block.blue { border-left-color: var(--blue); }
+  .math-block.green { border-left-color: var(--green); }
+  .math-block.purple { border-left-color: var(--purple); }
+
+  /* ——— KEY BOX ——— */
+  .key-box {
+    background: var(--gold-dim);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 1.2rem 1.5rem;
+    margin: 1.5rem 0;
+    position: relative;
+  }
+  .key-box::before {
+    content: '关键结论';
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gold);
+    position: absolute;
+    top: -8px;
+    left: 12px;
+    background: var(--bg);
+    padding: 0 6px;
+  }
+  .key-box.blue { background: var(--blue-dim); border-color: rgba(74,143,232,0.3); }
+  .key-box.blue::before { color: var(--blue); content: 'KEY INSIGHT'; }
+  .key-box.green { background: var(--green-dim); border-color: rgba(62,201,138,0.3); }
+  .key-box.green::before { color: var(--green); content: 'INTERVIEW TIP'; }
+  .key-box.red { background: var(--red-dim); border-color: rgba(232,90,107,0.3); }
+  .key-box.red::before { color: var(--red); content: '注意 / CAUTION'; }
+  .key-box.purple { background: var(--purple-dim); border-color: rgba(157,111,232,0.3); }
+  .key-box.purple::before { color: var(--purple); content: 'QUANT PROBLEM'; }
+
+  /* ——— COMPARE TABLE ——— */
+  .compare-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: var(--border-dim);
+    border-radius: 6px;
+    overflow: hidden;
+    margin: 1.2rem 0;
+  }
+  .compare-cell {
+    background: var(--bg2);
+    padding: 1.2rem;
+  }
+  .compare-cell.header {
+    background: var(--bg3);
+    text-align: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .compare-cell.header.mle { color: var(--blue); }
+  .compare-cell.header.map { color: var(--purple); }
+  .compare-cell .label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.3rem;
+  }
+
+  /* ——— PROPERTY CARDS ——— */
+  .prop-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin: 1rem 0;
+  }
+  .prop-card {
+    background: var(--bg2);
+    border: 1px solid var(--border-dim);
+    border-radius: 6px;
+    padding: 1rem;
+    transition: border-color 0.2s;
+  }
+  .prop-card:hover { border-color: var(--border); }
+  .prop-card .icon {
+    font-size: 1.5rem;
+    margin-bottom: 0.4rem;
+  }
+  .prop-card .title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--gold);
+    margin-bottom: 0.4rem;
+  }
+  .prop-card p { font-size: 14px; color: var(--text-dim); margin: 0; }
+
+  /* ——— EXAMPLE BLOCK ——— */
+  .example {
+    border: 1px solid var(--border-dim);
+    border-radius: 8px;
+    overflow: hidden;
+    margin: 1.5rem 0;
+  }
+  .example-header {
+    background: var(--bg3);
+    padding: 0.7rem 1.2rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--text-dim);
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    border-bottom: 1px solid var(--border-dim);
+  }
+  .example-header .badge {
+    background: var(--blue-dim);
+    color: var(--blue);
+    border: 1px solid rgba(74,143,232,0.3);
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-size: 10px;
+  }
+  .example-body {
+    padding: 1.2rem 1.5rem;
+    background: var(--bg2);
+  }
+
+  /* ——— STEP LIST ——— */
+  .steps {
+    counter-reset: step;
+    list-style: none;
+    margin: 0.8rem 0;
+  }
+  .steps li {
+    counter-increment: step;
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 0.6rem;
+    font-size: 15px;
+    align-items: flex-start;
+  }
+  .steps li::before {
+    content: counter(step);
+    background: var(--bg3);
+    color: var(--gold);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    min-width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border);
+    margin-top: 2px;
+    flex-shrink: 0;
+  }
+
+  /* ——— INLINE CODE ——— */
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85em;
+    background: var(--bg3);
+    border: 1px solid var(--border-dim);
+    padding: 1px 5px;
+    border-radius: 3px;
+    color: var(--green);
+  }
+
+  /* ——— QUANT PROBLEM ——— */
+  .quant-problem {
+    background: var(--bg2);
+    border: 1px solid rgba(157,111,232,0.25);
+    border-radius: 8px;
+    margin: 1.5rem 0;
+    overflow: hidden;
+  }
+  .qp-header {
+    background: var(--purple-dim);
+    padding: 0.7rem 1.2rem;
+    border-bottom: 1px solid rgba(157,111,232,0.2);
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+  }
+  .qp-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--purple);
+  }
+  .qp-body { padding: 1.2rem 1.5rem; }
+  .qp-answer {
+    background: var(--bg3);
+    border-top: 1px solid var(--border-dim);
+    padding: 1rem 1.5rem;
+  }
+  .qp-answer-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--green);
+    margin-bottom: 0.5rem;
+  }
+
+  /* ——— FORMULA REFERENCE ——— */
+  .formula-ref {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.8rem 1.5rem;
+    align-items: start;
+    margin: 1rem 0;
+  }
+  .formula-ref .f-name {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--gold);
+    padding-top: 4px;
+    white-space: nowrap;
+  }
+  .formula-ref .f-eq {
+    background: var(--bg3);
+    border-radius: 4px;
+    padding: 0.5rem 1rem;
+    font-size: 0.95rem;
+  }
+
+  /* ——— DIVIDER ——— */
+  hr {
+    border: none;
+    border-top: 1px solid var(--border-dim);
+    margin: 2rem 0;
+  }
+
+  /* ——— FOOTNOTE ——— */
+  .footnote {
+    font-size: 13px;
+    color: var(--text-dim);
+    font-style: italic;
+    margin-top: 0.5rem;
+  }
+
+  /* ——— HIGHLIGHT ——— */
+  .hl-gold { color: var(--gold2); }
+  .hl-blue { color: var(--blue); }
+  .hl-green { color: var(--green); }
+  .hl-red { color: var(--red); }
+  .hl-purple { color: var(--purple); }
+
+  /* ——— SCROLLBAR ——— */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--bg4); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--border); }
+
+  /* ——— RESPONSIVE ——— */
+  @media (max-width: 640px) {
+    .toc { grid-template-columns: 1fr; }
+    .compare-grid { grid-template-columns: 1fr; }
+    .prop-grid { grid-template-columns: 1fr 1fr; }
+    h1 { font-size: 2rem; }
+  }
+</style>
+</head>
+<body>
+<div class="page-wrapper">
+
+<!-- HEADER -->
+<header>
+  <div class="header-label">Quant Researcher Interview Prep · Statistics</div>
+  <h1>MLE & <em>MAP</em><br>Estimation</h1>
+  <div class="header-sub">Maximum Likelihood · Maximum A Posteriori · German Tank · Quant Problems</div>
+</header>
+
+<!-- TOC -->
+<nav class="toc">
+  <div class="toc-title">Contents</div>
+  <a href="#s1">01 · Frequentist vs Bayesian</a>
+  <a href="#s2">02 · MLE Framework</a>
+  <a href="#s3">03 · MAP Framework</a>
+  <a href="#s4">04 · MLE 性质</a>
+  <a href="#s5">05 · Examples: Normal & Exponential</a>
+  <a href="#s6">06 · MAP as Regularized MLE</a>
+  <a href="#s7">07 · German Tank Problem</a>
+  <a href="#s8">08 · Sequential Bayesian Update</a>
+  <a href="#s9">09 · Quant Interview Problems</a>
+  <a href="#s10">10 · Formula Cheatsheet</a>
+  <a href="#s11">11 · 面经：Z=X+Y，估计X</a>
+  <a href="#s12">12 · 面经：量角器测三角形</a>
+  <a href="#s13">13 · 面经：两把标尺测真值</a>
+  <a href="#s14">14 · 面经：不公平硬币贝叶斯</a>
+  <a href="#s15">15 · 面经：联合正态概率</a>
+  <a href="#s16">16 · 面经：两两相关系数范围</a>
+  <a href="#s17">17 · 面经：回归斜率之积</a>
+  <a href="#s18">18 · 面经：数据复制对回归的影响</a>
+  <a href="#s19">19 · 面经：Ridge lambda 变化</a>
+  <a href="#s20">20 · 综合速查表（扩展版）</a>
+</nav>
+
+<!-- ===== SECTION 1 ===== -->
+<section id="s1">
+  <div class="section-header">
+    <span class="section-num">01</span>
+    <h2>Frequentist vs Bayesian</h2>
+  </div>
+  <div class="compare-grid">
+    <div class="compare-cell header mle">MLE — Frequentist</div>
+    <div class="compare-cell header map">MAP — Bayesian</div>
+    <div class="compare-cell">
+      <div class="label">θ 的性质</div>
+      θ 是<strong>固定未知量</strong>，不是随机变量
+    </div>
+    <div class="compare-cell">
+      <div class="label">θ 的性质</div>
+      θ 是<strong>随机变量</strong>，服从先验分布 \(P(\theta)\)
+    </div>
+    <div class="compare-cell">
+      <div class="label">目标</div>
+      \(\arg\max_\theta P(D|\theta)\)
+    </div>
+    <div class="compare-cell">
+      <div class="label">目标</div>
+      \(\arg\max_\theta P(\theta|D)\)
+    </div>
+    <div class="compare-cell">
+      <div class="label">先验</div>
+      假设 θ uniform（无先验）
+    </div>
+    <div class="compare-cell">
+      <div class="label">先验</div>
+      显式给定 \(P(\theta)\)
+    </div>
+    <div class="compare-cell">
+      <div class="label">关系</div>
+      MLE 是 MAP 在先验均匀时的特例
+    </div>
+    <div class="compare-cell">
+      <div class="label">关系</div>
+      MAP 等价于带正则项的 MLE
+    </div>
+  </div>
+  <div class="key-box blue">
+    <strong>一句话区分：</strong>MLE 问"哪个参数让数据最可能出现"；MAP 问"看到数据后，哪个参数最可能是真值"。前者是 likelihood，后者是 posterior。
+  </div>
+</section>
+
+<!-- ===== SECTION 2 ===== -->
+<section id="s2">
+  <div class="section-header">
+    <span class="section-num">02</span>
+    <h2>MLE Framework</h2>
+  </div>
+
+  <p>给定 i.i.d. 样本 \(D = \{x_1, \ldots, x_n\}\)，参数化分布 \(P(x|\theta)\)，MLE 求：</p>
+
+  <div class="math-block">
+    $$\hat\theta_{\text{MLE}} = \arg\max_\theta P(D|\theta) = \arg\max_\theta \prod_{i=1}^n P(x_i|\theta)$$
+  </div>
+
+  <p>取对数（单调不改变 argmax），转为 <strong>log-likelihood</strong>：</p>
+
+  <div class="math-block">
+    $$\ell(\theta) = \log P(D|\theta) = \sum_{i=1}^n \log P(x_i|\theta)$$
+  </div>
+
+  <h4>求解步骤</h4>
+  <ol class="steps">
+    <li>写出单样本 likelihood \(P(x_i|\theta)\)</li>
+    <li>连乘得 \(L(\theta) = \prod_i P(x_i|\theta)\)</li>
+    <li>取 log 得 \(\ell(\theta)\)</li>
+    <li>对 θ 求导令 \(\frac{\partial \ell}{\partial \theta} = 0\)，解出 \(\hat\theta\)</li>
+    <li>验证二阶条件（确认是极大值）</li>
+  </ol>
+
+  <div class="key-box red">
+    <strong>常见陷阱：</strong>MLE 给出的估计量不一定无偏。例如正态分布的方差 MLE \(\hat\sigma^2 = \frac{1}{n}\sum(x_i-\bar x)^2\) 是<span class="hl-red">有偏</span>的（分母应为 n−1）。指数分布 \(\hat\lambda = 1/\bar x\) 也是有偏的（\(E[1/\bar x] \neq 1/\lambda\)）。
+  </div>
+</section>
+
+<!-- ===== SECTION 3 ===== -->
+<section id="s3">
+  <div class="section-header">
+    <span class="section-num">03</span>
+    <h2>MAP Framework</h2>
+  </div>
+
+  <p>MAP 利用 Bayes 定理，在 likelihood 基础上加入先验：</p>
+
+  <div class="math-block purple">
+    $$P(\theta|D) = \frac{P(D|\theta) \cdot P(\theta)}{P(D)} \propto P(D|\theta) \cdot P(\theta)$$
+  </div>
+
+  <div class="math-block purple">
+    $$\hat\theta_{\text{MAP}} = \arg\max_\theta [P(D|\theta) \cdot P(\theta)] = \arg\max_\theta [\ell(\theta) + \log P(\theta)]$$
+  </div>
+
+  <p>求解条件（对 θ 求导）：</p>
+
+  <div class="math-block">
+    $$\frac{\partial}{\partial\theta}\bigl[\log P(D|\theta) + \log P(\theta)\bigr] = 0$$
+  </div>
+
+  <h4>MAP vs 完整 Bayesian</h4>
+  <p>MAP 只取 posterior 的<strong>众数（mode）</strong>，丢弃了分布形状。完整 Bayesian 推断要计算 posterior 的完整分布，代价更高但信息更丰富。</p>
+
+  <div class="key-box">
+    <strong>直觉：</strong>\(\log P(\theta)\) 相当于对参数的"惩罚项"。数据量大时，先验影响减弱，MAP → MLE；数据量小时，先验起正则化作用，拉向先验均值。
+  </div>
+</section>
+
+<!-- ===== SECTION 4 ===== -->
+<section id="s4">
+  <div class="section-header">
+    <span class="section-num">04</span>
+    <h2>MLE 渐近性质</h2>
+  </div>
+
+  <div class="prop-grid">
+    <div class="prop-card">
+      <div class="icon">①</div>
+      <div class="title">Consistency</div>
+      <p>当 \(n\to\infty\) 时，\(\hat\theta_{\text{MLE}} \xrightarrow{p} \theta^*\)</p>
+    </div>
+    <div class="prop-card">
+      <div class="icon">②</div>
+      <div class="title">Asymptotic Normality</div>
+      <p>\(\sqrt{n}(\hat\theta - \theta^*) \xrightarrow{d} \mathcal{N}\!\left(0,\,\frac{1}{I(\theta^*)}\right)\)</p>
+    </div>
+    <div class="prop-card">
+      <div class="icon">③</div>
+      <div class="title">Asymptotic Efficiency</div>
+      <p>在所有无偏估计量中，MLE 方差最小（达到 Cramér-Rao 下界）</p>
+    </div>
+    <div class="prop-card">
+      <div class="icon">④</div>
+      <div class="title">Invariance</div>
+      <p>若 \(\hat\theta\) 是 θ 的 MLE，则 \(g(\hat\theta)\) 是 \(g(\theta)\) 的 MLE</p>
+    </div>
+  </div>
+
+  <h3>Fisher Information</h3>
+  <p>Fisher Information 衡量一个观测能提供多少关于 θ 的信息：</p>
+  <div class="math-block">
+    $$I(\theta) = -\mathbb{E}\left[\frac{\partial^2 \log P(x|\theta)}{\partial\theta^2}\right] = \mathbb{E}\left[\left(\frac{\partial \log P(x|\theta)}{\partial\theta}\right)^{\!2}\right]$$
+  </div>
+
+  <div class="key-box blue">
+    <strong>Cramér-Rao 下界：</strong>对任意无偏估计量 \(\hat\theta\)，有 \(\text{Var}(\hat\theta) \geq \frac{1}{nI(\theta)}\)。MLE 在大样本下达到此下界，即渐近最优。
+  </div>
+</section>
+
+<!-- ===== SECTION 5 ===== -->
+<section id="s5">
+  <div class="section-header">
+    <span class="section-num">05</span>
+    <h2>经典例题</h2>
+  </div>
+
+  <!-- Example: Exponential -->
+  <div class="example">
+    <div class="example-header">
+      <span class="badge">EXAMPLE 1</span>
+      指数分布 MLE
+    </div>
+    <div class="example-body">
+      <p>设 \(X_i \sim \text{Exp}(\lambda)\)，即 \(f(x|\lambda) = \lambda e^{-\lambda x},\ x\geq0\)。</p>
+      <div class="math-block">
+        $$\ell(\lambda) = n\log\lambda - \lambda\sum x_i$$
+        $$\ell'(\lambda) = \frac{n}{\lambda} - \sum x_i = 0 \implies \hat\lambda_{\text{MLE}} = \frac{1}{\bar x}$$
+      </div>
+      <div class="key-box red">
+        <strong>有偏性：</strong>\(\mathbb{E}[\hat\lambda] = \mathbb{E}[1/\bar X] \neq 1/\lambda\)，因为
+        \(\mathbb{E}[1/\bar X] = \frac{n}{n-1}\lambda\)（Jensen 不等式）。
+        因此无偏修正为 \(\hat\lambda_{\text{unbiased}} = \frac{n-1}{n} \cdot \frac{1}{\bar x}\)。
+      </div>
+    </div>
+  </div>
+
+  <!-- Example: Normal MLE -->
+  <div class="example">
+    <div class="example-header">
+      <span class="badge">EXAMPLE 2</span>
+      正态分布 MLE — 估计 μ（σ 已知）
+    </div>
+    <div class="example-body">
+      <p>设 \(X_i \sim \mathcal{N}(\mu, \sigma^2)\)，σ 已知，估计 μ。</p>
+      <div class="math-block">
+        $$\ell(\mu) = \sum_{i=1}^n \left[-\frac{(x_i-\mu)^2}{2\sigma^2}\right] + \text{const}$$
+        $$\ell'(\mu) = \frac{1}{\sigma^2}\sum(x_i - \mu) = 0 \implies \hat\mu_{\text{MLE}} = \bar x$$
+      </div>
+    </div>
+  </div>
+
+  <!-- Example: Normal sigma MLE -->
+  <div class="example">
+    <div class="example-header">
+      <span class="badge">EXAMPLE 3</span>
+      正态分布 MLE — 单样本估计 σ
+    </div>
+    <div class="example-body">
+      <p>设 \(X \sim \mathcal{N}(0, s^2)\)，μ=0 已知，一次观测得 \(X = k\)，估计 s。</p>
+      <div class="math-block">
+        $$L(s) = \frac{1}{\sqrt{2\pi}s}e^{-k^2/(2s^2)},\quad \ell(s) = -\log s - \frac{k^2}{2s^2} + \text{const}$$
+        $$\ell'(s) = -\frac{1}{s} + \frac{k^2}{s^3} = 0 \implies s^2 = k^2 \implies \hat s = |k|$$
+      </div>
+      <p class="footnote">直觉：单次观测等于真值，MLE 令方差等于观测值的平方。</p>
+    </div>
+  </div>
+
+  <!-- Example: Normal MAP -->
+  <div class="example">
+    <div class="example-header">
+      <span class="badge">EXAMPLE 4</span>
+      正态分布 MAP — 先验 μ ~ N(0, τ²)
+    </div>
+    <div class="example-body">
+      <p>数据 \(X_i \sim \mathcal{N}(\mu, \sigma^2)\)，先验 \(\mu \sim \mathcal{N}(0, \tau^2)\)。</p>
+      <div class="math-block blue">
+        $$\ell(\mu) + \log P(\mu) = -\sum\frac{(x_i-\mu)^2}{2\sigma^2} - \frac{\mu^2}{2\tau^2} + \text{const}$$
+        $$\frac{\partial}{\partial\mu}[\cdots] = \frac{1}{\sigma^2}\sum(x_i-\mu) - \frac{\mu}{\tau^2} = 0$$
+        $$\hat\mu_{\text{MAP}} = \frac{n/\sigma^2}{n/\sigma^2 + 1/\tau^2}\bar x = \frac{n\tau^2}{n\tau^2 + \sigma^2}\bar x$$
+      </div>
+      <div class="key-box">
+        <strong>收缩解释：</strong>MAP 估计是 MLE（\(\bar x\)）与先验均值（0）的<strong>加权平均</strong>，权重由精度（方差倒数）决定。\(n\to\infty\) 时权重趋向 MLE；样本少时被先验"拉向 0"（shrinkage）。
+      </div>
+    </div>
+  </div>
+
+  <!-- Example: Two observations MAP -->
+  <div class="example">
+    <div class="example-header">
+      <span class="badge">EXAMPLE 5</span>
+      两观测 MAP：\(M_i = \theta + \varepsilon_i\)，\(\varepsilon_i \sim \mathcal{N}(0, \sigma_i^2)\)
+    </div>
+    <div class="example-body">
+      <p><strong>MLE：</strong>最小化加权平方和</p>
+      <div class="math-block">
+        $$\hat\theta_{\text{MLE}} = \frac{M_1/\sigma_1^2 + M_2/\sigma_2^2}{1/\sigma_1^2 + 1/\sigma_2^2}$$
+      </div>
+      <p><strong>MAP</strong>（先验 \(\theta \sim \mathcal{N}(\mu_0, \tau^2)\)）：</p>
+      <div class="math-block blue">
+        $$\hat\theta_{\text{MAP}} = \frac{M_1/\sigma_1^2 + M_2/\sigma_2^2 + \mu_0/\tau^2}{1/\sigma_1^2 + 1/\sigma_2^2 + 1/\tau^2}$$
+      </div>
+      <div class="key-box">
+        <strong>规律：</strong>MAP = 加权平均，权重 = 精度 = 方差的倒数。先验贡献一项 \(\mu_0/\tau^2\)。
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SECTION 6 ===== -->
+<section id="s6">
+  <div class="section-header">
+    <span class="section-num">06</span>
+    <h2>MAP = Regularized MLE</h2>
+  </div>
+
+  <p>MAP 等价于带正则化约束的 MLE，先验分布决定正则化类型：</p>
+
+  <div class="compare-grid">
+    <div class="compare-cell header mle">先验分布</div>
+    <div class="compare-cell header map">等价正则化</div>
+    <div class="compare-cell">
+      \(\theta \sim \mathcal{N}(0, \tau^2)\)<br>
+      <span style="color:var(--text-dim);font-size:14px">高斯先验</span>
+    </div>
+    <div class="compare-cell">
+      <strong class="hl-blue">L₂ 正则 / Ridge</strong><br>
+      <span style="font-size:14px">\(\ell(\theta) - \frac{1}{2\tau^2}\|\theta\|^2\)</span>
+    </div>
+    <div class="compare-cell">
+      \(\theta \sim \text{Laplace}(0, b)\)<br>
+      <span style="color:var(--text-dim);font-size:14px">拉普拉斯先验</span>
+    </div>
+    <div class="compare-cell">
+      <strong class="hl-green">L₁ 正则 / LASSO</strong><br>
+      <span style="font-size:14px">\(\ell(\theta) - \frac{1}{b}|\theta|\)</span>
+    </div>
+    <div class="compare-cell">
+      \(\theta \sim \text{Uniform}\)<br>
+      <span style="color:var(--text-dim);font-size:14px">均匀先验</span>
+    </div>
+    <div class="compare-cell">
+      <strong class="hl-gold">无正则化 = MLE</strong>
+    </div>
+  </div>
+
+  <div class="key-box blue">
+    <strong>面试高频考点：</strong>为什么 Ridge 防止过拟合？因为高斯先验鼓励 θ 接近 0，惩罚大参数值；为什么 LASSO 产生稀疏解？因为拉普拉斯先验在 0 处有尖峰，倾向于将部分参数精确推到 0。
+  </div>
+</section>
+
+<!-- ===== SECTION 7 ===== -->
+<section id="s7">
+  <div class="section-header">
+    <span class="section-num">07</span>
+    <h2>德国坦克问题</h2>
+  </div>
+
+  <p>从 \(\{1, 2, \ldots, N\}\) 中<strong>均匀无放回</strong>抽取 k 个，观测到最大值 \(M_k = m_k\)，估计未知 N。</p>
+
+  <h3>PMF</h3>
+  <div class="math-block">
+    $$P(M_k = m_k) = \frac{\binom{m_k-1}{k-1}}{\binom{N}{k}}, \quad k \leq m_k \leq N$$
+  </div>
+  <p class="footnote">解释：从 \(\{1,\ldots,m_k\}\) 选 k 个且最大值恰为 \(m_k\)，等价于从前 \(m_k-1\) 个中选 \(k-1\) 个。</p>
+
+  <h3>MLE 估计</h3>
+  <p>固定 \(m_k\)，\(P(M_k = m_k)\) 关于 N 单调递减（分母 \(\binom{N}{k}\) 随 N 增大），因此：</p>
+  <div class="math-block">
+    $$\hat N_{\text{MLE}} = m_k$$
+  </div>
+  <p class="footnote">MLE 就是"你看到的最大值"，但这显然低估了 N。</p>
+
+  <h3>期望</h3>
+  <div class="math-block green">
+    $$\mathbb{E}[M_k] = \frac{k(N+1)}{k+1}$$
+  </div>
+
+  <h3>无偏估计（UMVUE）</h3>
+  <p>令 \(\mathbb{E}[M_k] = m_k\) 解出 N：</p>
+  <div class="math-block green">
+    $$\hat N = m_k \cdot \frac{k+1}{k} - 1 = m_k + \frac{m_k}{k} - 1$$
+  </div>
+
+  <div class="key-box">
+    <strong>直觉解释：</strong>
+    <ul style="margin-left:1.2rem;margin-top:0.4rem;line-height:2;">
+      <li>\(m_k\) 低估了 N（你采样到的最大值不可能超过 N）</li>
+      <li>\(\frac{m_k}{k}\) 是相邻观测值的平均间距，作为 "\(m_k\) 到 N" 这段距离的补偿</li>
+      <li>减 1 是因为序列从 1 开始</li>
+    </ul>
+  </div>
+
+  <div class="key-box green">
+    <strong>历史背景（面试聊天话题）：</strong>二战中盟军通过德国坦克序列号，用此方法估计德军生产量。统计估计约 256 辆/月，战后德军档案证实为 255 辆/月，远比情报部门 1,400 辆/月的估计精准。
+  </div>
+</section>
+
+<!-- ===== SECTION 8 ===== -->
+<section id="s8">
+  <div class="section-header">
+    <span class="section-num">08</span>
+    <h2>Sequential Bayesian Update</h2>
+  </div>
+
+  <p>Bayesian 框架天然支持<strong>顺序更新</strong>：先用 \(x_1\) 得到 posterior，将其作为下一次的 prior，再用 \(x_2\) 更新……最终结果与一次性用所有数据相同。</p>
+
+  <div class="math-block">
+    $$\underbrace{P(\theta|x_1)}_{\text{Step 1 posterior}} \propto P(x_1|\theta)P(\theta)$$
+    $$\underbrace{P(\theta|x_1,x_2)}_{\text{Step 2 posterior}} \propto P(x_2|\theta)\cdot\underbrace{P(\theta|x_1)}_{\text{Step 2 prior}}$$
+  </div>
+
+  <div class="key-box blue">
+    <strong>实际意义（Quant 视角）：</strong>在线学习、滤波（Kalman Filter）、实时参数更新都是顺序 Bayesian 的应用。每次新数据到来，无需重新用所有历史数据，只需更新 sufficient statistics。
+  </div>
+
+  <h3>共轭先验（Conjugate Prior）</h3>
+  <p>若先验与 posterior 属于同一分布族，称为共轭先验，可以解析更新：</p>
+  <div class="formula-ref">
+    <div class="f-name">Beta-Binomial</div>
+    <div class="f-eq">\(\text{Beta}(\alpha,\beta) \xrightarrow{+k\text{ heads, }n-k\text{ tails}} \text{Beta}(\alpha+k,\,\beta+n-k)\)</div>
+    <div class="f-name">Normal-Normal</div>
+    <div class="f-eq">\(\mu\sim\mathcal{N}(\mu_0,\tau^2) \xrightarrow{+n\text{ obs}} \mathcal{N}\!\left(\frac{n\bar x/\sigma^2+\mu_0/\tau^2}{n/\sigma^2+1/\tau^2},\;\frac{1}{n/\sigma^2+1/\tau^2}\right)\)</div>
+    <div class="f-name">Gamma-Poisson</div>
+    <div class="f-eq">\(\lambda\sim\text{Gamma}(\alpha,\beta) \xrightarrow{+\sum x_i,\,n\text{ obs}} \text{Gamma}(\alpha+\sum x_i,\,\beta+n)\)</div>
+  </div>
+</section>
+
+<!-- ===== SECTION 9 ===== -->
+<section id="s9">
+  <div class="section-header">
+    <span class="section-num">09</span>
+    <h2>Quant Interview Problems</h2>
+  </div>
+
+  <!-- Problem 1a -->
+  <div class="quant-problem">
+    <div class="qp-header">
+      <span class="qp-label">Problem 1a · Decision Under Noise</span>
+    </div>
+    <div class="qp-body">
+      <p>P 是未知数，你可以测量一次得到 \(X = P + \varepsilon\)，其中 \(\varepsilon \sim \mathcal{N}(0,1)\)。你可以选择收取 P 元（若 P 为负则亏损）。你的策略是什么？</p>
+    </div>
+    <div class="qp-answer">
+      <div class="qp-answer-label">Answer</div>
+      <p><strong>阈值策略：当且仅当 \(X > 0\) 时收取。</strong></p>
+      <p>观测到 X 后，P 的后验期望为 \(\mathbb{E}[P|X] = X\)（无先验时）。期望收益 \(\mathbb{E}[\text{payoff}] = \mathbb{E}[P \cdot \mathbf{1}_{X>0}]\)。</p>
+      <div class="math-block" style="margin:0.8rem 0;">
+        $$= \mathbb{E}[(X-\varepsilon)\cdot\mathbf{1}_{X>0}] = \mathbb{E}[X\cdot\mathbf{1}_{X>0}] - \mathbb{E}[\varepsilon\cdot\mathbf{1}_{X>0}]$$
+        $$= \int_0^\infty x\phi(x-P)\,dx - \int_0^\infty \varepsilon\,\phi(\varepsilon)\,d\varepsilon$$
+      </div>
+      <p>由于 \(\mathbb{E}[P|X] = X > 0\) 时收取严格优于任意其他 cut-off，阈值 0 最优。期望收益 = \(\phi(0) = \frac{1}{\sqrt{2\pi}} \approx 0.399\)（与 P 无关！）</p>
+    </div>
+  </div>
+
+  <!-- Problem 1b -->
+  <div class="quant-problem">
+    <div class="qp-header">
+      <span class="qp-label">Problem 1b · Competitive Information</span>
+    </div>
+    <div class="qp-body">
+      <p>你的朋友也独立测量得到 Y（你不知道 Y），朋友先决定是否收取，若朋友收取则你无法收取。如何调整策略？</p>
+    </div>
+    <div class="qp-answer">
+      <div class="qp-answer-label">Answer</div>
+      <p><strong>提高阈值：\(X > c^*\) 才收取，其中 \(c^* > 0\)。</strong></p>
+      <p>关键洞察：若朋友没收（轮到你），说明朋友的 \(Y \leq 0\)（他的 MLE 为负）。这提供了关于 P 的<strong>负面信号</strong>：P 倾向于偏低。</p>
+      <p>你收取的条件概率空间缩小为 \(\{Y\leq 0, X > c^*\}\)，在此条件下 P 的后验期望降低。因此需要更高的 X 阈值来保证 \(\mathbb{E}[P|X, Y\leq 0] > 0\)。</p>
+      <p class="footnote">这是经典的<strong>winner's curse</strong>问题：只有当朋友不要时你才能拿到，而朋友不要本身是坏消息。</p>
+    </div>
+  </div>
+
+  <!-- Problem 1c -->
+  <div class="quant-problem">
+    <div class="qp-header">
+      <span class="qp-label">Problem 1c · Optimal Stopping (Random Walk)</span>
+    </div>
+    <div class="qp-body">
+      <p>升级版：你测量到 \(X = P + \varepsilon\)，之后 P 每秒 ±1（等概率），你知道每次变动方向，可以选择任意时刻收取一次。策略是什么？</p>
+    </div>
+    <div class="qp-answer">
+      <div class="qp-answer-label">Answer</div>
+      <p><strong>设阈值 \(c\)，当当前值 \(P_t \geq c\) 时收取（且题意提示等待更优）。</strong></p>
+      <p>设初始测量 X，此后 P 做随机游走且你观测每步变动。设当前 P 值（已知）为 \(v\)。</p>
+      <p><strong>最优停止：</strong>若未来上升期望收益 > 当前值，继续等待。对称随机游走，\(\mathbb{E}[P_{t+1}|P_t] = P_t\)，但可以"止损"（P 下跌时不收，P 上涨时获益）。</p>
+      <div class="math-block" style="margin:0.8rem 0;">
+        $$V(v) = \max\left(v,\; \frac{1}{2}V(v+1) + \frac{1}{2}V(v-1)\right)$$
+      </div>
+      <p>解为阈值策略：存在最优 \(c^*\) 使得当 \(P_t \geq c^*\) 时立即收取。由于 V(v) 是凸函数，等待期权价值随距阈值距离增大而增大。</p>
+    </div>
+  </div>
+
+  <!-- Problem 1d -->
+  <div class="quant-problem">
+    <div class="qp-header">
+      <span class="qp-label">Problem 1d · Competitive Optimal Stopping</span>
+    </div>
+    <div class="qp-body">
+      <p>在 1c 的游戏中，朋友知道 Y（你不知道 Y），朋友每秒先于你决策，若朋友收取你就无法收取。如何保证正期望收益？最优策略是什么？</p>
+    </div>
+    <div class="qp-answer">
+      <div class="qp-answer-label">Answer</div>
+      <p><strong>保证正期望：只有当 P 足够高（远超朋友可能的收取阈值）才收取。</strong></p>
+      <p><strong>关键结构：</strong></p>
+      <ol class="steps">
+        <li>朋友有阈值策略 \(c_f\)（你可以通过博弈论推断）</li>
+        <li>当朋友没收时，意味着 \(P_t < c_f\)，这是 P 低的信号</li>
+        <li>你仍可以等待 P 上升到足够高再收取</li>
+        <li>最优阈值 \(c_y > c_f\)：你需要更高的 P 来抵消"信息劣势"</li>
+      </ol>
+      <p><strong>保证正期望的策略：</strong>设阈值 \(c_y\) 足够高，使得即使在朋友不收（P 有负面信号）的条件下，\(\mathbb{E}[P|P_t = c_y, \text{朋友未收}] > 0\)。</p>
+      <p class="footnote">这是一个 Markov 最优停时问题与竞争博弈的结合，解法需要 Bellman 方程 + 纳什均衡。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SECTION 10 ===== -->
+<section id="s10">
+  <div class="section-header">
+    <span class="section-num">10</span>
+    <h2>Formula Cheatsheet</h2>
+  </div>
+
+  <div class="formula-ref">
+    <div class="f-name">MLE</div>
+    <div class="f-eq">\(\hat\theta = \arg\max_\theta \sum_i \log P(x_i|\theta)\)</div>
+
+    <div class="f-name">MAP</div>
+    <div class="f-eq">\(\hat\theta = \arg\max_\theta \left[\sum_i \log P(x_i|\theta) + \log P(\theta)\right]\)</div>
+
+    <div class="f-name">Normal MLE</div>
+    <div class="f-eq">\(\hat\mu = \bar x,\quad \hat\sigma^2 = \frac{1}{n}\sum(x_i-\bar x)^2\) （有偏）</div>
+
+    <div class="f-name">Normal MAP</div>
+    <div class="f-eq">\(\hat\mu = \frac{n\bar x/\sigma^2 + \mu_0/\tau^2}{n/\sigma^2 + 1/\tau^2}\) （shrinkage toward \(\mu_0\)）</div>
+
+    <div class="f-name">Exp MLE</div>
+    <div class="f-eq">\(\hat\lambda = 1/\bar x\)（有偏；无偏修正 \(\hat\lambda = (n-1)/(n\bar x)\)）</div>
+
+    <div class="f-name">German Tank</div>
+    <div class="f-eq">\(\hat N_{\text{UMVUE}} = m_k + m_k/k - 1\)，其中 \(m_k\) = 样本最大值，k = 样本量</div>
+
+    <div class="f-name">Fisher Info</div>
+    <div class="f-eq">\(I(\theta) = -\mathbb{E}[\partial^2\ell/\partial\theta^2]\)，Cramér-Rao: \(\text{Var}(\hat\theta)\geq 1/(nI(\theta))\)</div>
+
+    <div class="f-name">Ridge ↔ MAP</div>
+    <div class="f-eq">\(\theta\sim\mathcal{N}(0,\tau^2)\) ⟺ \(\ell(\theta) - \lambda\|\theta\|^2\)，其中 \(\lambda = 1/(2\tau^2)\)</div>
+
+    <div class="f-name">LASSO ↔ MAP</div>
+    <div class="f-eq">\(\theta\sim\text{Laplace}(0,b)\) ⟺ \(\ell(\theta) - \lambda\|\theta\|_1\)，其中 \(\lambda = 1/b\)</div>
+  </div>
+
+  <hr>
+  <div class="key-box green">
+    <strong>面试答题框架：</strong>
+    <ol class="steps" style="margin-top:0.5rem;">
+      <li>先确认是 frequentist（θ 固定）还是 Bayesian（θ 随机），有无先验</li>
+      <li>写出 likelihood，取 log，求导令为 0</li>
+      <li>检查是否有偏；若有偏，能否修正（e.g. n→n-1）</li>
+      <li>讨论大样本性质（一致性、渐近正态、效率）</li>
+      <li>若有先验，加 log P(θ) 项，讨论等价正则化和 shrinkage 效果</li>
+    </ol>
+  </div>
+
+  <p style="margin-top:2rem;color:var(--text-dim);font-size:13px;font-family:'JetBrains Mono',monospace;">
+    Prepared for Quant Researcher interviews · MLE &amp; MAP · Princeton MFin ·
+    <span style="color:var(--gold)">Yuchen Yu</span>
+  </p>
+</section>
+
+<!-- ===== SECTION 11 ===== -->
+<section id="s11">
+  <div class="section-header">
+    <span class="section-num">11</span>
+    <h2>面经题：Z = X+Y，估计 X</h2>
+  </div>
+
+  <p><em>来源：SIG Quant 面经（高频考题）</em></p>
+
+  <div class="quant-problem">
+    <div class="qp-header">
+      <span class="qp-label">Problem · Signal Extraction</span>
+    </div>
+    <div class="qp-body">
+      <p>\(X \sim \mathcal{N}(0, \sigma_x^2)\)，\(Y \sim \mathcal{N}(0, \sigma_y^2)\)，两者独立。令 \(Z = X + Y\)，已观测到 \(Z = z\)，求 \(\mathbb{E}[X \mid Z]\)。只问 expectation，不问 variance。</p>
+    </div>
+    <div class="qp-answer">
+      <div class="qp-answer-label">完整推导</div>
+
+      <h4>方法一：联合正态条件期望公式（最快）</h4>
+      <p>由于 \(X\) 和 \(Y\) 独立正态，\((X, Z)\) 是联合正态分布，可直接用条件期望公式：</p>
+      <div class="math-block">
+        $$\mathbb{E}[X \mid Z] = \mathbb{E}[X] + \frac{\operatorname{Cov}(X,Z)}{\operatorname{Var}(Z)}\,(Z - \mathbb{E}[Z])$$
+      </div>
+      <p>逐项计算：</p>
+      <div class="math-block">
+        $$\mathbb{E}[X] = 0, \quad \mathbb{E}[Z] = \mathbb{E}[X] + \mathbb{E}[Y] = 0$$
+        $$\operatorname{Cov}(X,Z) = \operatorname{Cov}(X,\, X+Y) = \operatorname{Var}(X) + \underbrace{\operatorname{Cov}(X,Y)}_{=0} = \sigma_x^2$$
+        $$\operatorname{Var}(Z) = \operatorname{Var}(X+Y) = \sigma_x^2 + \sigma_y^2$$
+      </div>
+      <p>代入：</p>
+      <div class="math-block green">
+        $$\boxed{\mathbb{E}[X \mid Z] = \frac{\sigma_x^2}{\sigma_x^2 + \sigma_y^2} \cdot Z}$$
+      </div>
+
+      <h4>方法二：MAP 推导（直接优化）</h4>
+      <p>把 \(X\) 视为随机变量（非固定参数），MAP 估计为：</p>
+      <div class="math-block blue">
+        $$\hat{x}_{\text{MAP}} = \arg\max_x \; P(X=x) \cdot P(Z=z \mid X=x)$$
+      </div>
+      <p>展开两项（丢掉常数归一化因子）：</p>
+      <div class="math-block blue">
+        $$= \arg\max_x \; \exp\!\left(-\frac{x^2}{2\sigma_x^2}\right) \cdot \exp\!\left(-\frac{(z-x)^2}{2\sigma_y^2}\right)$$
+      </div>
+      <p>取对数，转为最小化：</p>
+      <div class="math-block">
+        $$\min_x \; \underbrace{\frac{x^2}{2\sigma_x^2}}_{\text{先验惩罚：}x\text{ 离 0 太远}} + \underbrace{\frac{(z-x)^2}{2\sigma_y^2}}_{\text{似然惩罚：需要 }Y\text{ 太大}}$$
+      </div>
+      <p>对 \(x\) 求导令为零：</p>
+      <div class="math-block">
+        $$\frac{\partial}{\partial x}\left[\frac{x^2}{2\sigma_x^2} + \frac{(z-x)^2}{2\sigma_y^2}\right] = \frac{x}{\sigma_x^2} - \frac{z-x}{\sigma_y^2} = 0$$
+        $$x\,\sigma_y^2 = (z-x)\,\sigma_x^2$$
+        $$x(\sigma_x^2 + \sigma_y^2) = z\,\sigma_x^2$$
+        $$\hat{x}_{\text{MAP}} = \frac{\sigma_x^2}{\sigma_x^2 + \sigma_y^2} \cdot z$$
+      </div>
+      <p>与方法一结果完全一致。</p>
+
+      <h4>为什么对 x 求导，而非对 z？</h4>
+      <div class="key-box red">
+        <strong>关键区分：</strong>\(z\) 是已经观测到的固定常数（比如 \(z = 3.7\)），不是决策变量。MAP 问的是"给定这个观测值，最可能的 \(x\) 是什么"——\(x\) 才是我们在搜索的。对 \(z\) 求导等于问"什么样的观测值最大化后验"，这毫无意义。
+      </div>
+
+      <h4>为什么不能直接用 MLE？</h4>
+      <div class="key-box red">
+        <strong>MLE 在此失效：</strong>MLE 把待估量视为<em>固定未知参数</em>，对 \(x\) 最大化 \(P(Z=z \mid X=x) = P(Y=z-x)\)，得到 \(\hat{x}_{\text{MLE}} = z\)（令 \(Y=0\)）。这完全忽略了 \(X\) 本身很小的先验信息。当 \(\sigma_x^2 \ll \sigma_y^2\) 时，MLE 说"X=z=5"，而贝叶斯说"X 大概率接近 0"——MLE 荒谬，MAP 正确。<br><br>
+        <strong>根本原因：</strong>\(X\) 是随机变量，有自己的分布，不能用频率派工具估计。
+      </div>
+
+      <h4>直觉解读</h4>
+      <div class="math-block">
+        $$\mathbb{E}[X|Z] = \underbrace{\frac{\sigma_x^2}{\sigma_x^2+\sigma_y^2}}_{\text{X占总方差的比例}} \cdot Z$$
+      </div>
+      <ul style="margin-left:1.5rem;line-height:2.2;">
+        <li>若 \(\sigma_x^2 \gg \sigma_y^2\)：Z 几乎全是 X，则 \(\mathbb{E}[X|Z] \approx Z\)</li>
+        <li>若 \(\sigma_x^2 \ll \sigma_y^2\)：Z 几乎全是噪声 Y，则 \(\mathbb{E}[X|Z] \approx 0\)（先验更可信）</li>
+        <li>若 \(\sigma_x^2 = \sigma_y^2\)：\(\mathbb{E}[X|Z] = Z/2\)，对半分</li>
+      </ul>
+      <p class="footnote">金融意义：X 是真实信号，Y 是噪声，Z = 观测到的带噪信号。这个公式就是信号提取的核心——Kalman Filter 在线性高斯情形下的解正是这个形式。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SECTION 12 ===== -->
+<section id="s12">
+  <div class="section-header">
+    <span class="section-num">12</span>
+    <h2>面经题：量角器测三角形角度</h2>
+  </div>
+
+  <p><em>来源：SIG 第一轮 Quant 面经</em></p>
+
+  <div class="quant-problem">
+    <div class="qp-header">
+      <span class="qp-label">Problem · Constrained MLE</span>
+    </div>
+    <div class="qp-body">
+      <p>用量角器测量一个三角形的三个角，结果分别是 56°, 55°, 57°（共 168°），真实的角度应该是多少？自己设置 assumption。</p>
+    </div>
+    <div class="qp-answer">
+      <div class="qp-answer-label">完整推导</div>
+
+      <h4>建立模型</h4>
+      <p>这道题<strong>不是数学题，是统计估计题</strong>。设真实角度为 \(\alpha, \beta, \gamma\)，满足约束 \(\alpha + \beta + \gamma = 180°\)。测量值为：</p>
+      <div class="math-block">
+        $$x_1 = \alpha + \varepsilon_1, \quad x_2 = \beta + \varepsilon_2, \quad x_3 = \gamma + \varepsilon_3$$
+      </div>
+      <p><strong>Assumption：</strong>测量误差独立同分布，\(\varepsilon_i \sim \mathcal{N}(0, \sigma^2)\)（各量角器精度相同）。</p>
+
+      <h4>约束 MLE（等价于约束最小二乘）</h4>
+      <p>似然函数（取对数，丢常数）：</p>
+      <div class="math-block">
+        $$\ell(\alpha,\beta,\gamma) = -\frac{1}{2\sigma^2}\left[(x_1-\alpha)^2 + (x_2-\beta)^2 + (x_3-\gamma)^2\right]$$
+      </div>
+      <p>最大化似然等价于约束最小化残差平方和：</p>
+      <div class="math-block">
+        $$\min_{\alpha,\beta,\gamma} \; (x_1-\alpha)^2 + (x_2-\beta)^2 + (x_3-\gamma)^2$$
+        $$\text{s.t.} \quad \alpha + \beta + \gamma = 180°$$
+      </div>
+
+      <h4>拉格朗日乘数法</h4>
+      <div class="math-block">
+        $$\mathcal{L} = (x_1-\alpha)^2 + (x_2-\beta)^2 + (x_3-\gamma)^2 - \lambda(\alpha+\beta+\gamma-180°)$$
+      </div>
+      <p>对 \(\alpha, \beta, \gamma\) 分别求偏导令为 0：</p>
+      <div class="math-block">
+        $$\frac{\partial\mathcal{L}}{\partial\alpha} = -2(x_1-\alpha) - \lambda = 0 \implies x_1 - \alpha = \frac{\lambda}{2}$$
+        $$\frac{\partial\mathcal{L}}{\partial\beta} = -2(x_2-\beta) - \lambda = 0 \implies x_2 - \beta = \frac{\lambda}{2}$$
+        $$\frac{\partial\mathcal{L}}{\partial\gamma} = -2(x_3-\gamma) - \lambda = 0 \implies x_3 - \gamma = \frac{\lambda}{2}$$
+      </div>
+      <p>三式相加：</p>
+      <div class="math-block">
+        $$(x_1+x_2+x_3) - (\alpha+\beta+\gamma) = \frac{3\lambda}{2}$$
+        $$168° - 180° = \frac{3\lambda}{2} \implies \lambda = \frac{-24°}{3} \cdot \frac{2}{1}\cdot\frac{1}{2} = -8°$$
+      </div>
+      <p>代回，每个误差为 \(-\lambda/2 = 4°\)，因此修正量为 \(+4°\)：</p>
+      <div class="math-block green">
+        $$\hat\alpha = 56° + 4° = 60°, \quad \hat\beta = 55° + 4° = 59°, \quad \hat\gamma = 57° + 4° = 61°$$
+      </div>
+
+      <h4>直觉：均匀分配误差</h4>
+      <p>总误差 \(180° - 168° = 12°\) 被均匀分配给三个角（\(12°/3 = 4°\)），这是因为假设各量角器精度相同（\(\sigma_1^2 = \sigma_2^2 = \sigma_3^2\)）。</p>
+
+      <h4>推广：精度不同时</h4>
+      <p>若各量角器精度不同（方差为 \(\sigma_1^2, \sigma_2^2, \sigma_3^2\)），目标函数变为加权残差平方和：</p>
+      <div class="math-block">
+        $$\min \; \frac{(x_1-\alpha)^2}{\sigma_1^2} + \frac{(x_2-\beta)^2}{\sigma_2^2} + \frac{(x_3-\gamma)^2}{\sigma_3^2} \quad \text{s.t.} \quad \alpha+\beta+\gamma=180°$$
+      </div>
+      <p>拉格朗日得：\(x_i - \hat\theta_i = \lambda\sigma_i^2 / 2\)，即<strong>精度越高的测量，修正量越小</strong>（改动越小，因为越可信）。</p>
+
+      <div class="key-box blue">
+        <strong>面试核心：</strong>考察约束 MLE + 拉格朗日，以及"精度加权"直觉。说出"这是约束优化，不是纯数学题"就得分。
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SECTION 13 ===== -->
+<section id="s13">
+  <div class="section-header">
+    <span class="section-num">13</span>
+    <h2>面经题：两把标尺测量真值</h2>
+  </div>
+
+  <p><em>来源：多个 Quant 面经（高频）；量角器题的两变量版本</em></p>
+
+  <div class="quant-problem">
+    <div class="qp-header">
+      <span class="qp-label">Problem · Precision-Weighted Estimation</span>
+    </div>
+    <div class="qp-body">
+      <p>两把标尺精度不同，测量同一个东西，得到结果 \(M_1\) 和 \(M_2\)，问真值是多少？对标尺测量分布作假设，用贝叶斯算最大概率。</p>
+    </div>
+    <div class="qp-answer">
+      <div class="qp-answer-label">完整推导</div>
+
+      <h4>设立模型</h4>
+      <p>设真值为 \(\mu\)，两把标尺的测量误差独立正态：</p>
+      <div class="math-block">
+        $$M_1 = \mu + \varepsilon_1, \quad \varepsilon_1 \sim \mathcal{N}(0, \sigma_1^2)$$
+        $$M_2 = \mu + \varepsilon_2, \quad \varepsilon_2 \sim \mathcal{N}(0, \sigma_2^2)$$
+      </div>
+
+      <h4>MLE：最大化联合似然</h4>
+      <div class="math-block">
+        $$L(\mu) = P(M_1|\mu) \cdot P(M_2|\mu) = \frac{1}{\sqrt{2\pi}\sigma_1}\exp\!\left(-\frac{(M_1-\mu)^2}{2\sigma_1^2}\right) \cdot \frac{1}{\sqrt{2\pi}\sigma_2}\exp\!\left(-\frac{(M_2-\mu)^2}{2\sigma_2^2}\right)$$
+      </div>
+      <p>取对数，丢常数，最大化等价于最小化：</p>
+      <div class="math-block">
+        $$\min_\mu \; \frac{(M_1-\mu)^2}{2\sigma_1^2} + \frac{(M_2-\mu)^2}{2\sigma_2^2}$$
+      </div>
+      <p>对 \(\mu\) 求导令为零：</p>
+      <div class="math-block">
+        $$\frac{\partial}{\partial\mu}\left[\frac{(M_1-\mu)^2}{2\sigma_1^2} + \frac{(M_2-\mu)^2}{2\sigma_2^2}\right] = -\frac{M_1-\mu}{\sigma_1^2} - \frac{M_2-\mu}{\sigma_2^2} = 0$$
+        $$\frac{\mu}{\sigma_1^2} + \frac{\mu}{\sigma_2^2} = \frac{M_1}{\sigma_1^2} + \frac{M_2}{\sigma_2^2}$$
+      </div>
+      <div class="math-block green">
+        $$\boxed{\hat\mu_{\text{MLE}} = \frac{M_1/\sigma_1^2 + M_2/\sigma_2^2}{1/\sigma_1^2 + 1/\sigma_2^2} = \frac{w_1 M_1 + w_2 M_2}{w_1 + w_2}}$$
+        $$\text{其中精度权重 } w_i = \frac{1}{\sigma_i^2}$$
+      </div>
+
+      <h4>MAP：加入先验 \(\mu \sim \mathcal{N}(\mu_0, \tau^2)\)</h4>
+      <p>后验正比于似然 × 先验，同样取对数最小化：</p>
+      <div class="math-block blue">
+        $$\hat\mu_{\text{MAP}} = \frac{M_1/\sigma_1^2 + M_2/\sigma_2^2 + \mu_0/\tau^2}{1/\sigma_1^2 + 1/\sigma_2^2 + 1/\tau^2}$$
+      </div>
+      <p>先验贡献第三项 \(\mu_0/\tau^2\)，权重为先验精度 \(1/\tau^2\)。</p>
+
+      <h4>推广到 n 把标尺</h4>
+      <div class="math-block">
+        $$\hat\mu = \frac{\sum_{i=1}^n M_i/\sigma_i^2}{\sum_{i=1}^n 1/\sigma_i^2}$$
+      </div>
+      <p>精度相同时（\(\sigma_i^2 = \sigma^2\) for all \(i\)）退化为简单算术平均。</p>
+
+      <div class="key-box">
+        <strong>规律：精度加权平均。</strong>精度（\(1/\sigma^2\)）越高的测量，在加权平均中权重越大，影响越强——越精准的标尺说话越有力。这个公式是 Kalman Filter 的离散单步更新，也是信号融合的基础。
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SECTION 14 ===== -->
+<section id="s14">
+  <div class="section-header">
+    <span class="section-num">14</span>
+    <h2>面经题：1个不公平硬币 + 999个公平硬币</h2>
+  </div>
+
+  <p><em>来源：Quant 面经，绿皮书变体</em></p>
+
+  <div class="quant-problem">
+    <div class="qp-header">
+      <span class="qp-label">Problem · Bayesian Coin Identification</span>
+    </div>
+    <div class="qp-body">
+      <p>有 1 枚不公平硬币（正面概率 \(p_u\)）和 999 枚公平硬币。随机选一枚，抛了 5 次都是正面，求这枚是公平硬币的概率。</p>
+    </div>
+    <div class="qp-answer">
+      <div class="qp-answer-label">完整推导</div>
+
+      <h4>贝叶斯公式框架</h4>
+      <p>设事件：\(F\) = 选到公平硬币，\(U\) = 选到不公平硬币，\(D\) = 观测到 5 次正面。</p>
+      <div class="math-block">
+        $$P(F) = \frac{999}{1000}, \quad P(U) = \frac{1}{1000}$$
+        $$P(D \mid F) = \left(\frac{1}{2}\right)^5 = \frac{1}{32}$$
+        $$P(D \mid U) = p_u^5$$
+      </div>
+      <p>由全概率公式：</p>
+      <div class="math-block">
+        $$P(D) = P(D|F)\,P(F) + P(D|U)\,P(U) = \frac{1}{32} \cdot \frac{999}{1000} + p_u^5 \cdot \frac{1}{1000}$$
+      </div>
+      <p>贝叶斯后验：</p>
+      <div class="math-block green">
+        $$P(F \mid D) = \frac{P(D|F)\,P(F)}{P(D)} = \frac{\dfrac{1}{32} \cdot \dfrac{999}{1000}}{\dfrac{1}{32} \cdot \dfrac{999}{1000} + p_u^5 \cdot \dfrac{1}{1000}}$$
+      </div>
+      <p>化简（分子分母同乘 \(1000/p_u^5\)）：</p>
+      <div class="math-block green">
+        $$P(F \mid D) = \frac{999/32}{999/32 + p_u^5 \cdot \frac{1}{(1/2)^5}} = \frac{999}{999 + 32\,p_u^5}$$
+      </div>
+
+      <h4>具体情形</h4>
+      <div class="compare-grid">
+        <div class="compare-cell header mle">\(p_u\) 的假设</div>
+        <div class="compare-cell header map">\(P(F \mid D)\)</div>
+        <div class="compare-cell">\(p_u = 1\)（双面正）</div>
+        <div class="compare-cell">\(\dfrac{999}{999+32} \approx 96.9\%\)</div>
+        <div class="compare-cell">\(p_u = 0.9\)（偏正）</div>
+        <div class="compare-cell">\(\dfrac{999}{999+32\times 0.9^5} \approx \dfrac{999}{999+18.9} \approx 98.1\%\)</div>
+        <div class="compare-cell">\(p_u = 0.7\)</div>
+        <div class="compare-cell">\(\dfrac{999}{999+32\times 0.168} \approx 99.5\%\)</div>
+      </div>
+
+      <div class="key-box blue">
+        <strong>直觉：</strong>999:1 的强先验使得即使 5 次正面，公平硬币仍是最可能的。只有当 \(p_u\) 非常大（接近 1），不公平硬币才会有可观的后验概率。这展示了先验信息在贝叶斯推断中的力量。
+      </div>
+
+      <h4>Follow-up：需要多少次正面才能"翻转"结论？</h4>
+      <p>设 \(n\) 次正面，令 \(P(F|D) = P(U|D)\)（后验相等）：</p>
+      <div class="math-block">
+        $$\frac{999}{1000} \cdot \left(\frac{1}{2}\right)^n = \frac{1}{1000} \cdot p_u^n$$
+        $$999 \cdot \left(\frac{1}{2p_u}\right)^n = 1$$
+        $$n = \frac{\log 999}{\log(2p_u)}$$
+      </div>
+      <p>当 \(p_u = 1\) 时，\(n \approx \log_2 999 \approx 10\)。需要约 10 次连续正面才能使两种硬币的后验概率相等。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SECTION 15 ===== -->
+<section id="s15">
+  <div class="section-header">
+    <span class="section-num">15</span>
+    <h2>面经题：联合正态概率 P(X+Y&gt;0, X+2Y&gt;0)</h2>
+  </div>
+
+  <p><em>来源：SIG 第二轮 Quant 面经</em></p>
+
+  <div class="quant-problem">
+    <div class="qp-header">
+      <span class="qp-label">Problem · Joint Normal Probability</span>
+    </div>
+    <div class="qp-body">
+      <p>给定 \(X, Y \sim \mathcal{N}(0,1)\) 独立，求 \(P(X+Y > 0 \;\text{且}\; X+2Y > 0)\)。Follow-up：若 \(X, Y\) 不独立，协方差为 \(\rho\)，结果如何变化？</p>
+    </div>
+    <div class="qp-answer">
+      <div class="qp-answer-label">完整推导</div>
+
+      <h4>Step 1：构造联合正态向量</h4>
+      <p>令 \(U = X+Y\)，\(V = X+2Y\)，则 \((U, V)\) 是 \((X,Y)\) 的线性变换，仍然服从联合正态。</p>
+      <div class="math-block">
+        $$\mathbb{E}[U] = \mathbb{E}[V] = 0$$
+        $$\operatorname{Var}(U) = \operatorname{Var}(X) + \operatorname{Var}(Y) = 1 + 1 = 2$$
+        $$\operatorname{Var}(V) = \operatorname{Var}(X) + 4\operatorname{Var}(Y) = 1 + 4 = 5$$
+        $$\operatorname{Cov}(U,V) = \operatorname{Cov}(X+Y,\, X+2Y) = \operatorname{Var}(X) + 2\operatorname{Var}(Y) + 3\operatorname{Cov}(X,Y)$$
+        $$= 1 + 2 + 0 = 3 \quad (\text{独立情形})$$
+      </div>
+
+      <h4>Step 2：相关系数</h4>
+      <div class="math-block">
+        $$\rho_{UV} = \frac{\operatorname{Cov}(U,V)}{\sqrt{\operatorname{Var}(U)\operatorname{Var}(V)}} = \frac{3}{\sqrt{2 \times 5}} = \frac{3}{\sqrt{10}}$$
+      </div>
+
+      <h4>Step 3：联合正态的角度公式</h4>
+      <p>对于均值为零的联合正态 \((U,V)\)，两个半平面 \(\{U>0\}\) 和 \(\{V>0\}\) 的交集概率为：</p>
+      <div class="math-block blue">
+        $$P(U>0,\, V>0) = \frac{1}{4} + \frac{1}{2\pi}\arcsin(\rho_{UV})$$
+      </div>
+      <p>代入 \(\rho_{UV} = 3/\sqrt{10}\)：</p>
+      <div class="math-block green">
+        $$P(X+Y>0,\, X+2Y>0) = \frac{1}{4} + \frac{\arcsin(3/\sqrt{10})}{2\pi}$$
+      </div>
+      <p>数值上：\(\arcsin(3/\sqrt{10}) \approx \arcsin(0.9487) \approx 71.6° \approx 1.25\text{ rad}\)，所以结果 \(\approx 0.25 + 0.199 = 0.449\)。</p>
+
+      <h4>几何直觉</h4>
+      <p>在 \((x,y)\) 平面上，\(X+Y=0\) 是直线 \(y=-x\)（斜率 \(-1\)），\(X+2Y=0\) 是直线 \(y=-x/2\)（斜率 \(-1/2\)）。两条线将平面分成四个区域，概率等于满足两个半平面条件的区域对应的角度 / \(360°\)（利用圆对称性）。</p>
+      <div class="math-block">
+        $$\text{两条分界线的夹角} = \arctan(-1/2) - \arctan(-1) \approx 45° - 26.6° = 18.4°$$
+        $$P \approx \frac{180° + 18.4°}{360°} \approx 0.551 \quad \text{（另一半）}$$
+      </div>
+      <p class="footnote">注意方向：\(\{X+Y>0\}\) 对应直线 \(y=-x\) 的上方，\(\{X+2Y>0\}\) 对应 \(y=-x/2\) 的上方，两个"上方"的交集即目标区域。</p>
+
+      <h4>Follow-up：\(\operatorname{Cov}(X,Y) = \rho\) 时</h4>
+      <div class="math-block">
+        $$\operatorname{Cov}(U,V) = 1 + 2 + 3\rho = 3 + 3\rho$$
+        $$\operatorname{Var}(U) = 2 + 2\rho, \quad \operatorname{Var}(V) = 5 + 4\rho$$
+        $$\rho_{UV} = \frac{3(1+\rho)}{\sqrt{(2+2\rho)(5+4\rho)}} = \frac{3(1+\rho)}{\sqrt{2(1+\rho)(5+4\rho)}} = \frac{3\sqrt{1+\rho}}{\sqrt{2(5+4\rho)}}$$
+      </div>
+      <div class="key-box">
+        <strong>结论：</strong>\(\rho\) 增大时，\(\rho_{UV}\) 也增大，\(P(U>0, V>0)\) 增大（两个事件更正相关，更容易同时发生）。
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SECTION 16 ===== -->
+<section id="s16">
+  <div class="section-header">
+    <span class="section-num">16</span>
+    <h2>面经题：两两相关系数范围</h2>
+  </div>
+
+  <p><em>来源：多个 Quant 面经（高频）</em></p>
+
+  <div class="quant-problem">
+    <div class="qp-header">
+      <span class="qp-label">Problem · Correlation Matrix Positive Definiteness</span>
+    </div>
+    <div class="qp-body">
+      <p>给定 \(n\) 个随机变量，两两相关系数均为 \(\rho\)，求 \(\rho\) 的可行范围。</p>
+    </div>
+    <div class="qp-answer">
+      <div class="qp-answer-label">完整推导（以 n=3 为例）</div>
+
+      <h4>写出相关矩阵</h4>
+      <div class="math-block">
+        $$\Sigma = \begin{pmatrix} 1 & \rho & \rho \\ \rho & 1 & \rho \\ \rho & \rho & 1 \end{pmatrix}$$
+      </div>
+      <p>合法的相关矩阵必须是<strong>正半定</strong>（positive semidefinite），即所有特征值 \(\geq 0\)，等价于所有主子式行列式 \(\geq 0\)。</p>
+
+      <h4>计算行列式</h4>
+      <div class="math-block">
+        $$\det(\Sigma) = 1(1-\rho^2) - \rho(\rho - \rho^2) + \rho(\rho^2 - \rho)$$
+        $$= 1 - \rho^2 - \rho^2 + \rho^3 + \rho^3 - \rho^2 = 1 - 3\rho^2 + 2\rho^3$$
+        $$= (1-\rho)^2(1+2\rho)$$
+      </div>
+      <p>令 \(\det(\Sigma) \geq 0\)：</p>
+      <div class="math-block">
+        $$(1-\rho)^2(1+2\rho) \geq 0$$
+      </div>
+      <p>由于 \((1-\rho)^2 \geq 0\) 恒成立，需要 \(1+2\rho \geq 0\)，即 \(\rho \geq -1/2\)。结合 \(\rho \leq 1\)：</p>
+      <div class="math-block green">
+        $$\boxed{\rho \in \left[-\frac{1}{2},\; 1\right]}$$
+      </div>
+
+      <h4>特征值验证</h4>
+      <p>矩阵 \(\Sigma = (1-\rho)I + \rho \mathbf{1}\mathbf{1}^T\) 的特征值为：</p>
+      <div class="math-block">
+        $$\lambda_1 = 1 + (n-1)\rho \quad \text{（重数 1，对应全1向量）}$$
+        $$\lambda_2 = 1 - \rho \quad \text{（重数 } n-1\text{，对应与全1正交的向量）}$$
+      </div>
+      <p>正半定要求 \(\lambda_1 \geq 0\) 且 \(\lambda_2 \geq 0\)：</p>
+      <div class="math-block">
+        $$1+(n-1)\rho \geq 0 \implies \rho \geq -\frac{1}{n-1}$$
+        $$1-\rho \geq 0 \implies \rho \leq 1$$
+      </div>
+      <div class="math-block green">
+        $$\boxed{\rho \in \left[-\frac{1}{n-1},\; 1\right]}$$
+      </div>
+      <p>当 \(n=3\) 时得 \(\rho \geq -1/2\)，与行列式法一致。</p>
+
+      <div class="key-box blue">
+        <strong>直觉：</strong>若 \(n\) 很大，\(\rho\) 的下界趋向 0，说明很多变量不可能都强负相关——因为如果 A 与 B 负相关，B 与 C 负相关，则 A 与 C 必须正相关，产生矛盾。
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SECTION 17 ===== -->
+<section id="s17">
+  <div class="section-header">
+    <span class="section-num">17</span>
+    <h2>面经题：回归斜率之积 \(\theta_1 \times \theta_2\)</h2>
+  </div>
+
+  <p><em>来源：多个 Quant 面经（高频）</em></p>
+
+  <div class="quant-problem">
+    <div class="qp-header">
+      <span class="qp-label">Problem · Regression Duality</span>
+    </div>
+    <div class="qp-body">
+      <p>对 \((x_i, y_i)\) 数据做 OLS，\(Y = \theta_1 X + c_1\) 得斜率 \(\theta_1\)；把 \(x\) 和 \(y\) 交换，\(X = \theta_2 Y + c_2\) 得斜率 \(\theta_2\)。问 \(\theta_1 \times \theta_2\) 的范围。</p>
+    </div>
+    <div class="qp-answer">
+      <div class="qp-answer-label">完整推导</div>
+
+      <h4>OLS 斜率公式</h4>
+      <p>正向回归 \(Y \sim X\)，OLS 斜率最小化 \(\sum(y_i - \theta x_i - c)^2\)（竖直残差）：</p>
+      <div class="math-block">
+        $$\theta_1 = \frac{\operatorname{Cov}(X,Y)}{\operatorname{Var}(X)} = \frac{S_{xy}}{S_{xx}}$$
+      </div>
+      <p>反向回归 \(X \sim Y\)，OLS 斜率最小化 \(\sum(x_i - \theta y_i - c)^2\)（水平残差）：</p>
+      <div class="math-block">
+        $$\theta_2 = \frac{\operatorname{Cov}(X,Y)}{\operatorname{Var}(Y)} = \frac{S_{xy}}{S_{yy}}$$
+      </div>
+
+      <h4>乘积</h4>
+      <div class="math-block green">
+        $$\theta_1 \times \theta_2 = \frac{S_{xy}}{S_{xx}} \cdot \frac{S_{xy}}{S_{yy}} = \frac{S_{xy}^2}{S_{xx} \cdot S_{yy}} = \rho^2 = R^2$$
+      </div>
+      <p>其中 \(\rho = \operatorname{Corr}(X,Y)\) 是 Pearson 相关系数，\(R^2\) 是两次回归共同的决定系数。</p>
+
+      <div class="math-block green">
+        $$\boxed{\theta_1 \times \theta_2 = R^2 \in [0, 1]}$$
+      </div>
+
+      <h4>几何直觉</h4>
+      <p>两条回归线：</p>
+      <ul style="margin-left:1.5rem;line-height:2;">
+        <li><strong>Y on X：</strong>最小化纵向（Y 方向）距离的平方和，直线倾向于更"平躺"</li>
+        <li><strong>X on Y：</strong>最小化横向（X 方向）距离的平方和，直线倾向于更"陡立"</li>
+        <li>两条线在样本均值 \((\bar{x}, \bar{y})\) 处相交</li>
+        <li>\(\rho^2 = 1\)（完美线性关系）时两线重合；\(\rho = 0\) 时一条水平一条垂直，乘积为 0</li>
+      </ul>
+
+      <div class="key-box">
+        <strong>面试 Follow-up：</strong>若最小化垂直距离（而非纵向或横向），得到的是 PCA 的第一主成分，斜率为 \(\operatorname{Var}(Y) - \operatorname{Var}(X) + \sqrt{(\operatorname{Var}(Y)-\operatorname{Var}(X))^2 + 4\operatorname{Cov}^2(X,Y)}\) 的函数，等价于最大化方差方向。
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SECTION 18 ===== -->
+<section id="s18">
+  <div class="section-header">
+    <span class="section-num">18</span>
+    <h2>面经题：数据复制对线性回归的影响</h2>
+  </div>
+
+  <p><em>来源：多个 Quant 面经（极高频）</em></p>
+
+  <div class="quant-problem">
+    <div class="qp-header">
+      <span class="qp-label">Problem · Data Duplication</span>
+    </div>
+    <div class="qp-body">
+      <p>将数据集完整复制 \(k\) 倍（共 \(kn\) 个样本），对以下量有何影响：OLS 系数 \(\hat\beta\)、\(R^2\)、残差方差 \(\hat\sigma^2\)、标准误 \(\text{SE}(\hat\beta)\)、\(t\) 统计量、\(p\) 值？</p>
+    </div>
+    <div class="qp-answer">
+      <div class="qp-answer-label">逐项推导</div>
+
+      <h4>OLS 系数 \(\hat\beta\)：不变</h4>
+      <div class="math-block">
+        $$\hat\beta = (X^TX)^{-1}X^Ty$$
+      </div>
+      <p>复制 \(k\) 倍后，\(X^TX \to k(X^TX)\)，\(X^Ty \to k(X^Ty)\)：</p>
+      <div class="math-block">
+        $$\hat\beta_{\text{new}} = (kX^TX)^{-1}(kX^Ty) = \frac{1}{k}(X^TX)^{-1} \cdot k(X^Ty) = \hat\beta$$
+      </div>
+
+      <h4>\(R^2\)：不变</h4>
+      <p>\(R^2 = 1 - \text{SS}_{\text{res}} / \text{SS}_{\text{tot}}\)。复制后分子分母同乘 \(k\)，比值不变。</p>
+
+      <h4>残差方差 \(\hat\sigma^2\)：不变</h4>
+      <div class="math-block">
+        $$\hat\sigma^2 = \frac{\text{SS}_{\text{res}}}{n - p - 1}$$
+      </div>
+      <p>复制后 \(\text{SS}_{\text{res}} \to k\,\text{SS}_{\text{res}}\)，\(n \to kn\)（\(p\) 不变）：</p>
+      <div class="math-block">
+        $$\hat\sigma^2_{\text{new}} = \frac{k\,\text{SS}_{\text{res}}}{kn - p - 1} \approx \frac{k\,\text{SS}_{\text{res}}}{k(n-p-1)} = \hat\sigma^2 \quad (k\text{ 大时})$$
+      </div>
+
+      <h4>标准误 \(\text{SE}(\hat\beta)\)：缩小到 \(1/\sqrt{k}\)</h4>
+      <div class="math-block">
+        $$\text{SE}(\hat\beta) = \hat\sigma\sqrt{(X^TX)^{-1}}$$
+      </div>
+      <p>复制后 \((X^TX)^{-1} \to \frac{1}{k}(X^TX)^{-1}\)，\(\hat\sigma\) 不变：</p>
+      <div class="math-block">
+        $$\text{SE}_{\text{new}} = \hat\sigma\sqrt{\frac{1}{k}(X^TX)^{-1}} = \frac{1}{\sqrt{k}}\,\text{SE}(\hat\beta)$$
+      </div>
+
+      <h4>\(t\) 统计量：扩大 \(\sqrt{k}\) 倍</h4>
+      <div class="math-block green">
+        $$t_{\text{new}} = \frac{\hat\beta}{\text{SE}_{\text{new}}} = \frac{\hat\beta}{\text{SE}/\sqrt{k}} = \sqrt{k}\, t$$
+      </div>
+
+      <h4>\(p\) 值：变小（虚假显著性）</h4>
+      <p>\(t\) 统计量变大 \(\sqrt{k}\) 倍，\(p\) 值急剧缩小，系数看起来"更显著"。</p>
+
+      <div class="compare-grid" style="margin-top:1rem;">
+        <div class="compare-cell header mle">统计量</div>
+        <div class="compare-cell header map">复制 k 倍后的变化</div>
+        <div class="compare-cell">\(\hat\beta\)（系数）</div>
+        <div class="compare-cell" style="color:var(--green)">不变</div>
+        <div class="compare-cell">\(R^2\)</div>
+        <div class="compare-cell" style="color:var(--green)">不变</div>
+        <div class="compare-cell">\(\hat\sigma^2\)（残差方差）</div>
+        <div class="compare-cell" style="color:var(--green)">近似不变</div>
+        <div class="compare-cell">\(\text{SE}(\hat\beta)\)</div>
+        <div class="compare-cell" style="color:var(--red)">缩小 \(1/\sqrt{k}\)</div>
+        <div class="compare-cell">\(t\) 统计量</div>
+        <div class="compare-cell" style="color:var(--red)">扩大 \(\sqrt{k}\)</div>
+        <div class="compare-cell">\(p\) 值</div>
+        <div class="compare-cell" style="color:var(--red)">变小（虚假显著）</div>
+      </div>
+
+      <div class="key-box red">
+        <strong>核心洞察：</strong>数据复制增加了"样本量"的假象，使 \(t\) 统计量虚增，\(p\) 值虚减，产生虚假显著性。信息量并没有增加，但模型以为有了更多独立证据。这是数据泄露和 p-hacking 的一种形式。
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SECTION 19 ===== -->
+<section id="s19">
+  <div class="section-header">
+    <span class="section-num">19</span>
+    <h2>面经题：Ridge Regression 的 \(\lambda\) 应如何变化</h2>
+  </div>
+
+  <p><em>来源：Quant 面经</em></p>
+
+  <div class="quant-problem">
+    <div class="qp-header">
+      <span class="qp-label">Problem A · High-Dimensional Features</span>
+    </div>
+    <div class="qp-body">
+      <p>\(x\) 是 10 维特征向量，\(y\) 是某股票明日收益，做 Ridge Regression，选 \(\lambda = \lambda_1\)。若数据不变但 \(x\) 扩充到 1000 维，\(\lambda\) 应变大还是变小？</p>
+    </div>
+    <div class="qp-answer">
+      <div class="qp-answer-label">答案与推导</div>
+
+      <h4>\(\lambda\) 应变大</h4>
+      <p>Ridge Regression 的目标函数：</p>
+      <div class="math-block">
+        $$\hat\beta_{\text{Ridge}} = \arg\min_\beta \; \underbrace{\|y - X\beta\|^2}_{\text{拟合}} + \lambda\underbrace{\|\beta\|^2}_{\text{正则化}}$$
+      </div>
+      <p>从 MAP 角度：Ridge 等价于先验 \(\beta \sim \mathcal{N}(0, \frac{1}{2\lambda}I)\)，\(\lambda = \frac{1}{2\tau^2}\)（\(\tau^2\) 是先验方差）。</p>
+
+      <h4>为什么维度增加需要更大的 \(\lambda\)？</h4>
+      <ol class="steps">
+        <li><strong>过拟合风险增加：</strong>从 10 维增到 1000 维，参数量从 10 增到 1000，但样本量不变。根据偏差-方差权衡，参数多时方差爆炸，需要更强的正则化来抑制过拟合。</li>
+        <li><strong>有效自由度：</strong>Ridge 的有效自由度为 \(\text{df}(\lambda) = \sum_j \frac{d_j^2}{d_j^2+\lambda}\)（\(d_j\) 为奇异值）。维度增加后如果 \(\lambda\) 不变，有效自由度成比例增大，模型过于灵活。</li>
+        <li><strong>稀疏性假设：</strong>1000 个特征中绝大多数与 y 无关，需要更强的惩罚把无关系数压向 0。</li>
+      </ol>
+
+      <div class="key-box blue">
+        <strong>规律：</strong>特征维度 \(p\) 与样本量 \(n\) 的比值 \(p/n\) 是衡量过拟合风险的核心指标。\(p/n\) 从 \(10/n\) 增到 \(1000/n\)，\(\lambda\) 需要相应增大约 100 倍（粗略估计）。
+      </div>
+    </div>
+  </div>
+
+  <div class="quant-problem" style="margin-top:1.5rem;">
+    <div class="qp-header">
+      <span class="qp-label">Problem B · Longer Horizon Returns</span>
+    </div>
+    <div class="qp-body">
+      <p>同样的 10 维 \(x\)，若把 \(y\) 从"今天到明天的收益"改为"今天到 1 个月后的收益"，\(\lambda\) 应变大还是变小？若把所有 \(y\) 都 rescale 到 \([0,1]\)，分析是否变化？</p>
+    </div>
+    <div class="qp-answer">
+      <div class="qp-answer-label">答案与推导</div>
+
+      <h4>\(\lambda\) 应变大（信噪比更低）</h4>
+      <p>月度收益 = 日度收益之和，若假设日度收益 i.i.d.，则 30 天收益：</p>
+      <div class="math-block">
+        $$y_{\text{1month}} = \sum_{t=1}^{30} r_t$$
+        $$\operatorname{Var}(y_{\text{1month}}) = 30\,\operatorname{Var}(r_{\text{daily}})$$
+      </div>
+      <p>信号（特征 \(x\) 能解释的部分）随时间增加有限，而噪声的方差随时间线性增加。月度收益的信噪比远低于日度收益：</p>
+      <div class="math-block">
+        $$\text{SNR} = \frac{\text{Signal}}{\text{Noise variance}} \propto \frac{1}{\sqrt{T}}$$
+      </div>
+      <p>信噪比降低意味着过拟合风险增大，需要更强的正则化。</p>
+
+      <h4>Rescale \(y\) 到 \([0,1]\) 的影响</h4>
+      <p>Ridge 的 \(\hat\beta\) 对 \(y\) 的缩放是线性的：若 \(y \to cy\)，则 \(\hat\beta \to c\hat\beta\)（\(\lambda\) 不变时）。但如果想保持同等的正则化"强度"（相对于系数的大小），需要调整 \(\lambda\)：</p>
+      <div class="math-block">
+        $$\text{若 } y \to cy, \text{ 等价正则化需要 } \lambda \to c^2\lambda$$
+      </div>
+      <p>因此 rescale \(y\) 会改变 \(\hat\beta\) 的量纲，若不同步调整 \(\lambda\)，正则化的相对强度会变化。<strong>分析结论会改变</strong>——需要重新选择 \(\lambda\)。</p>
+
+      <div class="key-box">
+        <strong>实践建议：</strong>标准化 \(y\)（zero mean, unit variance）和 \(x\) 后再做 Ridge，这样 \(\lambda\) 的选择与量纲无关，交叉验证的结果更稳定。
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SECTION 20 ===== -->
+<section id="s20">
+  <div class="section-header">
+    <span class="section-num">20</span>
+    <h2>综合速查表（扩展版）</h2>
+  </div>
+
+  <div class="formula-ref">
+    <div class="f-name">MLE</div>
+    <div class="f-eq">\(\hat\theta = \arg\max_\theta \sum_i \log P(x_i|\theta)\)</div>
+
+    <div class="f-name">MAP</div>
+    <div class="f-eq">\(\hat\theta = \arg\max_\theta \left[\sum_i \log P(x_i|\theta) + \log P(\theta)\right]\)</div>
+
+    <div class="f-name">Normal MLE</div>
+    <div class="f-eq">\(\hat\mu = \bar x,\quad \hat\sigma^2 = \frac{1}{n}\sum(x_i-\bar x)^2\)（有偏，分母需 \(n-1\) 才无偏）</div>
+
+    <div class="f-name">Normal MAP</div>
+    <div class="f-eq">\(\hat\mu = \frac{n\bar x/\sigma^2 + \mu_0/\tau^2}{n/\sigma^2 + 1/\tau^2}\)（shrinkage toward \(\mu_0\)）</div>
+
+    <div class="f-name">Z=X+Y 估 X</div>
+    <div class="f-eq">\(\mathbb{E}[X|Z] = \dfrac{\sigma_x^2}{\sigma_x^2+\sigma_y^2}\cdot Z\)（信号占总方差的权重）</div>
+
+    <div class="f-name">多标尺加权</div>
+    <div class="f-eq">\(\hat\mu = \dfrac{\sum_i M_i/\sigma_i^2}{\sum_i 1/\sigma_i^2}\)（精度加权平均）</div>
+
+    <div class="f-name">量角器修正</div>
+    <div class="f-eq">每角增加 \(\Delta = (180° - \sum x_i)/n\)（等精度时均匀分配误差）</div>
+
+    <div class="f-name">硬币贝叶斯</div>
+    <div class="f-eq">\(P(F|D) = \dfrac{P(D|F)P(F)}{P(D|F)P(F)+P(D|U)P(U)}\)（标准贝叶斯公式）</div>
+
+    <div class="f-name">联合正态</div>
+    <div class="f-eq">\(P(U>0,V>0) = \dfrac{1}{4}+\dfrac{1}{2\pi}\arcsin\!\left(\dfrac{\operatorname{Cov}(U,V)}{\sqrt{\operatorname{Var}(U)\operatorname{Var}(V)}}\right)\)</div>
+
+    <div class="f-name">两两相关范围</div>
+    <div class="f-eq">\(\rho \in [-1/(n-1),\;1]\)（相关矩阵正半定条件）</div>
+
+    <div class="f-name">斜率之积</div>
+    <div class="f-eq">\(\theta_1 \cdot \theta_2 = R^2 = \rho^2 \in [0,1]\)（两方向回归的斜率乘积等于决定系数）</div>
+
+    <div class="f-name">数据复制×k</div>
+    <div class="f-eq">\(\hat\beta\)不变，\(R^2\)不变，\(\text{SE}\to\text{SE}/\sqrt{k}\)，\(t\to t\sqrt{k}\)，\(p\text{值}\downarrow\)（虚假显著）</div>
+
+    <div class="f-name">Ridge ↔ MAP</div>
+    <div class="f-eq">\(\beta\sim\mathcal{N}(0,\tau^2)\) ⟺ \(\ell(\beta) - \lambda\|\beta\|^2\)，其中 \(\lambda = 1/(2\tau^2)\)</div>
+
+    <div class="f-name">LASSO ↔ MAP</div>
+    <div class="f-eq">\(\beta\sim\text{Laplace}(0,b)\) ⟺ \(\ell(\beta) - \lambda\|\beta\|_1\)，其中 \(\lambda = 1/b\)</div>
+
+    <div class="f-name">German Tank</div>
+    <div class="f-eq">\(\hat N_{\text{UMVUE}} = m_k + m_k/k - 1\)，其中 \(m_k\) = 样本最大值，\(k\) = 样本量</div>
+
+    <div class="f-name">Fisher Info</div>
+    <div class="f-eq">\(I(\theta) = -\mathbb{E}[\partial^2\ell/\partial\theta^2]\)，Cramér-Rao: \(\text{Var}(\hat\theta)\geq 1/(nI(\theta))\)</div>
+  </div>
+
+  <hr>
+  <div class="key-box green">
+    <strong>面试答题框架（万能模板）：</strong>
+    <ol class="steps" style="margin-top:0.5rem;">
+      <li>先确认：θ 是固定参数（MLE）还是随机变量（MAP/贝叶斯）？有无先验？</li>
+      <li>写出 likelihood，取 log，得目标函数</li>
+      <li>若有先验：加 \(\log P(\theta)\) 项，识别正则化类型（L2=Ridge, L1=LASSO）</li>
+      <li>对待估量求导令为 0，解出估计量</li>
+      <li>讨论有偏性；若有偏，给出无偏修正</li>
+      <li>检验大样本性质：一致性、渐近正态、Cramér-Rao 效率</li>
+      <li>给出直觉解释：精度加权、shrinkage 方向、信噪比含义</li>
+    </ol>
+  </div>
+
+  <p style="margin-top:2rem;color:var(--text-dim);font-size:13px;font-family:'JetBrains Mono',monospace;">
+    Prepared for Quant Researcher interviews · MLE &amp; MAP · Princeton MFin ·
+    <span style="color:var(--gold)">Yuchen Yu</span> · SIG Superday Prep
+  </p>
+</section>
+</body>
+</html>
+</div>
+
+<script>
+  document.querySelectorAll('section').forEach((s, i) => {
+    s.style.animationDelay = `${i * 0.04}s`;
+  });
+</script>
+</body>
+</html>

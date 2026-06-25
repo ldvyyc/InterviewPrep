@@ -1,0 +1,2940 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Linear Regression — Full Reference</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;500&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}],throwOnError:false});"></script>
+<style>
+:root {
+  --bg: #f5f2eb;
+  --bg2: #ede9e0;
+  --ink: #1a1612;
+  --ink2: #3d3630;
+  --ink3: #6b5f54;
+  --line: #d4cdc3;
+  --red: #b5381a;
+  --blue: #1a4a7a;
+  --green: #1a6645;
+  --gold: #8a6a00;
+  --serif: 'Playfair Display', Georgia, serif;
+  --sans: 'Source Sans 3', sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-weight: 300;
+  line-height: 1.75;
+}
+
+/* ─── SIDEBAR NAV ─── */
+.sidebar {
+  position: fixed;
+  left: 0; top: 0; bottom: 0;
+  width: 220px;
+  background: var(--ink);
+  padding: 28px 0;
+  overflow-y: auto;
+  z-index: 100;
+}
+
+.sidebar-logo {
+  font-family: var(--serif);
+  font-size: 1rem;
+  color: var(--bg);
+  padding: 0 20px 24px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  margin-bottom: 16px;
+  line-height: 1.3;
+}
+.sidebar-logo span { color: #c9a96e; display: block; font-size: 0.72rem; font-family: var(--mono); margin-top: 4px; }
+
+.nav-section {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.3);
+  padding: 12px 20px 4px;
+}
+
+.sidebar a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 20px;
+  text-decoration: none;
+  font-size: 0.78rem;
+  color: rgba(255,255,255,0.6);
+  transition: all 0.15s;
+  font-family: var(--sans);
+}
+.sidebar a:hover, .sidebar a.active { color: #fff; background: rgba(255,255,255,0.07); }
+.sidebar a .num {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: #c9a96e;
+  min-width: 18px;
+}
+
+/* ─── MAIN CONTENT ─── */
+.main {
+  margin-left: 220px;
+  padding: 0 60px 100px;
+  max-width: 1060px;
+}
+
+/* ─── PAGE HEADER ─── */
+.page-header {
+  padding: 60px 0 40px;
+  border-bottom: 2px solid var(--ink);
+  margin-bottom: 56px;
+}
+
+.header-eyebrow {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--red);
+  margin-bottom: 12px;
+}
+
+.page-header h1 {
+  font-family: var(--serif);
+  font-size: clamp(2.4rem, 4vw, 3.4rem);
+  line-height: 1.1;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 16px;
+}
+
+.page-header p {
+  color: var(--ink3);
+  font-size: 0.95rem;
+  max-width: 540px;
+}
+
+/* ─── SECTION ─── */
+.section {
+  margin-bottom: 72px;
+  padding-top: 8px;
+}
+
+.section-title {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  margin-bottom: 28px;
+}
+
+.sec-num {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--red);
+  background: rgba(181,56,26,0.08);
+  padding: 2px 7px;
+  border-radius: 3px;
+}
+
+.section-title h2 {
+  font-family: var(--serif);
+  font-size: 1.65rem;
+  font-weight: 700;
+  color: var(--ink);
+  border-bottom: 2px solid var(--red);
+  padding-bottom: 4px;
+}
+
+h3 {
+  font-family: var(--sans);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--blue);
+  margin: 24px 0 10px;
+}
+
+p {
+  font-size: 0.92rem;
+  color: var(--ink2);
+  margin-bottom: 10px;
+  max-width: 720px;
+}
+
+/* ─── FORMULA ─── */
+.formula {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--blue);
+  padding: 16px 20px;
+  margin: 14px 0;
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  color: var(--blue);
+  line-height: 2;
+  overflow-x: auto;
+  border-radius: 0 6px 6px 0;
+}
+.formula .cmt { color: var(--ink3); font-style: italic; }
+.formula .red { color: var(--red); }
+.formula .grn { color: var(--green); }
+.formula .gld { color: var(--gold); }
+
+/* ─── ASSUMPTION CARDS ─── */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin: 18px 0;
+}
+@media(max-width:800px){ .card-grid { grid-template-columns: 1fr 1fr; } }
+
+.acard {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-top: 3px solid;
+  padding: 18px;
+  border-radius: 0 0 6px 6px;
+}
+.acard.red-t  { border-top-color: var(--red); }
+.acard.blue-t { border-top-color: var(--blue); }
+.acard.grn-t  { border-top-color: var(--green); }
+.acard.gld-t  { border-top-color: var(--gold); }
+
+.acard-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.red-t .acard-label  { color: var(--red); }
+.blue-t .acard-label { color: var(--blue); }
+.grn-t .acard-label  { color: var(--green); }
+.gld-t .acard-label  { color: var(--gold); }
+
+.acard-title {
+  font-family: var(--serif);
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.acard p {
+  font-size: 0.8rem;
+  color: var(--ink3);
+  margin: 0;
+  max-width: 100%;
+  line-height: 1.55;
+}
+
+/* ─── TABLE ─── */
+.tbl {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.83rem;
+  margin: 16px 0;
+  background: #fff;
+  border: 1px solid var(--line);
+}
+.tbl th {
+  background: var(--ink);
+  color: #fff;
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 10px 14px;
+  text-align: left;
+  font-weight: 500;
+}
+.tbl td {
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+  line-height: 1.55;
+}
+.tbl tr:nth-child(even) td { background: var(--bg2); }
+.tbl .t-asmp { color: var(--blue); font-family: var(--mono); font-size: 0.77rem; font-weight: 500; }
+.tbl .t-viol { color: var(--red); }
+.tbl .t-sol  { color: var(--green); }
+.tbl .t-tag  { color: var(--gold); font-weight: 600; }
+
+/* ─── TWO COL ─── */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 16px 0; }
+@media(max-width:700px){ .two-col { grid-template-columns: 1fr; } }
+
+.panel {
+  background: #fff;
+  border: 1px solid var(--line);
+  padding: 20px;
+  border-radius: 6px;
+}
+.panel h3 { margin-top: 0; }
+
+/* ─── LIST ─── */
+ul.notes {
+  list-style: none;
+  padding: 0;
+  margin: 10px 0 14px;
+}
+ul.notes li {
+  font-size: 0.86rem;
+  color: var(--ink2);
+  padding: 5px 0 5px 18px;
+  position: relative;
+  border-bottom: 1px solid var(--line);
+}
+ul.notes li:last-child { border-bottom: none; }
+ul.notes li::before { content: '—'; position: absolute; left: 0; color: var(--red); font-size: 0.75rem; }
+ul.notes li strong { color: var(--ink); }
+ul.notes li .tag {
+  font-family: var(--mono);
+  font-size: 10px;
+  background: rgba(181,56,26,0.08);
+  color: var(--red);
+  padding: 1px 5px;
+  border-radius: 3px;
+  margin-left: 6px;
+}
+
+/* ─── EXAMPLE BOX ─── */
+.example {
+  background: #fffbf0;
+  border: 1px solid #e8d88a;
+  border-left: 4px solid var(--gold);
+  padding: 20px 22px;
+  margin: 20px 0;
+  border-radius: 0 6px 6px 0;
+}
+.example-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.example-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #e8d88a;
+}
+.example h4 {
+  font-family: var(--serif);
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+  color: var(--ink);
+}
+.example p { max-width: 100%; font-size: 0.88rem; }
+.example .formula {
+  background: #fff9e6;
+  border-left-color: var(--gold);
+  color: var(--gold);
+  margin: 10px 0;
+}
+.example .sol {
+  background: rgba(26,102,69,0.06);
+  border: 1px solid rgba(26,102,69,0.2);
+  padding: 10px 14px;
+  border-radius: 4px;
+  margin-top: 10px;
+  font-size: 0.85rem;
+}
+.example .sol strong { color: var(--green); }
+
+/* ─── THEOREM BOX ─── */
+.theorem {
+  background: rgba(26,74,122,0.05);
+  border: 1px solid rgba(26,74,122,0.25);
+  border-radius: 8px;
+  padding: 22px 26px;
+  margin: 18px 0;
+  position: relative;
+}
+.theorem::before {
+  content: '定理';
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  color: var(--blue);
+  position: absolute;
+  top: -9px;
+  left: 20px;
+  background: var(--bg);
+  padding: 0 6px;
+  text-transform: uppercase;
+}
+.theorem-title {
+  font-family: var(--serif);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--blue);
+  margin-bottom: 8px;
+}
+.theorem p { color: var(--ink2); font-size: 0.88rem; max-width: 100%; }
+
+/* ─── WARNING BOX ─── */
+.warn {
+  background: rgba(181,56,26,0.05);
+  border: 1px solid rgba(181,56,26,0.2);
+  border-radius: 6px;
+  padding: 14px 18px;
+  margin: 14px 0;
+  font-size: 0.85rem;
+  color: var(--red);
+}
+.warn strong { font-weight: 600; }
+
+/* ─── STEP LIST ─── */
+.steps { counter-reset: step; list-style: none; padding: 0; margin: 14px 0; }
+.steps li {
+  counter-increment: step;
+  display: flex;
+  gap: 14px;
+  margin-bottom: 14px;
+  font-size: 0.87rem;
+  color: var(--ink2);
+}
+.steps li::before {
+  content: counter(step);
+  min-width: 26px;
+  height: 26px;
+  background: var(--blue);
+  color: #fff;
+  font-family: var(--mono);
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.steps li strong { color: var(--ink); display: block; margin-bottom: 3px; }
+
+/* ─── BADGE ─── */
+.badge {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 9px;
+  padding: 2px 7px;
+  border-radius: 3px;
+  margin: 2px;
+  font-weight: 500;
+}
+.b-red   { background: rgba(181,56,26,0.1);  color: var(--red);   border: 1px solid rgba(181,56,26,0.25); }
+.b-blue  { background: rgba(26,74,122,0.1);  color: var(--blue);  border: 1px solid rgba(26,74,122,0.25); }
+.b-grn   { background: rgba(26,102,69,0.1);  color: var(--green); border: 1px solid rgba(26,102,69,0.25); }
+.b-gld   { background: rgba(138,106,0,0.1);  color: var(--gold);  border: 1px solid rgba(138,106,0,0.25); }
+
+/* ─── DERIVATION STEPS ─── */
+.derive {
+  background: #fff;
+  border: 1px solid var(--line);
+  padding: 20px 24px;
+  border-radius: 6px;
+  margin: 14px 0;
+}
+.derive h4 {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--ink3);
+  letter-spacing: 0.1em;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+}
+.derive .step-line {
+  display: flex;
+  gap: 12px;
+  margin: 8px 0;
+  font-size: 0.84rem;
+  align-items: flex-start;
+}
+.derive .step-lbl {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--blue);
+  min-width: 50px;
+  padding-top: 3px;
+  text-transform: uppercase;
+}
+.derive .step-eq {
+  font-family: var(--mono);
+  color: var(--ink);
+  flex: 1;
+  line-height: 1.7;
+}
+.derive .step-note {
+  font-size: 0.78rem;
+  color: var(--ink3);
+  font-style: italic;
+  margin-left: 62px;
+  margin-top: -4px;
+  margin-bottom: 6px;
+}
+
+/* ─── FLOW ─── */
+.flow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0;
+  margin: 16px 0;
+  background: #fff;
+  border: 1px solid var(--line);
+  padding: 18px 20px;
+  border-radius: 6px;
+}
+.flow-box {
+  background: var(--blue);
+  color: #fff;
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  padding: 10px 14px;
+  border-radius: 5px;
+  text-align: center;
+  min-width: 120px;
+}
+.flow-box .fb-title { font-weight: 500; font-size: 0.82rem; margin-bottom: 4px; }
+.flow-box .fb-sub { font-size: 0.68rem; opacity: 0.8; line-height: 1.4; }
+.flow-arr { font-size: 1.3rem; color: var(--line); padding: 0 10px; }
+
+/* ─── DIVIDER ─── */
+hr { border: none; border-top: 1px solid var(--line); margin: 48px 0; }
+
+/* ─── HIGHLIGHT INLINE ─── */
+.hi-r { color: var(--red); font-weight: 500; }
+.hi-b { color: var(--blue); font-weight: 500; }
+.hi-g { color: var(--green); font-weight: 500; }
+.hi-gold { color: var(--gold); font-weight: 500; }
+
+/* ─── QUICK REF FINAL ─── */
+.qref {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 16px 0;
+}
+@media(max-width:700px){ .qref { grid-template-columns: 1fr; } }
+.qref-item {
+  background: #fff;
+  border: 1px solid var(--line);
+  padding: 14px;
+  border-radius: 5px;
+  font-family: var(--mono);
+  font-size: 0.78rem;
+}
+.qref-item .q-lbl { font-size: 9px; color: var(--ink3); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px; }
+.qref-item .q-eq { color: var(--blue); line-height: 1.8; }
+
+/* ─── SCROLLBAR ─── */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--line); border-radius: 3px; }
+
+@media(max-width:768px){
+  .sidebar { display: none; }
+  .main { margin-left: 0; padding: 0 20px 60px; }
+}
+
+/* ─── KaTeX FORMULA BLOCKS ─── */
+.kformula {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--blue);
+  padding: 18px 22px;
+  margin: 14px 0;
+  border-radius: 0 6px 6px 0;
+  overflow-x: auto;
+}
+.kformula p {
+  margin: 6px 0;
+  max-width: 100%;
+  color: var(--ink2);
+  font-size: 0.95rem;
+}
+.kformula .kline {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin: 8px 0;
+}
+.kformula .klbl {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--blue);
+  min-width: 70px;
+  padding-top: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  flex-shrink: 0;
+}
+.kformula .keq {
+  flex: 1;
+  font-size: 0.95rem;
+}
+.kformula .knote {
+  font-size: 0.8rem;
+  color: var(--ink3);
+  font-style: italic;
+  margin: 2px 0 8px 84px;
+}
+.katex-display { margin: 8px 0 !important; }
+.katex { font-size: 1.05em; }
+
+/* comparison table for with/without intercept */
+.compare-grid {
+  display: grid;
+  grid-template-columns: 140px 1fr 1fr;
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  overflow: hidden;
+  margin: 16px 0;
+  font-size: 0.85rem;
+}
+.cg-cell {
+  background: #fff;
+  padding: 10px 14px;
+}
+.cg-cell.header {
+  background: var(--ink);
+  color: #fff;
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+.cg-cell.row-label {
+  background: var(--bg2);
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  color: var(--blue);
+  font-weight: 500;
+}
+.cg-cell.alt { background: #fafaf7; }
+</style>
+</head>
+<body>
+
+<nav class="sidebar">
+  <div class="sidebar-logo">Linear Regression<span>Princeton MFin · Oct 2025</span></div>
+  <div class="nav-section">基础</div>
+  <a href="#s1"><span class="num">01</span>六大假设</a>
+  <a href="#s2"><span class="num">02</span>Gauss-Markov & BLUE</a>
+  <a href="#s3"><span class="num">03</span>违反假设总览</a>
+  <div class="nav-section">核心问题</div>
+  <a href="#s4"><span class="num">04</span>Autocorrelation</a>
+  <a href="#s5"><span class="num">05</span>Multicollinearity</a>
+  <a href="#s6"><span class="num">06</span>Heteroskedasticity</a>
+  <a href="#s7"><span class="num">07</span>Endogeneity & IV</a>
+  <div class="nav-section">推导 & 统计推断</div>
+  <a href="#s8"><span class="num">08</span>OLS系数推导</a>
+  <a href="#s9"><span class="num">09</span>MLE推导</a>
+  <a href="#s10"><span class="num">10</span>最优权重推导</a>
+  <a href="#s13"><span class="num">13</span>矩阵形式完整推导</a>
+  <a href="#s14"><span class="num">14</span>t统计量 & 置信/预测区间</a>
+  <a href="#s15"><span class="num">15</span>TSS/ESS/RSS & R²</a>
+  <a href="#s16"><span class="num">16</span>t统计几何解释</a>
+  <div class="nav-section">高级定理</div>
+  <a href="#s20"><span class="num">20</span>FWL定理</a>
+  <a href="#s21"><span class="num">21</span>se有/无截距区别</a>
+  <a href="#s22"><span class="num">22</span>F检验 & 约束检验</a>
+  <a href="#s23"><span class="num">23</span>例题精选集</a>
+  <div class="nav-section">简单线性回归</div>
+  <a href="#s24"><span class="num">24</span>带截距完整推导</a>
+  <a href="#s25"><span class="num">25</span>无截距推导</a>
+  <a href="#s26"><span class="num">26</span>有/无截距完整对比</a>
+  <div class="nav-section">正则化详解</div>
+  <a href="#s11"><span class="num">11</span>Regularization概述</a>
+  <a href="#s17"><span class="num">17</span>Lasso深度解析</a>
+  <a href="#s18"><span class="num">18</span>Ridge深度解析</a>
+  <a href="#s19"><span class="num">19</span>PCR vs Ridge</a>
+  <a href="#s12"><span class="num">QR</span>Quick Reference</a>
+  <div class="nav-section">面经专题</div>
+  <a href="#s27"><span class="num">27</span>E[R²]四种推导</a>
+  <a href="#s28"><span class="num">28</span>斜率：有/无截距区别</a>
+</nav>
+
+<div class="main">
+<div class="page-header">
+  <div class="header-eyebrow">Econometrics · Statistics · Machine Learning</div>
+  <h1>Linear Regression<br>完整笔记 &amp; 参考手册</h1>
+  <p>涵盖全部OLS假设、违反后果、诊断检验、推导过程、例题与解法——从BLUE到正则化。</p>
+</div>
+
+<!-- ══════════════════════════════════════════
+     §1  SIX ASSUMPTIONS
+══════════════════════════════════════════ -->
+<section class="section" id="s1">
+  <div class="section-title"><span class="sec-num">01</span><h2>六大经典假设</h2></div>
+
+  <p>线性回归模型 <span class="hi-b">y = Xβ + ε</span> 成立依赖六个核心假设（CLM假设）。违反任意一个都有<strong>可预测的后果</strong>，且对应不同的修复方案。</p>
+
+  <div class="card-grid">
+    <div class="acard blue-t">
+      <div class="acard-label">A1 · Linearity</div>
+      <div class="acard-title">线性性</div>
+      <p>模型在参数β上是线性的：y = Xβ + ε。<br>注意：变量可以非线性（log x, x²），只要参数是线性的即可。<br><strong>违反</strong>：残差有系统性非线性模式，估计不可靠。<br><strong>修复</strong>：对变量做变换（取log, 开方），加交叉项 x₁x₂，使用非线性模型。</p>
+    </div>
+    <div class="acard red-t">
+      <div class="acard-label">A2 · Random Sampling / Independence</div>
+      <div class="acard-title">随机抽样与独立性</div>
+      <p>观测值独立同分布，无自相关：<strong>Cov(εᵢ, εⱼ) = 0</strong>（i ≠ j）。<br>也称为"No Autocorrelation"假设。<br><strong>违反</strong>：标准误有偏，F检验失效，OLS仍无偏但非BLUE。<br><strong>修复</strong>：ARIMA，Newey-West稳健标准误，GLS。</p>
+    </div>
+    <div class="acard grn-t">
+      <div class="acard-label">A3 · No Perfect Multicollinearity</div>
+      <div class="acard-title">无完全多重共线性</div>
+      <p>无常数变量，X无精确线性关系，<strong>X满列秩（full rank）</strong>，(XᵀX)可逆。<br><strong>违反</strong>：(XᵀX)不可逆，β̂无法计算（完全共线性）；或标准误膨胀（近似共线性）。<br><strong>修复</strong>：Ridge回归，删除变量，PCA降维。</p>
+    </div>
+    <div class="acard blue-t">
+      <div class="acard-label">A4 · Zero Conditional Mean / Exogeneity</div>
+      <div class="acard-title">零条件均值（外生性）</div>
+      <p><strong>E[ε | X] = 0</strong>，即对任意可测函数g(X)，E[g(X)·ε] = 0（正交条件）。<br>严格外生性：E[εᵢ | X₁,…,Xₙ] = 0<br>弱外生性：E[εᵢ | Xᵢ] = 0<br><strong>违反（内生性）</strong>：β̂有偏且不一致，标准误错误。<br><strong>修复</strong>：IV/2SLS，加回省略变量。</p>
+    </div>
+    <div class="acard gld-t">
+      <div class="acard-label">A5 · Homoskedasticity</div>
+      <div class="acard-title">同方差性</div>
+      <p><strong>Var(εᵢ | X) = σ²</strong>（常数，与i无关）。<br>结合A2，有 Var(ε) = σ²I。<br>这是Gauss-Markov定理要求OLS为BLUE的关键条件之一。<br><strong>违反（异方差）</strong>：OLS仍无偏，但标准误有偏，不是BLUE。<br><strong>修复</strong>：稳健标准误（HC），WLS，变量变换。</p>
+    </div>
+    <div class="acard red-t">
+      <div class="acard-label">A6 · Normality</div>
+      <div class="acard-title">误差正态性</div>
+      <p><strong>ε ~ N(0, σ²I)</strong>（正态分布）。<br>在A1-A5下，OLS已是BLUE。A6额外保证有限样本下t检验和F检验严格成立。<br>大样本下由CLT可近似正态，A6可以不要求。<br><strong>违反</strong>：小样本推断失效；大样本影响较小。</p>
+    </div>
+  </div>
+
+  <div class="warn">
+    <strong>⚠ 重要区分：</strong> A1–A3是识别条件（β̂可以被计算出来）；A4使OLS无偏；A4+A5使OLS成为BLUE；A6使精确推断成立。
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     §2  GAUSS-MARKOV & BLUE
+══════════════════════════════════════════ -->
+<section class="section" id="s2">
+  <div class="section-title"><span class="sec-num">02</span><h2>Gauss-Markov 定理 &amp; BLUE</h2></div>
+
+  <div class="theorem">
+    <div class="theorem-title">Gauss-Markov 定理</div>
+    <p>在假设 <strong>A1–A5</strong>（线性、随机抽样、无完全多重共线性、E[ε|X]=0、同方差）下，OLS 估计量是 <strong>最优线性无偏估计量（BLUE：Best Linear Unbiased Estimator）</strong>。</p>
+    <p style="margin-top:8px">即：在所有线性无偏估计量中，OLS 的方差最小。</p>
+  </div>
+
+  <h3>BLUE 的三个要求</h3>
+  <div class="card-grid" style="grid-template-columns: repeat(3,1fr)">
+    <div class="acard blue-t">
+      <div class="acard-label">B</div>
+      <div class="acard-title">Best（最优）</div>
+      <p>在同类估计量中方差最小，即最有效率（efficient）。</p>
+    </div>
+    <div class="acard blue-t">
+      <div class="acard-label">L</div>
+      <div class="acard-title">Linear（线性）</div>
+      <p>估计量是观测值y的线性函数：β̂ = Cy，其中C是某个矩阵。</p>
+    </div>
+    <div class="acard blue-t">
+      <div class="acard-label">UE</div>
+      <div class="acard-title">Unbiased（无偏）</div>
+      <p>E[β̂] = β，期望值等于真实参数。</p>
+    </div>
+  </div>
+
+  <h3>OLS 估计量的方差</h3>
+  <div class="kformula">
+  <div class="kline"><span class="klbl">OLS估计量</span><span class="keq">$\hat{\beta}_{OLS} = (X^\top X)^{-1}X^\top y$</span></div>
+  <div class="kline"><span class="klbl">同方差方差</span><span class="keq">$\text{Var}(\hat{\beta}) = \sigma^2(X^\top X)^{-1}$</span></div>
+  <div class="kline"><span class="klbl">三明治形式</span><span class="keq">$\text{Var}(\hat{\beta}) = (X^\top X)^{-1}\cdot[X^\top \Omega X]\cdot(X^\top X)^{-1}$，其中 $\Omega = \text{Var}(\varepsilon)$</span></div>
+</div>
+
+  <h3>OLS 的性质总结</h3>
+  <table class="tbl">
+    <thead><tr><th>违反假设</th><th>无偏？</th><th>一致？</th><th>BLUE？</th><th>标准误？</th></tr></thead>
+    <tbody>
+      <tr><td class="t-asmp">全部满足 A1-A5</td><td class="t-tag">✓ 无偏</td><td class="t-tag">✓ 一致</td><td class="t-tag">✓ BLUE</td><td class="t-tag">✓ 正确</td></tr>
+      <tr><td class="t-asmp">仅违反同方差（A5）</td><td class="t-tag">✓ 无偏</td><td class="t-tag">✓ 一致</td><td class="t-viol">✗ 非BLUE</td><td class="t-viol">✗ 有偏</td></tr>
+      <tr><td class="t-asmp">仅违反独立性（A2）</td><td class="t-tag">✓ 无偏</td><td class="t-tag">✓ 一致</td><td class="t-viol">✗ 非BLUE</td><td class="t-viol">✗ 有偏</td></tr>
+      <tr><td class="t-asmp">违反外生性（A4）</td><td class="t-viol">✗ 有偏</td><td class="t-viol">✗ 不一致</td><td class="t-viol">✗ 非BLUE</td><td class="t-viol">✗ 错误</td></tr>
+    </tbody>
+  </table>
+
+  <div class="example">
+    <div class="example-label">Example 1</div>
+    <h4>证明 OLS 是线性无偏估计量</h4>
+    <p>设 β̂ = (XᵀX)⁻¹Xᵀy，代入 y = Xβ + ε：</p>
+    <div class="kformula">
+  <div class="kline"><span class="klbl">代入y</span><span class="keq">$\hat{\beta} = (X^\top X)^{-1}X^\top(X\beta+\varepsilon) = \beta + (X^\top X)^{-1}X^\top\varepsilon$</span></div>
+  <div class="kline"><span class="klbl">取期望</span><span class="keq">$E[\hat{\beta}\mid X] = \beta + (X^\top X)^{-1}X^\top \underbrace{E[\varepsilon\mid X]}_{=0\,(A4)} = \beta\quad\checkmark$</span></div>
+</div>
+    <div class="sol"><strong>结论：</strong> OLS 在 A4 下是无偏的。无偏性 <em>不需要</em> 同方差假设 A5，只需要 A4。</div>
+  </div>
+
+  <div class="example">
+    <div class="example-label">Example 2</div>
+    <h4>计算 OLS 的方差-协方差矩阵</h4>
+    <div class="kformula">
+  <div class="kline"><span class="klbl">偏差</span><span class="keq">$\hat{\beta}-\beta = (X^\top X)^{-1}X^\top\varepsilon$</span></div>
+  <div class="kline"><span class="klbl">方差</span><span class="keq">$\text{Var}(\hat{\beta}\mid X) = (X^\top X)^{-1}X^\top\,E[\varepsilon\varepsilon^\top\mid X]\,X(X^\top X)^{-1}$</span></div>
+  <div class="kline"><span class="klbl">代入同方差</span><span class="keq">$=(X^\top X)^{-1}X^\top(\sigma^2 I)X(X^\top X)^{-1} = \sigma^2(X^\top X)^{-1}\quad\checkmark$</span></div>
+</div>
+    <div class="sol"><strong>注意：</strong> σ² 用 s² = SSR/(n-k) 无偏估计，其中 k 为参数个数（包含截距）。</div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     §3  VIOLATION SUMMARY
+══════════════════════════════════════════ -->
+<section class="section" id="s3">
+  <div class="section-title"><span class="sec-num">03</span><h2>违反假设总览</h2></div>
+
+  <table class="tbl">
+    <thead>
+      <tr><th>违反假设</th><th>结果（对OLS的影响）</th><th>检验方法</th><th>解决方案</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="t-asmp">A1 线性性</td>
+        <td class="t-viol">残差有系统非线性模式，估计不可靠</td>
+        <td>残差图（vs fitted values）</td>
+        <td class="t-sol">变换变量（log、平方根），加交叉项，使用非线性模型</td>
+      </tr>
+      <tr>
+        <td class="t-asmp">A2 无自相关</td>
+        <td class="t-viol">标准误有偏，t/F检验失效；OLS仍无偏但非BLUE</td>
+        <td>残差时序图，ACF图，DW检验，BG检验</td>
+        <td class="t-sol">Newey-West稳健SE，ARIMA，GLS/FGLS，加滞后项</td>
+      </tr>
+      <tr>
+        <td class="t-asmp">A3 无多重共线性</td>
+        <td class="t-viol">标准误膨胀，t检验失效（TypeII错误），系数符号可能错误</td>
+        <td>相关矩阵，VIF（>10或>5）</td>
+        <td class="t-sol">Ridge回归，删除变量，PCA，增加样本量</td>
+      </tr>
+      <tr>
+        <td class="t-asmp">A4 外生性</td>
+        <td class="t-viol">OLS有偏且不一致，标准误错误。增大样本无法改善</td>
+        <td>理论判断（经济逻辑），Hausman检验，过度识别检验</td>
+        <td class="t-sol">加回省略变量，工具变量（IV/2SLS），代理变量</td>
+      </tr>
+      <tr>
+        <td class="t-asmp">A5 同方差</td>
+        <td class="t-viol">OLS无偏但非BLUE，标准误有偏，假设检验失效</td>
+        <td>残差vs拟合值图，BP检验，White检验</td>
+        <td class="t-sol">稳健标准误（HC0-HC3），WLS，对因变量取log</td>
+      </tr>
+      <tr>
+        <td class="t-asmp">A6 正态性</td>
+        <td class="t-viol">有限样本t/F检验不严格有效；大样本下CLT渐近正态</td>
+        <td>残差Q-Q图，Jarque-Bera检验，Shapiro-Wilk检验</td>
+        <td class="t-sol">Bootstrap，Box-Cox变换，大样本依赖CLT</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ══════════════════════════════════════════
+     §4  AUTOCORRELATION
+══════════════════════════════════════════ -->
+<section class="section" id="s4">
+  <div class="section-title"><span class="sec-num">04</span><h2>Autocorrelation（自相关）</h2></div>
+
+  <p>自相关指误差项之间存在相关性：<span class="hi-r">Cov(εᵢ, εⱼ) ≠ 0（i ≠ j）</span>。在时间序列中极为常见。</p>
+
+  <div class="warn">
+    <strong>后果：</strong> 标准误有偏（通常被低估），t/F检验失效；但OLS 仍然<strong>无偏</strong>，只是<strong>非BLUE</strong>（效率损失）。<br>
+    笔记原文：<em>"std. error biased, F test not working. Still unbiased, not efficient."</em>
+  </div>
+
+  <h3>保证 Var(β̂) 的基础</h3>
+  <div class="kformula">
+  <div class="kline"><span class="klbl">无自相关</span><span class="keq">$\text{Var}(\hat{\beta}) = \sigma^2(X^\top X)^{-1}$（仅在 $\text{Cov}(\varepsilon_i,\varepsilon_j)=0$ 时成立）</span></div>
+  <div class="kline"><span class="klbl">有自相关</span><span class="keq">$\text{Var}(\hat{\beta})_{true} = (X^\top X)^{-1}X^\top\Omega X(X^\top X)^{-1} \neq \sigma^2(X^\top X)^{-1}$，其中 $E[\varepsilon\varepsilon^\top]=\sigma^2\Omega,\,\Omega\neq I$</span></div>
+</div>
+
+  <h3>AR(1) 过程（最常见）</h3>
+  <div class="kformula">
+  <div class="kline"><span class="klbl">AR(1)模型</span><span class="keq">$\varepsilon_t = \rho\varepsilon_{t-1}+u_t,\quad |\rho|<1\text{（平稳条件）},\quad u_t\sim\text{iid}(0,\sigma_u^2)$</span></div>
+  <div class="kline"><span class="klbl">方差</span><span class="keq">$\text{Var}(\varepsilon_t) = \dfrac{\sigma_u^2}{1-\rho^2}$</span></div>
+  <div class="kline"><span class="klbl">自协方差</span><span class="keq">$\text{Cov}(\varepsilon_t,\varepsilon_{t-k}) = \rho^k\cdot\dfrac{\sigma_u^2}{1-\rho^2}$（相关性随lag指数衰减）</span></div>
+</div>
+
+  <h3>检测方法</h3>
+
+  <div class="example">
+    <div class="example-label">检验 a — 残差时序图</div>
+    <h4>Plot Residuals over Time</h4>
+    <p>将残差 ε̂ₜ 对时间 t 作图。若存在明显的周期性模式或趋势，说明存在自相关。</p>
+    <div class="sol"><strong>判断标准：</strong> 随机散布于零周围 → 无自相关；有清晰的正负交替周期 → 负自相关；残差缓慢漂移 → 正自相关。</div>
+  </div>
+
+  <div class="example">
+    <div class="example-label">检验 b — ACF 图</div>
+    <h4>Autocorrelation Function Plot</h4>
+    <p>ACF(k) = Corr(ε̂ₜ, ε̂ₜ₋ₖ)，绘制不同lag k下的自相关系数。若某个lag的竖线超出蓝色置信带（±1.96/√n），说明在该lag显著自相关。</p>
+    <div class="sol"><strong>AR(1)特征：</strong> ACF指数衰减，PACF在lag=1截尾。<br><strong>MA(1)特征：</strong> ACF在lag=1截尾，PACF指数衰减。</div>
+  </div>
+
+  <div class="example">
+    <div class="example-label">检验 c — Durbin-Watson Test</div>
+    <h4>DW检验（检验AR(1)自相关）</h4>
+    <p><strong>假设：</strong> H₀: ρ = 0（无自相关）vs. H₁: ρ ≠ 0</p>
+    <div class="kformula">
+  <div class="kline"><span class="klbl">DW统计量</span><span class="keq">$$DW = \frac{\sum_{t=2}^n(\hat{\varepsilon}_t-\hat{\varepsilon}_{t-1})^2}{\sum_{t=1}^n\hat{\varepsilon}_t^2} \approx 2(1-\hat{\rho})$$</span></div>
+</div>
+    <table class="tbl" style="margin:10px 0">
+      <thead><tr><th>DW值</th><th>含义</th></tr></thead>
+      <tbody>
+        <tr><td>DW ≈ 2</td><td class="t-tag">无自相关（ρ ≈ 0）</td></tr>
+        <tr><td>DW < 1.5</td><td class="t-viol">高正自相关（ρ > 0），εₜ与εₜ₋₁同向</td></tr>
+        <tr><td>DW > 2.5</td><td class="t-viol">高负自相关（ρ < 0），εₜ与εₜ₋₁反向</td></tr>
+        <tr><td>0 ≤ DW ≤ 4</td><td>完整范围（DW=0 → ρ=1，DW=4 → ρ=-1）</td></tr>
+      </tbody>
+    </table>
+    <div class="sol"><strong>局限：</strong> DW只检验AR(1)；有"不确定区间"（inconclusive zone）；不适用于有滞后因变量的模型。</div>
+  </div>
+
+  <div class="example">
+    <div class="example-label">检验 d — Ljung-Box Q Test</div>
+    <h4>Box-Ljung检验（联合检验多个lag）</h4>
+    <p><strong>假设：</strong> H₀: ρ₁ = ρ₂ = … = ρₖ = 0（前K个lag均无自相关）</p>
+    <div class="kformula">
+  <div class="kline"><span class="klbl">Q统计量</span><span class="keq">$Q = n(n+2)\displaystyle\sum_{k=1}^K\dfrac{\hat{\rho}_k^2}{n-k}\sim\chi^2(K)$（$H_0$下）</span></div>
+  <div class="knote">若 $Q > \chi^2_{\alpha}(K)$，拒绝 $H_0$，存在自相关</div>
+</div>
+    <div class="sol"><strong>优势：</strong> 同时检验多个lag；适合残差的自相关诊断（金融时间序列常用）。</div>
+  </div>
+
+  <div class="example">
+    <div class="example-label">检验 e — Breusch-Godfrey Test（BG检验）</div>
+    <h4>BG检验（可检验高阶AR自相关，最推荐）</h4>
+    <p><strong>步骤：</strong></p>
+    <ol class="steps">
+      <li><strong>第一步：OLS估计原模型，获得残差 ε̂ₜ</strong></li>
+      <li><strong>第二步：辅助回归</strong><br>将 ε̂ₜ 对原来所有 X 和滞后残差回归：<br>
+        <div class="kformula" style="margin:8px 0"><span class="keq">$\hat{\varepsilon}_t = \alpha_0 + X'\alpha + \rho_1\hat{\varepsilon}_{t-1}+\rho_2\hat{\varepsilon}_{t-2}+\cdots+\rho_p\hat{\varepsilon}_{t-p}+u_t$</span></div>
+      </li>
+      <li><strong>第三步：构造统计量</strong><br>
+        <div class="kformula" style="margin:8px 0"><span class="keq">$LM=(n-p)\cdot R^2\sim\chi^2(p)$（$H_0:\rho_1=\cdots=\rho_p=0$下）</span></div>
+      </li>
+      <li><strong>结论：</strong> 若 LM > χ²_α(p)，拒绝H₀，存在p阶自相关。</li>
+    </ol>
+    <div class="sol"><strong>优势 vs DW：</strong> ①可检验高阶AR（p>1）；②可处理含滞后因变量的模型；③更一般化。</div>
+  </div>
+
+  <h3>解决方案</h3>
+
+  <h3>方案1：Generalized Least Squares（GLS）</h3>
+  <p>当 Var(ε) = σ²V（V为已知n×n正定矩阵），用Cholesky分解 V = KKᵀ 变换模型：</p>
+  <div class="kformula">
+  <div class="kline"><span class="klbl">原模型</span><span class="keq">$y=X\beta+\varepsilon,\quad \text{Var}(\varepsilon)=\sigma^2 V$（$V$已知 $n\times n$ 正定矩阵）</span></div>
+  <div class="kline"><span class="klbl">Cholesky</span><span class="keq">令 $V=KK^\top$，变换 $C=K^{-1}$，则 $\tilde{y}=Cy,\; \tilde{X}=CX,\; \tilde{\varepsilon}=C\varepsilon$</span></div>
+  <div class="kline"><span class="klbl">同方差验证</span><span class="keq">$\text{Var}(\tilde{\varepsilon}\mid X) = C\cdot\sigma^2 V\cdot C^\top = \sigma^2 I\quad\checkmark$</span></div>
+  <div class="kline"><span class="klbl">GLS估计量</span><span class="keq">$$\hat{\beta}_{GLS} = (\tilde{X}^\top\tilde{X})^{-1}\tilde{X}^\top\tilde{y} = (X^\top V^{-1}X)^{-1}X^\top V^{-1}y$$</span></div>
+</div>
+
+  <div class="theorem">
+    <div class="theorem-title">GLS的BLUE性质</div>
+    <p>在 Var(ε) = σ²V（V已知）下，GLS估计量 β̂_GLS 是 <strong>BLUE</strong>。它的方差为：</p>
+    <div class="kformula" style="margin-top:10px"><span class="keq">$\text{Var}(\hat{\beta}_{GLS}) = \sigma^2(X^\top V^{-1}X)^{-1}$</span></div>
+  </div>
+
+  <h3>方案2：FGLS（Feasible GLS）</h3>
+  <p>实践中V通常未知。FGLS步骤：</p>
+  <ol class="steps">
+    <li><strong>OLS估计，获得残差</strong></li>
+    <li><strong>用残差估计V的结构</strong>（例如，估计AR(1)中的ρ：ρ̂ = Σε̂ₜε̂ₜ₋₁/Σε̂²ₜ₋₁）</li>
+    <li><strong>用V̂代替V，做GLS</strong></li>
+  </ol>
+
+  <h3>方案3：Newey-West 稳健标准误（HAC）</h3>
+  <div class="kformula">
+  <div class="kline"><span class="klbl">NW方差</span><span class="keq">$\widehat{\text{Var}}_{NW}(\hat{\beta}) = (X^\top X)^{-1}\hat{S}_{NW}(X^\top X)^{-1}$（不改变$\hat{\beta}$，只修正SE）</span></div>
+  <div class="kline"><span class="klbl">S_NW</span><span class="keq">$\hat{S}_{NW} = \hat{\Gamma}_0 + \displaystyle\sum_{l=1}^L w_l(\hat{\Gamma}_l+\hat{\Gamma}_l^\top),\quad w_l=1-\dfrac{l}{L+1}$（Bartlett核）</span></div>
+  <div class="kline"><span class="klbl">lag-j自协方差</span><span class="keq">$\hat{\Gamma}_j = \dfrac{1}{T}\displaystyle\sum_{t=j+1}^T \phi_t\phi_{t-j}^\top,\quad \phi_t=x_t u_t$</span></div>
+</div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     §5  MULTICOLLINEARITY
+══════════════════════════════════════════ -->
+<section class="section" id="s5">
+  <div class="section-title"><span class="sec-num">05</span><h2>Multicollinearity（多重共线性）</h2></div>
+
+  <p>当自变量之间存在<strong>近似（非完全）线性关系</strong>时，OLS依然无偏，但标准误膨胀。</p>
+
+  <div class="warn">
+    <strong>后果（笔记原文）：</strong> "variance increase, t test fail, hard to explain individual effect of each variable."<br>
+    ① 标准误膨胀 → t检验倾向于接受H₀（Type II Error，漏判）<br>
+    ② 系数估计不稳定，可能出现错误符号<br>
+    ③ 系数的经济学解释困难<br>
+    注意：<span class="hi-g">OLS仍然无偏且一致</span>，只是效率损失。
+  </div>
+
+  <h3>检测：VIF（Variance Inflation Factor）</h3>
+
+  <div class="example">
+    <div class="example-label">检验 — VIF</div>
+    <h4>方差膨胀因子</h4>
+    <p><strong>步骤：</strong></p>
+    <ol class="steps">
+      <li><strong>计算相关矩阵</strong>，初步判断自变量间相关性</li>
+      <li><strong>对每个自变量 Xₖ，做辅助回归：</strong><br>
+        <div class="kformula" style="margin:8px 0"><span class="keq">$X_k = \beta_0+\beta_1 X_1+\cdots+\beta_{k-1}X_{k-1}+\beta_{k+1}X_{k+1}+\cdots+\beta_p X_p+u$</span></div>
+        从中得到 R²ₖ（该回归的决定系数）
+      </li>
+      <li><strong>计算VIF：</strong><br>
+        <div class="kformula" style="margin:8px 0"><span class="keq">$VIF_k = 1/(1-R_k^2)$</span></div>
+      </li>
+    </ol>
+    <table class="tbl" style="margin-top:10px">
+      <thead><tr><th>VIF值</th><th>解读</th></tr></thead>
+      <tbody>
+        <tr><td>VIF = 1</td><td class="t-tag">完全无共线性（Xₖ与其他X正交）</td></tr>
+        <tr><td>1 &lt; VIF &lt; 5</td><td>轻微共线性，通常可接受</td></tr>
+        <tr><td>5 &lt; VIF &lt; 10</td><td class="t-viol">中度共线性，需要关注</td></tr>
+        <tr><td>VIF > 10</td><td class="t-viol">严重共线性，需要处理</td></tr>
+        <tr><td>VIF → ∞</td><td class="t-viol">完全共线性，(XᵀX)不可逆</td></tr>
+      </tbody>
+    </table>
+    <div class="sol"><strong>直觉：</strong> VIFₖ 告诉你由于Xₖ与其他变量相关，其系数的方差被放大了多少倍。VIF=10意味着标准误膨胀了 √10 ≈ 3.16 倍。</div>
+  </div>
+
+  <h3>条件数（Condition Number）</h3>
+  <div class="kformula">
+  <div class="kline"><span class="klbl">条件数</span><span class="keq">$CN = \sqrt{\lambda_{\max}/\lambda_{\min}}$，其中 $\lambda$ 为 $X^\top X$ 的特征值</span></div>
+  <div class="knote">$CN > 30$：中度共线性；$CN > 100$：严重共线性</div>
+</div>
+
+  <h3>解决方案1：Ridge Regression（岭回归）</h3>
+
+  <div class="example">
+    <div class="example-label">Solution — Ridge Regression</div>
+    <h4>Ridge 回归的推导与性质</h4>
+    <p>在OLS损失函数中加入L2惩罚项（λ||β||²），使 (XᵀX + λI) 在任何情况下都可逆：</p>
+    <div class="kformula">
+  <div class="kline"><span class="klbl">目标函数</span><span class="keq">$\hat{\beta}_{Ridge} = \arg\min_{\beta}\{\|y-X\beta\|^2 + \lambda\|\beta\|^2\},\quad\lambda>0$</span></div>
+  <div class="kline"><span class="klbl">FOC</span><span class="keq">$-2X^\top(y-X\beta)+2\lambda\beta=0 \;\Rightarrow\; (X^\top X+\lambda I)\beta = X^\top y$</span></div>
+  <div class="kline"><span class="klbl">解</span><span class="keq">$$\hat{\beta}_{Ridge} = (X^\top X+\lambda I)^{-1}X^\top y$$</span></div>
+</div>
+    <div class="sol">
+      <strong>为何 (XᵀX + λI) 一定可逆？</strong><br>
+      XᵀX 是半正定矩阵（所有特征值 ≥ 0）。加上 λI 后，所有特征值变为 (λᵢ + λ) > 0（因为 λ > 0），因此 (XᵀX + λI) 是正定矩阵，必然可逆。✓<br><br>
+      <strong>Ridge 的关键特性：</strong><br>
+      ① 有偏估计（但方差更小）：bias-variance tradeoff<br>
+      ② 将所有β均匀拉向0，但不会产生精确的0（无稀疏性）<br>
+      ③ 惩罚高的β，使高β降低（drag high β down to small β）<br>
+      ④ 截距项通常不惩罚
+    </div>
+    <p style="margin-top:12px"><strong>必须预处理：</strong> 在做Ridge前，对X和y做标准化（z-score standardization），使各变量的收缩量可比。</p>
+    <div class="kformula">
+  <div class="kline"><span class="klbl">标准化X</span><span class="keq">$\tilde{X}_{ij} = (X_{ij}-\bar{X}_j)/\text{std}(X_j)$（每列均值0，标准差1）</span></div>
+  <div class="kline"><span class="klbl">中心化y</span><span class="keq">$\tilde{y}_i = y_i - \bar{y}$（截距不惩罚，center后可排除截距列）</span></div>
+</div>
+    <p><strong>λ 的选择：</strong> 通过交叉验证（cross-validation）选取最优λ。笔记提示：可根据VIF的变化来选λ——选使VIF降到阈值以下的最小λ。</p>
+  </div>
+
+  <h3>解决方案2：PCA（主成分分析）</h3>
+  <div class="kformula">
+  <div class="kline"><span class="klbl">SVD</span><span class="keq">$X = UDV^\top$，取前 $k$ 列，得分矩阵 $Z_k = XV_k = U_k D_k$</span></div>
+  <div class="kline"><span class="klbl">PCR</span><span class="keq">$Z$ 的各列彼此正交，消除共线性；先对 $Z_k$ 回归，再转换回原始 $X$ 空间</span></div>
+</div>
+
+  <div class="example">
+    <div class="example-label">Example — VIF计算</div>
+    <h4>判断是否存在多重共线性</h4>
+    <p>模型：y = β₀ + β₁x₁ + β₂x₂ + β₃x₃ + ε。计算各 VIF：</p>
+    <div class="kformula">
+  <div class="kline"><span class="klbl" style="color:var(--red)">VIF₁</span><span class="keq">$x_1$ 对 $x_2,x_3$ 回归：$R_1^2=0.95\Rightarrow VIF_1=1/(1-0.95)=20$ <strong style="color:var(--red)">（严重！）</strong></span></div>
+  <div class="kline"><span class="klbl">VIF₂</span><span class="keq">$x_2$ 对 $x_1,x_3$ 回归：$R_2^2=0.6\Rightarrow VIF_2=1/(1-0.6)=2.5$（可接受）</span></div>
+  <div class="kline"><span class="klbl">VIF₃</span><span class="keq">$x_3$ 对 $x_1,x_2$ 回归：$R_3^2=0.3\Rightarrow VIF_3=1/(1-0.3)=1.4$（无问题）</span></div>
+</div>
+    <div class="sol"><strong>结论：</strong> x₁ 与其他变量存在严重共线性（VIF=20 >> 10）。考虑删除 x₁，或对 x₁ 做 Ridge 惩罚，或用 PCA 合并 x₁ 和与它相关的变量。</div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     §6  HETEROSKEDASTICITY
+══════════════════════════════════════════ -->
+<section class="section" id="s6">
+  <div class="section-title"><span class="sec-num">06</span><h2>Heteroskedasticity（异方差）</h2></div>
+
+  <p>异方差指 <span class="hi-r">Var(εᵢ | Xᵢ) = σ²ᵢ</span>（随观测值变化，而非常数σ²）。</p>
+
+  <div class="warn">
+    <strong>后果（笔记原文）：</strong> "std. error wrong, unbiased but no BLUE, 假设检验失败"<br>
+    ① OLS β̂ 仍然<strong>无偏</strong>（E[ε|X]=0仍满足）<br>
+    ② 但<strong>不是BLUE</strong>：有比OLS方差更小的线性无偏估计量（WLS）<br>
+    ③ 标准误有偏 → t/F检验无效
+  </div>
+
+  <h3>检测：Breusch-Pagan Test（BP检验）</h3>
+  <div class="example">
+    <div class="example-label">检验 — Breusch-Pagan Test</div>
+    <h4>BP检验步骤</h4>
+    <ol class="steps">
+      <li><strong>OLS估计原模型</strong>，获取残差 ε̂ᵢ</li>
+      <li><strong>辅助回归：</strong> 将 ε̂²ᵢ 对所有自变量回归<br>
+        <div class="kformula" style="margin:8px 0"><span class="keq">$\hat{\varepsilon}_i^2=\alpha_0+\alpha_1 x_{1i}+\cdots+\alpha_k x_{ki}+v_i$</span></div>
+      </li>
+      <li><strong>统计量：</strong> LM = n·R²  ~  χ²(k) 在 H₀: 同方差 下</li>
+    </ol>
+    <div class="sol">H₀: α₁=…=αₖ=0（同方差）。若拒绝H₀，存在异方差。</div>
+  </div>
+
+  <div class="example">
+    <div class="example-label">检验 — White Test</div>
+    <h4>White检验（更一般化）</h4>
+    <p>辅助回归中加入所有自变量的平方项和交叉乘积项：</p>
+    <div class="kformula">
+  <div class="kline"><span class="klbl">辅助回归</span><span class="keq">$\hat{\varepsilon}_i^2 = \alpha_0 + \sum_j\alpha_j x_{ji} + \sum_{j,k}\alpha_{jk}x_{ji}^2 + \sum_{j\neq l}\alpha_{jl}x_{ji}x_{li} + v_i$</span></div>
+</div>
+    <div class="sol">White检验不假定异方差的特定函数形式，更一般化，但自由度更多（检验力可能较低）。</div>
+  </div>
+
+  <h3>WLS（Weighted Least Squares，加权最小二乘）</h3>
+  <p>若已知 Var(εᵢ) = σ²hᵢ（如 hᵢ = xᵢ 或 hᵢ = x²ᵢ），用权重 wᵢ = 1/hᵢ 缩放：</p>
+
+  <div class="example">
+    <div class="example-label">Derivation — WLS</div>
+    <h4>WLS推导</h4>
+    <p>目标：找一组权重 wᵢ，使加权残差的方差同质化。</p>
+    <div class="kformula">
+  <div class="kline"><span class="klbl">设定</span><span class="keq">$\text{Var}(\varepsilon_i)=\sigma^2 h_i$，令 $w_i=1/h_i$，两边乘 $\sqrt{w_i}$：</span></div>
+  <div class="kline"><span class="klbl">变换</span><span class="keq">$\sqrt{w_i}y_i = \sqrt{w_i}(\beta_0+\beta_1 x_{1i}+\cdots+\beta_k x_{ki})+\sqrt{w_i}\varepsilon_i$</span></div>
+  <div class="kline"><span class="klbl">同方差验证</span><span class="keq">$\text{Var}(\sqrt{w_i}\varepsilon_i)=w_i\sigma^2 h_i = \sigma^2\quad\checkmark$</span></div>
+  <div class="kline"><span class="klbl">WLS估计量</span><span class="keq">$$\hat{\beta}_{WLS} = \arg\min\sum_i w_i(y_i-X_i\beta)^2 = (X^\top WX)^{-1}X^\top Wy$$其中 $W=\text{diag}(w_1,\ldots,w_n)$</span></div>
+</div>
+    <div class="sol"><strong>直觉：</strong> 对方差大的观测给予更小权重（信任度低），对方差小的给予更大权重（信任度高）。WLS在已知hᵢ时是BLUE。</div>
+  </div>
+
+  <h3>GLS vs OLS+稳健标准误的比较</h3>
+  <div class="two-col">
+    <div class="panel">
+      <h3>GLS / WLS（有先验知识）</h3>
+      <ul class="notes">
+        <li>需要知道误差方差结构 Var(εᵢ) = σ²hᵢ</li>
+        <li><strong>更有效率</strong>（BLUE）</li>
+        <li>对方差结构的误设定更敏感</li>
+        <li>计算更复杂</li>
+        <li>适合：误差结构有经济理论支撑时</li>
+      </ul>
+    </div>
+    <div class="panel">
+      <h3>OLS + 稳健标准误（HC）</h3>
+      <ul class="notes">
+        <li>不需要误差结构的先验知识</li>
+        <li><strong>更稳健</strong>（对误设定不敏感）</li>
+        <li>效率稍低但更实用</li>
+        <li>应用计量经济学的标准做法</li>
+        <li>适合：误差结构未知时（大多数场景）</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="kformula">
+  <div class="kline"><span class="klbl">HC0（White 1980）</span><span class="keq">$\widehat{\text{Var}}_{HC0}(\hat{\beta}) = (X^\top X)^{-1}\!\left[\sum_i \hat{\varepsilon}_i^2 x_i x_i^\top\right]\!(X^\top X)^{-1}$</span></div>
+  <div class="kline"><span class="klbl">HC1</span><span class="keq">HC0 $\times\, n/(n-k)$（小样本修正）</span></div>
+  <div class="kline"><span class="klbl">HC2</span><span class="keq">用 $\hat{\varepsilon}_i^2/(1-h_{ii})$ 替代 $\hat{\varepsilon}_i^2$（$h_{ii}$ 为帽子矩阵对角元素）</span></div>
+  <div class="kline"><span class="klbl">HC3</span><span class="keq">用 $\hat{\varepsilon}_i^2/(1-h_{ii})^2$ 替代（最保守）</span></div>
+</div>
+
+  <div class="example">
+    <div class="example-label">Example — 异方差检测与处理</div>
+    <h4>工资回归中的异方差</h4>
+    <p>设模型：wage = β₀ + β₁edu + β₂exp + ε。通常高教育高技能工人的工资方差更大。</p>
+    <div class="kformula">
+  <div class="kline"><span class="klbl">WLS</span><span class="keq">若 $\text{Var}(\varepsilon_i)\propto edu_i^2$，令 $w_i=1/edu_i^2$，WLS模型：$\dfrac{wage_i}{edu_i}=\beta_0\dfrac{1}{edu_i}+\beta_1+\beta_2\dfrac{exp_i}{edu_i}+\dfrac{\varepsilon_i}{edu_i}$</span></div>
+  <div class="kline"><span class="klbl">取对数</span><span class="keq">$\ln(wage_i) = \beta_0+\beta_1 edu_i+\beta_2 exp_i+\varepsilon_i$（稳定方差的常用变换）</span></div>
+</div>
+    <div class="sol">取对数是处理异方差最常用的方法之一，同时也将系数解释为弹性/半弹性。</div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     §7  ENDOGENEITY & IV
+══════════════════════════════════════════ -->
+<section class="section" id="s7">
+  <div class="section-title"><span class="sec-num">07</span><h2>Endogeneity（内生性）&amp; Instrumental Variables</h2></div>
+
+  <p>内生性：<span class="hi-r">E[ε | X] ≠ 0，即 Cov(ε, X) ≠ 0</span>。这使得OLS估计量<strong>有偏且不一致</strong>——即使样本量趋于无穷大，OLS也无法恢复真实参数。</p>
+
+  <div class="warn">
+    <strong>后果（笔记）：</strong> "Biased, Inconsistent, Std. Err Wrong"<br>
+    这是OLS所有违反假设中<strong>最严重</strong>的情况——不能靠增大样本修复！
+  </div>
+
+  <h3>内生性的三大来源</h3>
+
+  <div class="example">
+    <div class="example-label">Cause 1 — Omitted Variable（省略变量）</div>
+    <h4>省略变量偏差（OVB）的完整推导</h4>
+    <p>假设真实模型为：<strong>yᵢ = β₁x₁ᵢ + β₂x₂ᵢ + εᵢ</strong>，但研究者误设为：<strong>yᵢ = α₁x₁ᵢ + uᵢ</strong>（省略了 x₂）。</p>
+    <div class="kformula">
+  <div class="kline"><span class="klbl">省略变量</span><span class="keq">真实模型 $y=\beta_1 x_1+\beta_2 x_2+\varepsilon$，估计 $y=\alpha_1 x_1+u$</span></div>
+  <div class="kline"><span class="klbl">展开</span><span class="keq">$\hat{\alpha}_1 = \beta_1 + \beta_2\cdot\hat{\delta}_{21} + \dfrac{\sum(x_{1i}-\bar{x}_1)\varepsilon_i}{\sum(x_{1i}-\bar{x}_1)^2}$</span></div>
+  <div class="kline"><span class="klbl">取期望</span><span class="keq">$E[\hat{\alpha}_1] = \beta_1 + \beta_2\cdot\hat{\delta}_{21}$，其中 $\hat{\delta}_{21}=\dfrac{\text{Cov}(x_1,x_2)}{\text{Var}(x_1)}$</span></div>
+  <div class="kline"><span class="klbl" style="color:var(--red)">OVB</span><span class="keq">$$\text{OVB} = \beta_2\cdot\frac{\text{Cov}(x_1,x_2)}{\text{Var}(x_1)}$$</span></div>
+</div>
+    <table class="tbl" style="margin-top:10px">
+      <thead><tr><th>β₂（省略变量对y的影响）</th><th>Cov(x₁,x₂)（相关方向）</th><th>偏差方向</th></tr></thead>
+      <tbody>
+        <tr><td>正（+）</td><td>正（+）</td><td class="t-viol">正偏差（高估β₁）</td></tr>
+        <tr><td>正（+）</td><td>负（−）</td><td class="t-viol">负偏差（低估β₁）</td></tr>
+        <tr><td>负（−）</td><td>正（+）</td><td class="t-viol">负偏差（低估β₁）</td></tr>
+        <tr><td>负（−）</td><td>负（−）</td><td class="t-viol">正偏差（高估β₁）</td></tr>
+        <tr><td>任意</td><td>0（正交）</td><td class="t-tag">无偏差！</td></tr>
+      </tbody>
+    </table>
+    <div class="sol"><strong>笔记例子：</strong> 收入回归中省略"个人背景"（personal background）。背景好的人收入高（β₂>0），且背景好的人可能受教育更多（Cov(edu, background)>0），导致教育的系数被高估。</div>
+  </div>
+
+  <div class="example">
+    <div class="example-label">Cause 2 — Simultaneity（联立性）</div>
+    <h4>联立方程偏差</h4>
+    <p>价格与需求同时决定：价格影响需求，需求也影响价格。无法用单一方程的OLS识别。</p>
+    <div class="kformula">
+  <div class="kline"><span class="klbl">需求方程</span><span class="keq">$Q = \alpha_0+\alpha_1 P+\alpha_2\text{Income}+\varepsilon_1$</span></div>
+  <div class="kline"><span class="klbl">供给方程</span><span class="keq">$Q = \beta_0+\beta_1 P+\beta_2\text{Cost}+\varepsilon_2$</span></div>
+  <div class="knote">$P$ 是内生变量：$\text{Cov}(P,\varepsilon_1)\neq 0$，直接OLS估计需求方程 $\Rightarrow$ 偏差</div>
+</div>
+    <div class="sol">需要用供给侧变量（成本、天气等）作为P的工具变量（IV）来识别需求曲线。</div>
+  </div>
+
+  <div class="example">
+    <div class="example-label">Cause 3 — Measurement Error（测量误差）</div>
+    <h4>经典测量误差（Classical Errors-in-Variables）</h4>
+    <p>真实模型：y = βX* + ε，但X*不可观测，观测到 X = X* + v（测量误差）。</p>
+    <div class="kformula">
+  <div class="kline"><span class="klbl">代入</span><span class="keq">$y=\beta(X-v)+\varepsilon = \beta X+(\varepsilon-\beta v)$，复合误差 $u=\varepsilon-\beta v$</span></div>
+  <div class="kline"><span class="klbl">内生性</span><span class="keq">$\text{Cov}(X,u)=\text{Cov}(X^*+v,\varepsilon-\beta v)=-\beta\cdot\text{Var}(v)\neq 0$</span></div>
+  <div class="kline"><span class="klbl" style="color:var(--red)">衰减偏差</span><span class="keq">$$\text{plim}\,\hat{\beta}_{OLS} = \beta\cdot\frac{\text{Var}(X^*)}{\text{Var}(X^*)+\text{Var}(v)} = \beta\cdot\lambda,\quad 0<\lambda<1$$</span></div>
+</div>
+    <div class="sol"><strong>笔记例子：</strong> X 由调查（survey）采集 → 存在回答误差。</div>
+  </div>
+
+  <h3>解决方案：工具变量（Instrumental Variables）</h3>
+
+  <div class="theorem">
+    <div class="theorem-title">工具变量 Z 的两个必要条件</div>
+    <p><strong>① 相关性（Relevance）：</strong> Cov(Z, X) ≠ 0，Z与内生变量X相关。</p>
+    <p><strong>② 排他性（Exclusion Restriction）：</strong> Cov(Z, ε) = 0，Z只通过X影响y（不直接影响y）。</p>
+  </div>
+
+  <div class="example">
+    <div class="example-label">Derivation — IV Estimator</div>
+    <h4>IV估计量的一致性证明</h4>
+    <p>模型：y = βx + ε，工具变量 Z。</p>
+    <div class="kformula">
+  <div class="kline"><span class="klbl">矩条件</span><span class="keq">$\text{Cov}(Z,y)=\beta\cdot\text{Cov}(Z,x)+\underbrace{\text{Cov}(Z,\varepsilon)}_{=0}\;\Rightarrow\;\hat{\beta}_{IV}=\dfrac{\text{Cov}(Z,y)}{\text{Cov}(Z,x)}$</span></div>
+  <div class="kline"><span class="klbl">矩阵形式</span><span class="keq">$$\hat{\beta}_{IV} = (Z^\top X)^{-1}Z^\top Y$$</span></div>
+  <div class="kline"><span class="klbl">一致性</span><span class="keq">$\text{plim}\,\hat{\beta}_{IV} = \beta + \dfrac{\text{Cov}(Z,\varepsilon)}{\text{Cov}(Z,X)} = \beta\quad\checkmark$</span></div>
+</div>
+  </div>
+
+  <h3>2SLS（Two-Stage Least Squares）</h3>
+  <p>2SLS 是最常用的IV方法，当有多个工具变量时（过度识别），比单纯IV更有效率。</p>
+
+  <div class="flow">
+    <div class="flow-box">
+      <div class="fb-title">Stage 1</div>
+      <div class="fb-sub">X 对 Z 做OLS<br>X̂ = Z(ZᵀZ)⁻¹ZᵀX<br>= Pz·X</div>
+    </div>
+    <div class="flow-arr">→</div>
+    <div class="flow-box">
+      <div class="fb-title">Stage 2</div>
+      <div class="fb-sub">y 对 X̂ 做OLS<br>β̂_2SLS = (X̂ᵀX̂)⁻¹X̂ᵀy</div>
+    </div>
+    <div class="flow-arr">→</div>
+    <div class="flow-box">
+      <div class="fb-title">等价形式</div>
+      <div class="fb-sub">β̂_2SLS = (XᵀPzX)⁻¹XᵀPzy<br>Pz = Z(ZᵀZ)⁻¹Zᵀ</div>
+    </div>
+    <div class="flow-arr">→</div>
+    <div class="flow-box">
+      <div class="fb-title">一致性</div>
+      <div class="fb-sub">X̂ = Pz·X 与 ε 正交<br>Cov(X̂, ε) = 0 ✓</div>
+    </div>
+  </div>
+
+  <div class="example">
+    <div class="example-label">Example — IV in Practice</div>
+    <h4>教育回报率的IV估计（Card 1995）</h4>
+    <p>问题：收入对教育年限回归，但"能力"（ability）是省略变量，导致内生性。</p>
+    <div class="kformula">
+  <div class="kline"><span class="klbl">模型</span><span class="keq">$\ln(wage_i) = \beta_0+\beta_1 educ_i+\beta_2 ability_i+\varepsilon_i$；省略 $ability$ $\Rightarrow$ OVB（高估 $\beta_1$）</span></div>
+  <div class="kline"><span class="klbl">工具变量</span><span class="keq">$Z=$ 是否在大学附近长大（proximity to college）</span></div>
+  <div class="kline"><span class="klbl">相关性 ✓</span><span class="keq">$\text{Cov}(Z,educ)\neq 0$：住大学附近 $\Rightarrow$ 上大学成本低 $\Rightarrow$ 教育年限更多</span></div>
+  <div class="kline"><span class="klbl">排他性 ✓</span><span class="keq">$\text{Cov}(Z,\varepsilon)=0$：地理位置不直接影响工资（假设！）</span></div>
+</div>
+    <div class="sol">用2SLS估计：第一阶段用proximity预测educ，第二阶段用预测的educ估计工资方程。通常发现OLS高估教育回报（β₁_OLS > β₁_IV）。</div>
+  </div>
+
+  <h3>Hausman 检验（判断内生性是否存在）</h3>
+  <div class="kformula">
+  <div class="kline"><span class="klbl">假设</span><span class="keq">$H_0$：$X$ 外生（OLS和IV均一致）；$H_1$：$X$ 内生（仅IV一致）</span></div>
+  <div class="kline"><span class="klbl">统计量</span><span class="keq">$$H = (\hat{\beta}_{IV}-\hat{\beta}_{OLS})^\top[\text{Var}(\hat{\beta}_{IV})-\text{Var}(\hat{\beta}_{OLS})]^{-1}(\hat{\beta}_{IV}-\hat{\beta}_{OLS})\sim\chi^2(k)$$</span></div>
+</div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     §8  OLS DERIVATION
+══════════════════════════════════════════ -->
+<section class="section" id="s8">
+  <div class="section-title"><span class="sec-num">08</span><h2>OLS 系数完整推导</h2></div>
+
+  <h3>有截距的简单线性回归：y = α + βx + ε</h3>
+
+  <div class="derive">
+    <h4>目标：最小化 S = Σᵢ(yᵢ − α − βxᵢ)²</h4>
+    <div class="step-line"><span class="step-lbl">对α求导</span><span class="step-eq">∂S/∂α = −2Σ(yᵢ − α − βxᵢ) = 0</span></div>
+    <div class="step-note">→ Σyᵢ = nα + βΣxᵢ</div>
+    <div class="step-line"><span class="step-lbl">化简</span><span class="step-eq">ȳ = α + βx̄   →   <strong>α̂ = ȳ − β̂x̄</strong></span></div>
+    <div class="step-line"><span class="step-lbl">对β求导</span><span class="step-eq">∂S/∂β = −2Σxᵢ(yᵢ − α − βxᵢ) = 0</span></div>
+    <div class="step-note">→ ΣxᵢYᵢ = αΣxᵢ + βΣxᵢ²</div>
+    <div class="step-line"><span class="step-lbl">代入α̂</span><span class="step-eq">ΣxᵢYᵢ = (ȳ − β̂x̄)·nx̄ + β̂Σxᵢ²</span></div>
+    <div class="step-line"><span class="step-lbl">整理</span><span class="step-eq">ΣxᵢYᵢ − nx̄ȳ = β̂(Σxᵢ² − nx̄²)</span></div>
+    <div class="step-line"><span class="step-lbl">最终</span><span class="step-eq"><strong>β̂ = Σ(xᵢ−x̄)(yᵢ−ȳ) / Σ(xᵢ−x̄)² = Cov(x,y) / Var(x)</strong></span></div>
+  </div>
+
+  <h3>无截距回归：y = βx + ε</h3>
+
+  <div class="derive">
+    <h4>目标：最小化 S = Σᵢ(yᵢ − βxᵢ)²</h4>
+    <div class="step-line"><span class="step-lbl">对β求导</span><span class="step-eq">∂S/∂β = −2Σxᵢ(yᵢ − βxᵢ) = 0</span></div>
+    <div class="step-line"><span class="step-lbl">化简</span><span class="step-eq">ΣxᵢYᵢ = βΣxᵢ²</span></div>
+    <div class="step-line"><span class="step-lbl">最终</span><span class="step-eq"><strong>β̂ = ΣxᵢYᵢ / Σxᵢ²</strong></span></div>
+    <div class="step-note">注意：此处 σ̂² = (1/n)Σ(yᵢ − β̂xᵢ)² 是有偏的；实践中用 1/(n-1) 代替（笔记原文："This is biased, in practice use 1/(n-1), R² unbiased"）</div>
+  </div>
+
+  <div class="example">
+    <div class="example-label">Example — 矩阵形式推导</div>
+    <h4>多元回归 OLS 矩阵推导</h4>
+    <div class="kformula">
+  <div class="kline"><span class="klbl">目标</span><span class="keq">$S=(y-X\beta)^\top(y-X\beta)=y^\top y - 2\beta^\top X^\top y + \beta^\top X^\top X\beta$</span></div>
+  <div class="kline"><span class="klbl">梯度</span><span class="keq">$\nabla_\beta S = -2X^\top y + 2X^\top X\beta = 0 \;\Rightarrow\; X^\top X\beta = X^\top y$（正则方程）</span></div>
+  <div class="kline"><span class="klbl" style="color:var(--red)">解</span><span class="keq">$$\hat{\beta} = (X^\top X)^{-1}X^\top y$$</span></div>
+</div>
+  </div>
+
+  <h3>β̂ 的抽样分布</h3>
+  <div class="kformula">
+  <div class="kline"><span class="klbl">抽样分布</span><span class="keq">$\hat{\beta}\mid X \sim N(\beta,\,\sigma^2(X^\top X)^{-1})$（在 A1-A6 下）</span></div>
+  <div class="kline"><span class="klbl">t检验</span><span class="keq">$t_k = (\hat{\beta}_k-\beta_{k,0})/\text{se}(\hat{\beta}_k)\sim t(n-K)$，$K$=参数个数（含截距）</span></div>
+  <div class="kline"><span class="klbl">F检验</span><span class="keq">$F=\dfrac{(RSS_r-RSS_u)/q}{RSS_u/(n-K)}\sim F(q,n-K)$，$q$=约束个数</span></div>
+  <div class="kline"><span class="klbl">σ²无偏估计</span><span class="keq">$s^2=RSS/(n-K)=\sum\hat{\varepsilon}_i^2/(n-K)$（MLE用$1/n$有偏，OLS用$1/(n-K)$无偏）</span></div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     §9  MLE DERIVATION
+══════════════════════════════════════════ -->
+<section class="section" id="s9">
+  <div class="section-title"><span class="sec-num">09</span><h2>MLE 推导 &amp; MLE vs OLS</h2></div>
+
+  <p>在正态误差假设 ε ~ N(0, σ²) 下，OLS 等价于 MLE。</p>
+
+  <div class="example">
+    <div class="example-label">Derivation — MLE</div>
+    <h4>最大似然估计推导（正态误差）</h4>
+    <div class="kformula">
+  <div class="kline"><span class="klbl">对数似然</span><span class="keq">$\ell(\alpha,\beta,\sigma^2)=-\dfrac{n}{2}\ln(2\pi)-\dfrac{n}{2}\ln\sigma^2-\dfrac{1}{2\sigma^2}\displaystyle\sum_i(y_i-\alpha-\beta x_i)^2$</span></div>
+  <div class="kline"><span class="klbl">等价性</span><span class="keq">最大化 $\ell$ w.r.t. $\alpha,\beta$ $\Leftrightarrow$ 最小化 $\sum(y_i-\alpha-\beta x_i)^2$ $\Rightarrow$ MLE $=$ OLS $\checkmark$</span></div>
+  <div class="kline"><span class="klbl">σ²的FOC</span><span class="keq">$\dfrac{\partial\ell}{\partial\sigma^2}=-\dfrac{n}{2\sigma^2}+\dfrac{1}{2\sigma^4}\sum\hat{\varepsilon}_i^2=0$</span></div>
+  <div class="kline"><span class="klbl" style="color:var(--red)">MLE（有偏）</span><span class="keq">$\hat{\sigma}^2_{MLE}=\dfrac{1}{n}\sum\hat{\varepsilon}_i^2$</span></div>
+  <div class="kline"><span class="klbl" style="color:var(--green)">OLS（无偏）</span><span class="keq">$\hat{\sigma}^2_{OLS}=\dfrac{1}{n-K}\sum\hat{\varepsilon}_i^2=s^2$</span></div>
+</div>
+    <div class="sol">
+      <strong>关键结论（笔记原文同）：</strong><br>
+      ① MLE和OLS对β的估计完全相同（正态误差下）<br>
+      ② MLE的σ²估计是有偏的（分母n而非n-K），实践中用OLS的s²
+    </div>
+  </div>
+
+  <div class="example">
+    <div class="example-label">Example — MLE vs OLS对比</div>
+    <h4>两种方法的异同</h4>
+    <table class="tbl">
+      <thead><tr><th>性质</th><th>OLS</th><th>MLE（正态误差）</th></tr></thead>
+      <tbody>
+        <tr><td>β̂ 估计值</td><td class="t-tag">相同</td><td class="t-tag">相同</td></tr>
+        <tr><td>β̂ 无偏性</td><td class="t-tag">✓ 无偏</td><td class="t-tag">✓ 无偏</td></tr>
+        <tr><td>σ² 估计</td><td class="t-tag">s² = SSR/(n−K)（无偏）</td><td class="t-viol">σ̂² = SSR/n（有偏）</td></tr>
+        <tr><td>需要正态假设</td><td class="t-tag">不需要（BLUE性质不需要）</td><td class="t-viol">需要</td></tr>
+        <tr><td>渐近性质</td><td>有效率（若正态）</td><td class="t-tag">渐近有效率</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     §10  OPTIMAL WEIGHTS DERIVATION
+══════════════════════════════════════════ -->
+<section class="section" id="s10">
+  <div class="section-title"><span class="sec-num">10</span><h2>最优权重推导（WLS基础）</h2></div>
+
+  <p>笔记中对"加权平均估计量的最优权重"有详细推导。这是WLS直觉的核心。</p>
+
+  <div class="example">
+    <div class="example-label">Derivation — Optimal Weights via Lagrangian</div>
+    <h4>无偏估计量中方差最小的最优权重</h4>
+    <p>已知 X₁, …, Xₙ 互相独立，E[Xᵢ] = μ，Var(Xᵢ) = σ²ᵢ（各不相同）。<br>构造线性估计量 μ̂ = Σwᵢxᵢ，求使 Var(μ̂) 最小的权重 wᵢ，约束 Σwᵢ = 1（无偏性）。</p>
+
+    <div class="derive">
+      <h4>Lagrangian 推导过程</h4>
+      <div class="step-line"><span class="step-lbl">目标</span><span class="step-eq">min Var(μ̂) = Σ wᵢ²σᵢ²   s.t.  Σwᵢ = 1</span></div>
+      <div class="step-line"><span class="step-lbl">Lagrangian</span><span class="step-eq">L = Σwᵢ²σᵢ² + λ(Σwᵢ − 1)</span></div>
+      <div class="step-line"><span class="step-lbl">FOC w.r.t. wᵢ</span><span class="step-eq">∂L/∂wᵢ = 2wᵢσᵢ² + λ = 0   →   wᵢ = −λ/(2σᵢ²)</span></div>
+      <div class="step-line"><span class="step-lbl">代入约束</span><span class="step-eq">Σwᵢ = −λ/2 · Σ(1/σᵢ²) = 1   →   λ = −2/Σ(1/σᵢ²)</span></div>
+      <div class="step-line"><span class="step-lbl">最优权重</span><span class="step-eq"><strong>wᵢ* = (1/σᵢ²) / Σⱼ(1/σⱼ²)</strong></span></div>
+      <div class="step-note">最优权重与方差成反比——方差越大，权重越小（信任度越低）✓</div>
+      <div class="step-line"><span class="step-lbl">最优方差</span><span class="step-eq">Var_min(μ̂) = 1 / Σᵢ(1/σᵢ²)</span></div>
+    </div>
+    <div class="sol">
+      <strong>WLS的直觉：</strong> WLS选择 wᵢ = 1/σᵢ²，正好是使加权估计量方差最小的最优权重。这也是为什么WLS在已知误差方差结构时是BLUE。
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     §11  REGULARIZATION
+══════════════════════════════════════════ -->
+<section class="section" id="s11">
+  <div class="section-title"><span class="sec-num">11</span><h2>Regularization（正则化）</h2></div>
+
+  <p>正则化在OLS目标函数中加入惩罚项，防止过拟合，处理多重共线性，实现特征选择。<span class="hi-r">做正则化前必须对X和y做标准化（z-score）</span>，使各特征的收缩量可比。截距项通常不惩罚。</p>
+
+  <h3>三种正则化方法对比</h3>
+  <table class="tbl">
+    <thead><tr><th>方法</th><th>惩罚项</th><th>目标函数</th><th>特点</th><th>适用场景</th></tr></thead>
+    <tbody>
+      <tr>
+        <td class="t-tag">Ridge（L2）</td>
+        <td>λΣβ²ⱼ</td>
+        <td class="t-asmp">||y−Xβ||² + λ||β||²</td>
+        <td>均匀收缩所有β，无稀疏性；解析解</td>
+        <td>所有特征都有用；多重共线性严重</td>
+      </tr>
+      <tr>
+        <td class="t-tag">Lasso（L1）</td>
+        <td>λΣ|βⱼ|</td>
+        <td class="t-asmp">||y−Xβ||² + λΣ|βⱼ|</td>
+        <td>产生稀疏解（精确为0）；自动特征选择</td>
+        <td>真实稀疏模型；特征选择</td>
+      </tr>
+      <tr>
+        <td class="t-tag">Elastic Net</td>
+        <td>λ₁Σ|βⱼ|+λ₂Σβ²ⱼ</td>
+        <td class="t-asmp">||y−Xβ||² + λ₁||β||₁ + λ₂||β||²</td>
+        <td>L1+L2结合；稀疏+分组效应</td>
+        <td>相关特征 + 需要稀疏解</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="example">
+    <div class="example-label">Derivation — Ridge 的解析解</div>
+    <h4>Ridge 回归完整推导</h4>
+    <div class="kformula">
+  <div class="kline"><span class="klbl">解</span><span class="keq">$\hat{\beta}_{Ridge}=(X^\top X+\lambda I)^{-1}X^\top y$</span></div>
+  <div class="kline"><span class="klbl">有偏</span><span class="keq">$E[\hat{\beta}_{Ridge}]=(X^\top X+\lambda I)^{-1}X^\top X\cdot\beta \neq \beta$（$\lambda>0$ 时）</span></div>
+  <div class="kline"><span class="klbl">方差更小</span><span class="keq">$\text{Var}(\hat{\beta}_{Ridge})=\sigma^2(X^\top X+\lambda I)^{-1}X^\top X(X^\top X+\lambda I)^{-1} \leq \text{Var}(\hat{\beta}_{OLS})$</span></div>
+</div>
+    <div class="sol"><strong>Bias-Variance Tradeoff：</strong> λ越大 → 偏差越大，方差越小；λ=0 → 退化为OLS（无偏但可能方差大）。最优λ通过交叉验证选取。</div>
+  </div>
+
+  <div class="example">
+    <div class="example-label">Derivation — Lasso 特性分析</div>
+    <h4>Lasso 为何产生稀疏解？</h4>
+    <div class="kformula">
+  <div class="kline"><span class="klbl">Lasso</span><span class="keq">$\hat{\beta}_{Lasso}=\arg\min_\beta\{\|y-X\beta\|^2+\lambda\sum_j|\beta_j|\}$</span></div>
+  <div class="kline"><span class="klbl">次梯度（$\beta_j\neq 0$）</span><span class="keq">$-2X_j^\top(y-X\beta)+\lambda\cdot\text{sign}(\beta_j)=0$</span></div>
+  <div class="kline"><span class="klbl">次梯度（$\beta_j=0$）</span><span class="keq">$|2X_j^\top(y-X\beta)|\leq\lambda$（残差与 $X_j$ 的相关性 $\leq\lambda$）</span></div>
+  <div class="kline"><span class="klbl">软阈值解</span><span class="keq">$\hat{\beta}_j=\text{sign}(\hat{z}_j)\cdot\max(|\hat{z}_j|-\lambda/2,\,0)$，$\hat{z}_j$为OLS解</span></div>
+</div>
+    <div class="sol"><strong>几何直觉：</strong> Ridge的约束域是球形（光滑），最优点通常不在轴上；Lasso的约束域是菱形（有角），最优点容易在顶角处（即某些β=0）。这就是Lasso产生稀疏解的原因。</div>
+  </div>
+
+  <div class="example">
+    <div class="example-label">Example — Ridge vs OLS 数值比较</div>
+    <h4>多重共线性下的表现</h4>
+    <p>设 X = [x₁, x₂]，其中 x₂ = x₁ + small noise（高度相关）：</p>
+    <div class="kformula">
+  <div class="kline"><span class="klbl">OLS</span><span class="keq">$\hat{\beta}=[5,\,-4]$，se$=[10,\,10]$（标准误极大，$VIF_{x_1}=VIF_{x_2}=25$，严重共线性）</span></div>
+  <div class="kline"><span class="klbl">Ridge ($\lambda=1$)</span><span class="keq">$\hat{\beta}_{Ridge}=[2.1,\,1.9]$，均匀收缩，稳定；从 $\lambda=0.01$ 增大到 $VIF<5$ 为止</span></div>
+</div>
+    <div class="sol">Ridge虽然引入了偏差，但大幅降低了方差，总体MSE更小（通常）。这就是bias-variance tradeoff在实践中的体现。</div>
+  </div>
+
+  <h3>λ 的选择</h3>
+  <div class="two-col">
+    <div class="panel">
+      <h3>Cross-Validation（CV）</h3>
+      <ul class="notes">
+        <li>k折CV：对每个λ计算平均CV误差</li>
+        <li>选择使CV误差最小的λ（或"one standard error rule"）</li>
+        <li><strong>最常用方法</strong></li>
+      </ul>
+    </div>
+    <div class="panel">
+      <h3>VIF导向（笔记方法）</h3>
+      <ul class="notes">
+        <li>从小λ开始，计算Ridge估计后的各VIF</li>
+        <li>增大λ直到所有VIF降到阈值（5或10）以下</li>
+        <li>适合多重共线性的诊断场景</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     §12  QUICK REFERENCE
+══════════════════════════════════════════ -->
+<section class="section" id="s12">
+  <div class="section-title"><span class="sec-num">12</span><h2>Quick Formula Reference</h2></div>
+
+  <div class="qref">
+    <div class="qref-item">
+      <div class="q-lbl">OLS Estimator</div>
+      <div class="q-eq">β̂ = (XᵀX)⁻¹Xᵀy<br>α̂ = ȳ − β̂x̄（简单回归）<br>β̂ = Cov(x,y)/Var(x)</div>
+    </div>
+    <div class="qref-item">
+      <div class="q-lbl">GLS Estimator</div>
+      <div class="q-eq">β̂_GLS = (XᵀV⁻¹X)⁻¹XᵀV⁻¹y<br>Var(β̂_GLS) = σ²(XᵀV⁻¹X)⁻¹</div>
+    </div>
+    <div class="qref-item">
+      <div class="q-lbl">WLS Estimator</div>
+      <div class="q-eq">β̂_WLS = (XᵀWX)⁻¹XᵀWy<br>W = diag(1/σ₁², …, 1/σₙ²)<br>wᵢ* = (1/σᵢ²)/Σ(1/σⱼ²)</div>
+    </div>
+    <div class="qref-item">
+      <div class="q-lbl">IV Estimator</div>
+      <div class="q-eq">β̂_IV = (ZᵀX)⁻¹ZᵀY<br>2SLS: β̂ = (XᵀPzX)⁻¹XᵀPzy<br>Pz = Z(ZᵀZ)⁻¹Zᵀ</div>
+    </div>
+    <div class="qref-item">
+      <div class="q-lbl">Ridge Estimator</div>
+      <div class="q-eq">β̂_R = (XᵀX + λI)⁻¹Xᵀy<br>有偏；(XᵀX+λI)总可逆</div>
+    </div>
+    <div class="qref-item">
+      <div class="q-lbl">VIF</div>
+      <div class="q-eq">VIF_k = 1/(1 − R²_k)<br>阈值：&gt;5 关注，&gt;10 严重</div>
+    </div>
+    <div class="qref-item">
+      <div class="q-lbl">Durbin-Watson</div>
+      <div class="q-eq">DW = Σ(ε̂ₜ−ε̂ₜ₋₁)²/Σε̂ₜ²<br>≈ 2(1−ρ̂)<br>DW≈2：无自相关</div>
+    </div>
+    <div class="qref-item">
+      <div class="q-lbl">OVB</div>
+      <div class="q-eq">Bias = β₂·Cov(x₁,x₂)/Var(x₁)<br>= β₂·δ̂₂₁</div>
+    </div>
+    <div class="qref-item">
+      <div class="q-lbl">Sampling Distribution</div>
+      <div class="q-eq">β̂ ~ N(β, σ²(XᵀX)⁻¹)<br>t = (β̂ₖ−β₀)/se(β̂ₖ) ~ t(n−K)<br>s² = SSR/(n−K)（无偏）</div>
+    </div>
+    <div class="qref-item">
+      <div class="q-lbl">Attenuation Bias</div>
+      <div class="q-eq">plim β̂ = β·Var(X*)/(Var(X*)+Var(v))<br>测量误差 → 系数被低估</div>
+    </div>
+    <div class="qref-item">
+      <div class="q-lbl">BG Test（自相关）</div>
+      <div class="q-eq">ε̂ₜ = α₀+Xα+Σρⱼε̂ₜ₋ⱼ+uₜ<br>LM = (n−p)·R² ~ χ²(p)</div>
+    </div>
+    <div class="qref-item">
+      <div class="q-lbl">Projection Matrix H</div>
+      <div class="q-eq">H = X(XᵀX)⁻¹Xᵀ（对称、幂等）<br>ŷ=Hy, e=My, M=I−H<br>hᵢᵢ=leverage，tr(H)=k</div>
+    </div>
+    <div class="qref-item">
+      <div class="q-lbl">σ̂² Unbiased</div>
+      <div class="q-eq">σ̂² = RSS/(n−k) = εᵀε/(n−k)<br>(n−k)σ̂²/σ² ~ χ²(n−k)<br>k=p+1（含截距）</div>
+    </div>
+    <div class="qref-item">
+      <div class="q-lbl">t & R² Relationship</div>
+      <div class="q-eq">t = √[(n−2)R²/(1−R²)]<br>R² = t²/(t²+n−2)<br>（简单回归）</div>
+    </div>
+    <div class="qref-item">
+      <div class="q-lbl">Confidence Interval</div>
+      <div class="q-eq">β̂ⱼ ± t^(α/2)_(n−k)·σ̂·√(XᵀX)⁻¹ⱼⱼ<br>ŷᵢ ± t^(α/2)_(n−k)·σ̂·√hᵢᵢ</div>
+    </div>
+    <div class="qref-item">
+      <div class="q-lbl">Prediction Interval</div>
+      <div class="q-eq">y_new ± t^(α/2)_(n−k)·σ̂·√(1+hᵢᵢ)<br>Var(y_new−ŷ) = σ²(1+hᵢᵢ)</div>
+    </div>
+    <div class="qref-item">
+      <div class="q-lbl">TSS = ESS + RSS</div>
+      <div class="q-eq">R² = ESS/TSS = 1−RSS/TSS<br>有截距：0≤R²≤1<br>无截距：用R²₀=‖ŷ‖²/‖y‖²</div>
+    </div>
+    <div class="qref-item">
+      <div class="q-lbl">Soft Thresholding（Lasso）</div>
+      <div class="q-eq">β̂ = sign(y)·(|y|−λ)₊<br>正交设计：β̂ⱼ=sign(β̂ⱼ_OLS)·(|β̂ⱼ_OLS|−λ)₊</div>
+    </div>
+    <div class="qref-item">
+      <div class="q-lbl">Ridge SVD Form</div>
+      <div class="q-eq">β̂_λ = V(D²+λI)⁻¹DUᵀy<br>β̃ⱼ = [dⱼ/(dⱼ²+λ)]·(uⱼᵀy)<br>ŷ_λ = U·diag[dⱼ²/(dⱼ²+λ)]·Uᵀy</div>
+    </div>
+    <div class="qref-item">
+      <div class="q-lbl">Ridge Bias-Variance</div>
+      <div class="q-eq">Bias(β̃ⱼ) = −λ/(dⱼ²+λ)·β̃ⱼ*<br>Var(β̃ⱼ) = σ²dⱼ²/(dⱼ²+λ)²<br>vs OLS: Var=σ²/dⱼ²</div>
+    </div>
+    <div class="qref-item">
+      <div class="q-lbl">Ridge vs PCR 权重</div>
+      <div class="q-eq">Ridge wⱼ = dⱼ²/(dⱼ²+λ)（连续）<br>PCR wⱼ = 1[j≤k]（二元）<br>OLS wⱼ = 1（全保留）</div>
+    </div>
+    <div class="qref-item">
+      <div class="q-lbl">AIC / BIC</div>
+      <div class="q-eq">AIC = IS Dev + 2·df<br>BIC = IS Dev + log(n)·df<br>BIC更节省参数（n>7时）</div>
+    </div>
+
+  <p style="text-align:center; color:var(--ink3); font-family:var(--mono); font-size:11px; margin-top:48px; border-top:1px solid var(--line); padding-top:20px;">
+    Linear Regression Complete Reference · Yuchen Yu · Princeton MFin · Oct 2025
+  </p>
+</section>
+
+
+<!-- ══════════════════════════════════════════
+     §13  MATRIX FORM COMPLETE DERIVATION (Images 1-2)
+══════════════════════════════════════════ -->
+<section class="section" id="s13">
+  <div class="section-title"><span class="sec-num">13</span><h2>矩阵形式完整推导</h2></div>
+
+  <p>笔记Image 2完整展开了多元线性回归的矩阵推导，包括投影矩阵H、方差推导、σ²无偏估计，以及误差向量的分布。</p>
+
+  <h3>矩阵表示</h3>
+  <div class="kformula">
+  <div class="kline"><span class="klbl">矩阵形式</span><span class="keq">$\underbrace{y}_{n\times 1}=\underbrace{X}_{n\times(p+1)}\underbrace{\beta}_{(p+1)\times 1}+\underbrace{\varepsilon}_{n\times 1}$</span></div>
+  <div class="kline"><span class="klbl">展开</span><span class="keq">$\begin{bmatrix}y_1\\\vdots\\y_n\end{bmatrix}=\begin{bmatrix}1&x_{11}&\cdots&x_{1p}\\\vdots&\vdots&&\vdots\\1&x_{n1}&\cdots&x_{np}\end{bmatrix}\begin{bmatrix}\beta_0\\\vdots\\\beta_p\end{bmatrix}+\begin{bmatrix}\varepsilon_1\\\vdots\\\varepsilon_n\end{bmatrix}$</span></div>
+</div>
+
+  <h3>投影矩阵 H（Hat Matrix）</h3>
+  <div class="kformula">
+  <div class="kline"><span class="klbl">投影矩阵</span><span class="keq">$\hat{y}=X\hat{\beta}=X(X^\top X)^{-1}X^\top y=Hy$，其中 $H=X(X^\top X)^{-1}X^\top$</span></div>
+  <div class="kline"><span class="klbl">对称性</span><span class="keq">$H=H^\top$</span></div>
+  <div class="kline"><span class="klbl">幂等性</span><span class="keq">$H^2=H$（idempotent）</span></div>
+  <div class="kline"><span class="klbl">秩</span><span class="keq">$\text{rank}(H)=k=p+1$，$\text{tr}(H)=k$</span></div>
+  <div class="kline"><span class="klbl">截距</span><span class="keq">$H\cdot\mathbf{1}=\mathbf{1}$（含截距时 $\mathbf{1}\in\text{col}(X)$）</span></div>
+  <div class="kline"><span class="klbl">杠杆值</span><span class="keq">$h_{ii}=x_i^\top(X^\top X)^{-1}x_i$（leverage ratio）</span></div>
+</div>
+
+  <div class="example">
+    <div class="example-label">Derivation — ŷ 和 e 的正交性</div>
+    <h4>残差与拟合值正交（垂直）</h4>
+    <div class="kformula">
+  <div class="kline"><span class="klbl">残差</span><span class="keq">$e=y-\hat{y}=(I-H)y=My$，$M=I-H$（annihilator matrix）</span></div>
+  <div class="kline"><span class="klbl">M的性质</span><span class="keq">$M=M^\top,\quad M^2=M,\quad MX=0,\quad HX=X$</span></div>
+  <div class="kline"><span class="klbl">正交证明</span><span class="keq">$\hat{y}^\top e=(Hy)^\top(My)=y^\top HMy=y^\top H(I-H)y=y^\top(H-H^2)y=0\quad\checkmark$</span></div>
+</div>
+    <div class="sol"><strong>几何直觉：</strong> ŷ = Hy 是y在col(X)上的投影，e = My是y垂直于col(X)的分量。两者天然正交。</div>
+  </div>
+
+  <h3>β̂ 的期望与方差（完整推导）</h3>
+  <div class="derive">
+    <h4>期望：E[β̂] = β</h4>
+    <div class="step-line"><span class="step-lbl">代入</span><span class="step-eq">E[β̂] = E[(XᵀX)⁻¹Xᵀy] = (XᵀX)⁻¹XᵀE[y]</span></div>
+    <div class="step-line"><span class="step-lbl">由模型</span><span class="step-eq">E[y] = E[Xβ + ε] = Xβ + E[ε|X] = Xβ</span></div>
+    <div class="step-line"><span class="step-lbl">结论</span><span class="step-eq"><strong>E[β̂] = (XᵀX)⁻¹XᵀXβ = β  ✓</strong></span></div>
+  </div>
+
+  <div class="derive">
+    <h4>方差：Var(β̂) 的推导（笔记Image 2黄色高亮部分）</h4>
+    <div class="step-line"><span class="step-lbl">定义</span><span class="step-eq">Var(β̂) = Var((XᵀX)⁻¹Xᵀy)</span></div>
+    <div class="step-line"><span class="step-lbl">展开</span><span class="step-eq">= (XᵀX)⁻¹Xᵀ · Var(y) · X(XᵀX)⁻¹    <span class="cmt">// Var(Ay) = A·Var(y)·Aᵀ</span></span></div>
+    <div class="step-note">① 来自：若 y ~ N(μ, Σ)，则 y = Xβ+ε ~ N(Xβ, BΣBᵀ)，其中 y = Bx+c</div>
+    <div class="step-line"><span class="step-lbl">Var(y)</span><span class="step-eq">Var(y) = Var(Xβ+ε) = Var(ε) = σ²Iₙ    <span class="cmt">// 同方差假设</span></span></div>
+    <div class="step-line"><span class="step-lbl">代入</span><span class="step-eq">= (XᵀX)⁻¹Xᵀ · σ²Iₙ · X(XᵀX)⁻¹</span></div>
+    <div class="step-line"><span class="step-lbl">化简</span><span class="step-eq">= σ²·(XᵀX)⁻¹XᵀX·(XᵀX)⁻¹</span></div>
+    <div class="step-line"><span class="step-lbl">结论</span><span class="step-eq"><strong>Var(β̂) = σ²(XᵀX)⁻¹</strong></span></div>
+  </div>
+
+  <div class="kformula">
+  <div class="kline"><span class="klbl">方差矩阵</span><span class="keq">$\text{Var}(\hat{\beta})=\begin{bmatrix}\text{Var}(\hat{\beta}_0)&\text{Cov}(\hat{\beta}_1,\hat{\beta}_0)&\cdots\\\text{Cov}(\hat{\beta}_0,\hat{\beta}_1)&\text{Var}(\hat{\beta}_1)&\cdots\\\vdots&\vdots&\ddots\end{bmatrix}$</span></div>
+  <div class="kline"><span class="klbl">标准误</span><span class="keq">$\text{se}(\hat{\beta})=\sigma\sqrt{(X^\top X)^{-1}}$；$\text{se}(\hat{\beta}_i)=\sigma\sqrt{[(X^\top X)^{-1}]_{ii}}$（取对角元）</span></div>
+  <div class="kline"><span class="klbl">简单回归</span><span class="keq">$\text{se}(\hat{\beta})=\hat{\sigma}/\sqrt{\sum(x_i-\bar{x})^2}$</span></div>
+  </div>
+
+  <h3>σ² 的无偏估计（笔记Image 2底部完整推导）</h3>
+  <div class="derive">
+    <h4>E[RSS|X] = (n−k)σ² → σ̂² = RSS/(n−k)</h4>
+    <div class="step-line"><span class="step-lbl">定义</span><span class="step-eq">RSS = εᵀε = eᵀe,    e = y−ŷ = (I−H)y = My</span></div>
+    <div class="step-line"><span class="step-lbl">展开</span><span class="step-eq">RSS = (My)ᵀ(My) = yᵀMᵀMy = yᵀM²y = yᵀMy    <span class="cmt">// M幂等</span></span></div>
+    <div class="step-line"><span class="step-lbl">代入模型</span><span class="step-eq">= (Xβ+ε)ᵀM(Xβ+ε) = εᵀMε    <span class="cmt">// 因为MX=0，HX=X</span></span></div>
+    <div class="step-line"><span class="step-lbl">取期望</span><span class="step-eq">E[RSS|X] = E[εᵀMε|X] = tr(M·E[εεᵀ|X]) = tr(Mσ²I) = σ²tr(M)</span></div>
+    <div class="step-note">用矩阵迹的性质：E[aᵀAa] = tr(AΣ) + μᵀAμ，其中a~(μ,Σ)。这里μ=0。</div>
+    <div class="step-line"><span class="step-lbl">计算tr(M)</span><span class="step-eq">tr(M) = tr(I−H) = n − tr(H) = n − k    <span class="cmt">// tr(H)=rank(H)=k</span></span></div>
+    <div class="step-line"><span class="step-lbl">结论</span><span class="step-eq">E[RSS|X] = (n−k)σ²    →    <strong>σ̂² = RSS/(n−k) = εᵀε/(n−k)  （无偏）</strong></span></div>
+    <div class="step-note">其中 k = p+1，p为自变量个数（含截距）。分母 n−k 是自由度。</div>
+  </div>
+
+  <h3>β̂ 和 σ̂² 的抽样分布</h3>
+  <div class="kformula">
+  <div class="kline"><span class="klbl">β̂分布</span><span class="keq">$\hat{\beta}\mid X\sim N(\beta,\,\sigma^2(X^\top X)^{-1})$</span></div>
+  <div class="kline"><span class="klbl">ε分布</span><span class="keq">$\varepsilon\mid X\sim N(0,\,\sigma^2 I_n)$</span></div>
+  <div class="kline"><span class="klbl">σ̂²分布</span><span class="keq">$\dfrac{(n-k)\hat{\sigma}^2}{\sigma^2}\sim\chi^2(n-k)$</span></div>
+</div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     §14  t-STATISTIC, CI, PI (Images 3 & 5)
+══════════════════════════════════════════ -->
+<section class="section" id="s14">
+  <div class="section-title"><span class="sec-num">14</span><h2>t统计量、置信区间与预测区间</h2></div>
+
+  <h3>χ² 分布与 t 分布回顾</h3>
+  <div class="kformula">
+  <div class="kline"><span class="klbl">χ²分布</span><span class="keq">$X=z_1^2+z_2^2+\cdots+z_k^2,\; z_j\sim N(0,1)\;\Rightarrow\; X\sim\chi_k^2$；$E[X]=k,\;\text{Var}(X)=2k$</span></div>
+  <div class="kline"><span class="klbl">t分布</span><span class="keq">$t=\bar{z}/\sqrt{V/n},\; V\sim\chi_n^2\;\Rightarrow\; t\sim t_n$</span></div>
+</div>
+
+  <h3>t 统计量（单个系数检验）</h3>
+  <div class="kformula">
+  <div class="kline"><span class="klbl">假设</span><span class="keq">$H_0:\beta_j=\beta_{j,0}$</span></div>
+  <div class="kline"><span class="klbl">t统计量</span><span class="keq">$t_j=\dfrac{\hat{\beta}_j-\beta_{j,0}}{\text{se}(\hat{\beta}_j)}\sim t(n-k)$（$H_0$下）</span></div>
+  <div class="kline"><span class="klbl">标准误</span><span class="keq">$\text{se}(\hat{\beta}_j)=\hat{\sigma}\cdot\sqrt{[(X^\top X)^{-1}]_{jj}}$，$\hat{\sigma}=\sqrt{RSS/(n-k)}$</span></div>
+</div>
+
+  <div class="example">
+    <div class="example-label">Derivation — t统计量的矩阵形式（笔记Image 5）</div>
+    <h4>从简单回归推导 t 统计量</h4>
+    <p>设简单线性回归 yᵢ = β₀ + β₁xᵢ + εᵢ，定义：</p>
+    <div class="kformula">
+  <div class="kline"><span class="klbl">记号</span><span class="keq">$S_{xx}=\sum(x_i-\bar{x})^2,\;S_{xy}=\sum(x_i-\bar{x})(y_i-\bar{y}),\;S_{yy}=\sum(y_i-\bar{y})^2$</span></div>
+  <div class="kline"><span class="klbl">t²</span><span class="keq">$t^2=\dfrac{\hat{\beta}_1^2}{\text{se}^2(\hat{\beta}_1)}=\dfrac{S_{xy}^2/S_{xx}^2}{\hat{\sigma}^2/S_{xx}}=\dfrac{S_{xy}^2}{S_{xx}\hat{\sigma}^2}$</span></div>
+  <div class="kline"><span class="klbl">代入</span><span class="keq">$\hat{\sigma}^2=\dfrac{(1-R^2)S_{yy}}{n-2}$，$S_{xy}^2=r^2 S_{xx}S_{yy}$</span></div>
+  <div class="kline"><span class="klbl" style="color:var(--red)">结论</span><span class="keq">$$t^2=\frac{(n-2)R^2}{1-R^2}\quad\Leftrightarrow\quad R^2=\frac{t^2}{t^2+n-2}$$</span></div>
+</div>
+    <div class="sol"><strong>重要结论：</strong> t统计量与R²之间存在一一对应关系！简单回归中，知道其一就能算出另一个。</div>
+  </div>
+
+  <h3>置信区间（Confidence Interval）</h3>
+  <div class="kformula">
+  <div class="kline"><span class="klbl">CI for β̂ⱼ</span><span class="keq">$	ext{CI}(\hat{\beta}_j) = \hat{\beta}_j \pm t^{\alpha/2}_{n-p-1}\cdot\hat{\sigma}\cdot\sqrt{[(X^\top X)^{-1}]_{jj}}$</span></div>
+  <div class="kline"><span class="klbl">简单回归</span><span class="keq">$\text{se}^2(\hat{\beta}_1)=\dfrac{\sigma^2}{\sum(x_i-\bar{x})^2}$，$\text{se}^2(\hat{\alpha})=\sigma^2\!\left[\dfrac{1}{n}+\dfrac{\bar{x}^2}{\sum(x_i-\bar{x})^2}\right]$</span></div>
+</div>
+
+  <h3>ŷ 的方差</h3>
+  <div class="kformula">
+  <div class="kline"><span class="klbl">Var(y)</span><span class="keq">$\text{Var}(y)=\sigma^2 I_n$，$\varepsilon\sim N(0,\sigma^2 I_n)$</span></div>
+  <div class="kline"><span class="klbl">Var(ŷ)</span><span class="keq">$\text{Var}(\hat{y})=H\cdot\sigma^2 I\cdot H^\top=\sigma^2 H\;\Rightarrow\;\hat{y}\sim N(X\beta,\,\sigma^2 H)$</span></div>
+  <div class="kline"><span class="klbl">Var(ŷᵢ)</span><span class="keq">$\text{Var}(\hat{y}_i)=\sigma^2 x_i^\top(X^\top X)^{-1}x_i=\sigma^2 h_{ii}$（$h_{ii}$为leverage）</span></div>
+  <div class="kline"><span class="klbl">Var(e)</span><span class="keq">$\text{Var}(e)=\text{Var}(My)=M\cdot\sigma^2 I\cdot M^\top=\sigma^2 M$</span></div>
+</div>
+
+  <div class="example">
+    <div class="example-label">CI vs PI — 核心区别</div>
+    <h4>置信区间 vs 预测区间（笔记Image 3绿色高亮）</h4>
+    <p><strong>置信区间（CI）：</strong> 对条件均值 E[y|x] = xβ 的不确定性</p>
+    <div class="kformula">
+  <div class="kline"><span class="klbl">CI（条件均值）</span><span class="keq">$\hat{y}_i \pm t^{\alpha/2}_{n-p-1}\cdot\hat{\sigma}\cdot\sqrt{x_i^\top(X^\top X)^{-1}x_i} = \hat{y}_i\pm t^{\alpha/2}_{n-p-1}\cdot\hat{\sigma}\cdot\sqrt{h_{ii}}$</span></div>
+</div>
+    <p><strong>预测区间（PI）：</strong> 对新观测值 y_new 的不确定性（比CI宽！）</p>
+    <div class="kformula">
+  <div class="kline"><span class="klbl">预测误差方差</span><span class="keq">$\text{Var}(y_{new}-\hat{y}_{new})=\sigma^2 x_i^\top(X^\top X)^{-1}x_i+\sigma^2=\sigma^2(1+h_{ii})$</span></div>
+  <div class="kline"><span class="klbl" style="color:var(--red)">PI（新观测值）</span><span class="keq">$$y_{new}\pm t^{\alpha/2}_{n-k}\cdot\hat{\sigma}\cdot\sqrt{1+h_{ii}}$$</span></div>
+</div>
+    <div class="sol">
+      <strong>关键区别：</strong><br>
+      CI的方差 = σ²hᵢᵢ（只有参数不确定性）<br>
+      PI的方差 = σ²(1+hᵢᵢ)（参数不确定性 + 新误差项）<br>
+      PI永远比CI宽。当n→∞时，CI→零宽度，PI→仍有σ²的宽度。
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     §15  TSS / ESS / RSS & R² (Images 3, 4, 5, 6)
+══════════════════════════════════════════ -->
+<section class="section" id="s15">
+  <div class="section-title"><span class="sec-num">15</span><h2>TSS / ESS / RSS &amp; R²</h2></div>
+
+  <h3>三个平方和的定义</h3>
+  <div class="card-grid" style="grid-template-columns:repeat(3,1fr)">
+    <div class="acard blue-t">
+      <div class="acard-label">TSS — Total</div>
+      <div class="acard-title">总平方和</div>
+      <p>TSS = Σ(ȳᵢ − yᵢ)² = ‖yd‖² <br>总体偏离均值的程度（分母）<br>yc = y − ȳ·1ₙ</p>
+    </div>
+    <div class="acard grn-t">
+      <div class="acard-label">ESS — Explained</div>
+      <div class="acard-title">回归平方和</div>
+      <p>ESS = Σ(ŷᵢ − ȳ)² = ‖ŷ − ȳ1‖²<br>模型能解释的部分</p>
+    </div>
+    <div class="acard red-t">
+      <div class="acard-label">RSS — Residual</div>
+      <div class="acard-title">残差平方和</div>
+      <p>RSS = Σ(ŷᵢ − yᵢ)² = Σêᵢ² = ‖e‖²<br>模型无法解释的误差</p>
+    </div>
+  </div>
+
+  <h3>TSS = ESS + RSS 的证明（笔记Image 4完整证明）</h3>
+
+  <div class="theorem">
+    <div class="theorem-title">关键性质：ŷ − ȳ·1 ⊥ y − ŷ（正交）</div>
+    <p>即"回归值偏离均值的部分"与"残差"互相垂直。</p>
+  </div>
+
+  <div class="derive">
+    <h4>证明：ŷ − ȳ·1 ⊥ y − ŷ（笔记Image 4 Key Relationship of OLS）</h4>
+    <div class="step-line"><span class="step-lbl">已知</span><span class="step-eq">ŷ = Hy,  e = y−ŷ = My</span></div>
+    <div class="step-line"><span class="step-lbl">H·1 = 1</span><span class="step-eq">因H是投影矩阵，若含截距则1∈col(X)，H把1投影到自身</span></div>
+    <div class="step-line"><span class="step-lbl">∴</span><span class="step-eq">ŷ − ȳ·1 = H(y − ȳ·1)    <span class="cmt">// ȳ·1 = ȳ·H1 = H(ȳ·1)</span></span></div>
+    <div class="step-line"><span class="step-lbl">内积</span><span class="step-eq">(ŷ − ȳ·1)ᵀ·e = [H(y−ȳ·1)]ᵀ·My</span></div>
+    <div class="step-line"><span class="step-lbl">展开</span><span class="step-eq">= yᵀHᵀMy − ȳ·1ᵀHᵀMy = yᵀHMy − ȳ·1ᵀHMy</span></div>
+    <div class="step-line"><span class="step-lbl">HM=0</span><span class="step-eq">H·M = H(I−H) = H−H² = H−H = 0</span></div>
+    <div class="step-line"><span class="step-lbl">结论</span><span class="step-eq"><strong>(ŷ − ȳ·1)ᵀ·e = 0  ✓  正交</strong></span></div>
+    <div class="step-note">注：M·1 = 0（若有截距），因为M·X=0，而1∈col(X)。</div>
+    <div class="step-line"><span class="step-lbl">∴</span><span class="step-eq">‖yc‖² = ‖ŷ−ȳ1‖² + ‖e‖²   即   <strong>TSS = ESS + RSS</strong></span></div>
+  </div>
+
+  <h3>R² — 决定系数</h3>
+  <div class="kformula">
+  <div class="kline"><span class="klbl">R²定义</span><span class="keq">$R^2=1-\dfrac{RSS}{TSS}=\dfrac{ESS}{TSS}$</span></div>
+  <div class="kline"><span class="klbl">简单回归</span><span class="keq">$R^2=\rho^2=\dfrac{\text{Cov}(x,y)^2}{\text{Var}(x)\cdot\text{Var}(y)}$</span></div>
+  <div class="kline"><span class="klbl">有截距时</span><span class="keq">$R^2=\text{corr}(y,\hat{y})^2$</span></div>
+</div>
+
+  <div class="example">
+    <div class="example-label">Key — R² 的解释</div>
+    <h4>R² 的性质与注意事项（笔记Image 4）</h4>
+    <ul class="notes">
+      <li><strong>模型解释力：</strong> R²是模型解释的方差比例（proportion of variance explained by the model）</li>
+      <li><strong>分母理解：</strong> 分母= 仅回归β₀（截距模型）的RSS；分子= 实际模型的RSS</li>
+      <li><strong>负R²：</strong> 当拟合模型比样本均值还差时，R² < 0（含截距时样本内不会发生）</li>
+      <li><strong>含截距时：</strong> 0 ≤ R² ≤ 1（因为ESS, RSS ≥ 0，且TSS = ESS + RSS）</li>
+      <li><strong>样本外：</strong> OOS R² 可以 < 0，说明模型不如用均值预测</li>
+      <li><strong>多元回归：</strong> 添加任何变量都会增加（或不变）样本内R²，不可靠用于模型选择</li>
+    </ul>
+  </div>
+
+  <h3>含截距 vs 无截距的 R²（笔记Image 4-5）</h3>
+  <div class="two-col">
+    <div class="panel">
+      <h3>有截距（With Intercept）</h3>
+      <div class="kformula" style="margin-top:8px">
+        <div class="kline"><span class="keq">$\mathbf{1}_n\in\text{col}(X)$，$e\perp\text{col}(X)\Rightarrow e\perp\hat{y}$</span></div>
+        <div class="kline"><span class="keq">$\sum e_i=0\Rightarrow\bar{e}=0\Rightarrow\bar{\hat{y}}=\bar{y}$</span></div>
+        <div class="kline"><span class="keq">$\hat{y}-\bar{y}\mathbf{1}_n\in\text{col}(X)\cap\{\mathbf{1}_n\}^\perp$，$e\in\text{col}(X)^\perp$</span></div>
+        <div class="kline"><span class="keq">$\|y_c\|^2=\|\hat{y}-\bar{y}\mathbf{1}_n\|^2+\|e\|^2\Rightarrow 0\leq R^2\leq 1$</span></div>
+      </div>
+    </div>
+    <div class="panel">
+      <h3>无截距（Without Intercept）</h3>
+      <div class="kformula" style="margin-top:8px">
+  <div class="kline"><span class="keq">$\|y\|^2=\|\hat{y}\|^2+\|e\|^2$（仍成立）；但 $\|y_c\|^2\neq\|\hat{y}-\bar{y}\mathbf{1}\|^2+\|e\|^2$（$\hat{y}-\bar{y}\mathbf{1}$ 不一定 ⊥ e<br><br>
+        → RSS 可能 > TSS（R² < 0）<br>
+        → ESS 可能 > TSS（R² > 1）<br><br>
+        解决：用 <span class="hi-r">Uncentered R²</span>：<br>
+        R²₀ = ESS₀/TSS₀ = ‖ŷ‖²/‖y‖²
+      </div>
+    </div>
+  </div>
+
+  <div class="example">
+    <div class="example-label">Example — R² 组间异质性例题（笔记Image 6）</div>
+    <h4>R² 组间异质性可以极大改变总体 R²</h4>
+    <p><strong>题目：</strong> X, Y, Z 各组 size 1000，r² = 0.5，全部组合在一起，r² 的取值范围？</p>
+    <div class="kformula">
+  <div class="kline"><span class="klbl">情形1（左图）</span><span class="keq">各组均值分离 $\Rightarrow$ 组间方差主导TSS $\Rightarrow$ 合并后 $R^2	o 1$（远大于0.5）</span></div>
+  <div class="kline"><span class="klbl">情形2（右图）</span><span class="keq">各组均值重叠但斜率方向相反 $\Rightarrow$ 合并后斜率互相抵消 $\Rightarrow$ $R^2	o 0$（甚至负）</span></div>
+</div>
+    <div class="sol">
+      <strong>结论（笔记原文红色）：</strong> R² ∈ [0,1]，和 0.5 无关。<br>
+      组间异质性（between-group heterogeneity）可以极大改变总体R²。<br>
+      这说明R²高度依赖数据的聚合方式，单独看某个组的R²与合并后的R²可以完全不同——这是<strong>辛普森悖论（Simpson's Paradox）</strong>的一个体现。
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     §16  GEOMETRIC INTERPRETATION OF t-STAT (Image 5)
+══════════════════════════════════════════ -->
+<section class="section" id="s16">
+  <div class="section-title"><span class="sec-num">16</span><h2>t 统计量的几何解释</h2></div>
+
+  <p>笔记Image 5给出了t统计量与R²之间的精确代数关系，揭示了t检验的几何本质。</p>
+
+  <h3>核心关系式（笔记Image 5完整推导）</h3>
+  <div class="kformula">
+  <div class="kline"><span class="klbl">推导</span><span class="keq">$t^2=\dfrac{\hat{\beta}_1^2}{\text{se}^2}=\dfrac{S_{xy}^2/S_{xx}}{\hat{\sigma}^2}$，代入 $S_{xy}^2=r^2 S_{xx}S_{yy}$，$\hat{\sigma}^2=(1-R^2)S_{yy}/(n-2)$：</span></div>
+  <div class="kline"><span class="klbl" style="color:var(--red)">核心关系</span><span class="keq">$$t = r\sqrt{\frac{n-2}{1-r^2}},\qquad R^2 = \frac{t^2}{t^2+n-2}$$</span></div>
+</div>
+
+  <h3>几何意义解读</h3>
+
+  <div class="two-col">
+    <div class="panel">
+      <h3>t统计量的几何含义</h3>
+      <ul class="notes">
+        <li><strong>R²的函数：</strong> t只取决于R²和样本量n，与β的大小无关</li>
+        <li><strong>夹角解释：</strong> 将数据中心化后，y和X可看作n维空间的向量。corr r = cos(θ)，θ是两向量夹角</li>
+        <li><strong>t大时：</strong> R²接近1，即y与ŷ几乎平行（夹角趋于0）</li>
+        <li><strong>t=0时：</strong> R²=0，y与X垂直（夹角90°），X对预测y无贡献</li>
+      </ul>
+    </div>
+    <div class="panel">
+      <h3>向量分解视角（投影几何）</h3>
+      <ul class="notes">
+        <li><strong>yc = ŷc + e：</strong> yc在col(X)上的正交分解</li>
+        <li><strong>‖ŷc‖/‖yc‖ = √R²：</strong> 投影长度比 = √R²</li>
+        <li><strong>sin²θ = 1−R²：</strong> 残差方向的"距离"</li>
+        <li><strong>t²∝ ‖ŷc‖²/‖e‖²：</strong> 解释方差与残差方差之比（经自由度修正）</li>
+        <li><strong>F统计量：</strong> 多元回归中，F是所有方向上t²的推广</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="example">
+    <div class="example-label">Example — 几何解释数值验证</div>
+    <h4>用 R² 和 t 的对应关系做推断</h4>
+    <p>设 n = 52（月度数据2年），简单回归中 R² = 0.25。</p>
+    <div class="kformula">
+  <div class="kline"><span class="klbl">例</span><span class="keq">$n=52,\;R^2=0.25$：$t=\sqrt{50\times 0.25/0.75}=\sqrt{50/3}\approx 4.08$，临界值 $t_{0.025}(50)\approx 2.01$，显著</span></div>
+  <div class="kline"><span class="klbl">反推</span><span class="keq">$t=2$ 时：$R^2=4/(4+50)\approx 7.4\%$（$n=52$ 时仅需极低 $R^2$ 即可显著！）</span></div>
+</div>
+    <div class="sol"><strong>直觉：</strong> 大样本中，即使R²很低，也可以统计显著——统计显著性≠经济显著性。这是金融实证研究中的常见误区。</div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     §17  LASSO — DEEP DIVE (PDF Content)
+══════════════════════════════════════════ -->
+<section class="section" id="s17">
+  <div class="section-title"><span class="sec-num">17</span><h2>Lasso 深度解析</h2></div>
+
+  <p>来自期中Cheatsheet PDF的Lasso完整理论，包括软阈值推导、正交设计、约束等价、稀疏性的几何解释。</p>
+
+  <h3>P1：惩罚形式 ⟺ 约束形式的等价性</h3>
+  <div class="kformula">
+  <div class="kline"><span class="klbl">约束形式</span><span class="keq">$\min_\beta\;\tfrac{1}{2}\|y-X\beta\|^2\quad\text{s.t.}\quad\|\beta\|_1\leq\tau$</span></div>
+  <div class="kline"><span class="klbl">惩罚形式</span><span class="keq">$\min_\beta\;\tfrac{1}{2}\|y-X\beta\|^2+\lambda\|\beta\|_1$</span></div>
+  <div class="kline"><span class="klbl">等价性</span><span class="keq">对给定 $\tau$，约束解=惩罚解（在使约束active的 $\lambda$ 处）；$\lambda\uparrow\Leftrightarrow\tau\downarrow$</span></div>
+</div>
+  <div class="warn">
+    <strong>约束何时紧（binding）？</strong> 若‖β̂_OLS‖₁ > τ，OLS不可行；由凸性和封闭可行集，最优点在边界‖β‖₁ = τ 上。
+  </div>
+
+  <h3>P2：软阈值（Soft-Thresholding）——1D情形完整推导</h3>
+  <div class="example">
+    <div class="example-label">Derivation — Soft Thresholding</div>
+    <h4>1维Lasso：min_β ½(y−β)² + λ|β|</h4>
+    <div class="derive">
+      <h4>分三种情况讨论（|β|在β=0处不可微）：</h4>
+      <div class="step-line"><span class="step-lbl">Case 1</span><span class="step-eq">β > 0：q'(β) = −(y−β) + λ = β − y + λ = 0  →  β = y − λ</span></div>
+      <div class="step-note">有效条件：β > 0 要求 y − λ > 0，即 y > λ</div>
+      <div class="step-line"><span class="step-lbl">Case 2</span><span class="step-eq">β &lt; 0：q'(β) = −(y−β) − λ = β − y − λ = 0  →  β = y + λ</span></div>
+      <div class="step-note">有效条件：β &lt; 0 要求 y + λ &lt; 0，即 y &lt; −λ</div>
+      <div class="step-line"><span class="step-lbl">Case 3</span><span class="step-eq">β = 0：当 |y| ≤ λ 时，β=0 是全局最小值（|β|的折点处两侧次梯度条件满足）</span></div>
+      <div class="step-line"><span class="step-lbl">结论</span><span class="step-eq"><strong>β̂ = sign(y)·(|y|−λ)₊ = S_λ(y)</strong>（软阈值算子）</span></div>
+    </div>
+    <div class="kformula">
+  <div class="kline"><span class="klbl">软阈值算子</span><span class="keq">$\hat{\beta}=\mathcal{S}_\lambda(y)=\text{sign}(y)\cdot(|y|-\lambda)_+ = \begin{cases}y-\lambda & y>\lambda\\0 & |y|\leq\lambda\\y+\lambda & y<-\lambda\end{cases}$</span></div>
+</div>
+    <div class="sol">
+      <strong>软阈值 vs 硬阈值（Hard Thresholding）：</strong><br>
+      硬阈值：|β̂_OLS| ≤ λ → 设为0；|β̂_OLS| > λ → 保持原值（不压缩）<br>
+      软阈值：|β̂_OLS| ≤ λ → 设为0；|β̂_OLS| > λ → 压缩λ（shrunk by λ，即"软"）<br>
+      软阈值是Lasso的解，硬阈值对应Best Subset。
+    </div>
+  </div>
+
+  <h3>P3：正交设计下的Lasso解（XᵀX = Iₚ）</h3>
+  <div class="kformula">
+  <div class="kline"><span class="klbl">正交设计</span><span class="keq">$X^\top X=I_p\;\Rightarrow\;\hat{\beta}_{OLS}=X^\top y$，目标函数分解：$\tfrac{1}{2}\|y-X\beta\|^2=\tfrac{1}{2}\|\beta-\hat{\beta}_{OLS}\|^2+\text{const}$</span></div>
+  <div class="kline"><span class="klbl">分量独立</span><span class="keq">Lasso $=\sum_j[\tfrac{1}{2}(\hat{\beta}_j^{OLS}-\beta_j)^2+\lambda|\beta_j|]$，逐分量可分离</span></div>
+  <div class="kline"><span class="klbl">解</span><span class="keq">$\hat{\beta}_j^{Lasso}=\text{sign}(\hat{\beta}_j^{OLS})\cdot(|\hat{\beta}_j^{OLS}|-\lambda)_+$</span></div>
+</div>
+  <div class="warn"><strong>重要：</strong> 正交设计是唯一有解析解的情形。一般情形需要坐标下降（LARS算法）。</div>
+
+  <h3>P4：尺度不变性问题</h3>
+  <div class="kformula">
+  <div class="kline"><span class="klbl">问题</span><span class="keq">若 $\tilde{x}_j=cx_j$，则 $\tilde{\beta}_j=\beta_j/c$，惩罚 $\lambda|\tilde{\beta}_j|=\lambda|\beta_j|/c$，$c$大时被惩罚少</span></div>
+  <div class="kline"><span class="klbl">Lasso</span><span class="keq">不是尺度不变的！必须先标准化</div>
+  <div class="kline"><span class="klbl">解决</span><span class="keq">$\tilde{x}_j=(x_j-\bar{x}_j)/\text{std}(x_j)$（使所有列的惩罚可比）</span></div>
+</div>
+
+  <h3>P5：λ 的选择——K折交叉验证</h3>
+  <ol class="steps">
+    <li><strong>对每个候选λ值：</strong> 将数据分为K个fold</li>
+    <li><strong>对k=1,…,K：</strong> 在k-1个fold上拟合β̂^(-k)_λ，在第k个fold上计算验证MSE</li>
+    <li><strong>平均CV误差：</strong> CV(λ) = (1/K)·Σₖ MSE_k</li>
+    <li><strong>选取λ*：</strong> 使CV(λ)最小的λ（或"one-standard-error rule"：选最大的λ使CV ≤ min_CV + 1·SE）</li>
+  </ol>
+  <div class="warn">
+    <strong>时间序列CV（笔记PDF）：</strong><br>
+    滚动窗口（Rolling）：训练集 [t₀−w, t₀]，验证集 [t₀+1, t₀+h]，滚动前进 t₀<br>
+    扩展窗口（Expanding）：训练集 [1, t]，验证集 [t+1, t+h]，增长 t<br>
+    <strong>绝不能用未来数据训练（不能train on future data）。</strong>
+  </div>
+
+  <h3>Lasso路径（Regularization Path）</h3>
+  <div class="kformula">
+  <div class="kline"><span class="klbl">LARS路径</span><span class="keq">从 $\lambda_{max}$（$\hat{\beta}=0$）到 $\lambda=0$（OLS），路径分段线性；warm starts 使更新廉价</span></div>
+  <div class="kline"><span class="klbl">次梯度条件</span><span class="keq">$\beta_j\neq 0$：$-X_j^\top(y-X\beta)+\lambda\cdot\text{sign}(\beta_j)=0$；$\beta_j=0$：$|X_j^\top(y-X\beta)|\leq\lambda$</span></div>
+</div>
+
+  <h3>Lasso稀疏性的几何解释</h3>
+  <div class="two-col">
+    <div class="panel">
+      <h3>Lasso（L1球，菱形）</h3>
+      <p style="font-size:0.84rem">可行域 {‖β‖₁ ≤ τ} 是菱形（hypercube的对偶）。顶角在坐标轴上（如β₁=0或β₂=0的点）。OLS等高线椭圆从外向内扩张，最先碰到的往往是菱形的顶角——某个βⱼ = 0，产生<strong>精确零解（稀疏性）</strong>。</p>
+    </div>
+    <div class="panel">
+      <h3>Ridge（L2球，圆形）</h3>
+      <p style="font-size:0.84rem">可行域 {‖β‖₂ ≤ c} 是球形（光滑）。OLS等高线椭圆最先碰到球面的切点通常不在坐标轴上——<strong>不产生精确零解，只有收缩</strong>。这是Ridge不选择变量的几何原因。</p>
+    </div>
+  </div>
+
+  <h3>三种正则化估计量对比（正交设计情形）</h3>
+  <table class="tbl">
+    <thead><tr><th>估计量</th><th>公式（正交设计）</th><th>类型</th><th>稀疏性</th></tr></thead>
+    <tbody>
+      <tr><td class="t-asmp">Best Subset（大小K）</td><td>β̂ⱼ_OLS · 1[|β̂ⱼ_OLS| ≥ |β̂_(K)_OLS|]</td><td>硬阈值（binary）</td><td class="t-tag">✓ 精确零</td></tr>
+      <tr><td class="t-asmp">Ridge</td><td>β̂ⱼ_OLS / (1+λ)</td><td>均匀收缩</td><td class="t-viol">✗ 无零</td></tr>
+      <tr><td class="t-asmp">Lasso</td><td>sign(β̂ⱼ_OLS)·(|β̂ⱼ_OLS|−λ)₊</td><td>软阈值</td><td class="t-tag">✓ 精确零</td></tr>
+      <tr><td class="t-asmp">PCR（前k个PC）</td><td>β̂ⱼ_OLS · 1[j≤k]</td><td>二元（按方向）</td><td class="t-tag">✓（某方向）</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ══════════════════════════════════════════
+     §18  RIDGE — DEEP DIVE (PDF Content)
+══════════════════════════════════════════ -->
+<section class="section" id="s18">
+  <div class="section-title"><span class="sec-num">18</span><h2>Ridge 深度解析</h2></div>
+
+  <h3>P1：投影矩阵 H 的性质回顾</h3>
+  <div class="kformula">
+  <div class="kline"><span class="klbl">投影矩阵</span><span class="keq">$H=X(X^\top X)^{-1}X^\top$：对称（$H=H^\top$），幂等（$H^2=H$）</span></div>
+  <div class="kline"><span class="klbl">SVD表示</span><span class="keq">$X=UDV^\top$（全秩）$\Rightarrow$ $H=UU^\top$（投影到 $\text{col}(X)$）</span></div>
+</div>
+
+  <h3>P3：Ridge 的闭合解 & 约束等价性</h3>
+  <div class="kformula">
+  <div class="kline"><span class="klbl">目标函数</span><span class="keq">$Q(\beta)=\|y-X\beta\|^2+\lambda\|\beta\|^2$</span></div>
+  <div class="kline"><span class="klbl">FOC</span><span class="keq">$(X^\top X+\lambda I_p)\beta=X^\top y\;\Rightarrow\;\hat{\beta}_\lambda=(X^\top X+\lambda I_p)^{-1}X^\top y$（$\lambda>0$ 保证正定可逆）</span></div>
+  <div class="kline"><span class="klbl">等价约束</span><span class="keq">$\min_\beta\|y-X\beta\|^2$ s.t. $\|\beta\|^2\leq c$；$g(\lambda)=\|\hat{\beta}_\lambda\|^2$ 严格递减</span></div>
+</div>
+
+  <h3>P4：增广设计矩阵（Augmented Design）</h3>
+  <div class="kformula">
+  <div class="kline"><span class="klbl">增广设计</span><span class="keq">$\tilde{X}=\begin{bmatrix}X\\\sqrt{\lambda}I_p\end{bmatrix}\in\mathbb{R}^{(T+p)\times p},\quad\tilde{y}=\begin{bmatrix}y\\0\end{bmatrix}$</span></div>
+  <div class="kline"><span class="klbl">等价</span><span class="keq">$\|\tilde{y}-\tilde{X}\beta\|^2=\|y-X\beta\|^2+\lambda\|\beta\|^2\;\checkmark$；$\tilde{X}^\top\tilde{X}=X^\top X+\lambda I$</span></div>
+</div>
+
+  <h3>P5：Ridge 的 SVD 形式（最重要！）</h3>
+  <div class="example">
+    <div class="example-label">Derivation — Ridge的SVD表示</div>
+    <h4>通过奇异值分解理解Ridge的收缩机制</h4>
+    <div class="kformula">
+  <div class="kline"><span class="klbl">SVD</span><span class="keq">$X=UDV^\top$（thin SVD），$d_1\geq\cdots\geq d_p>0$，$X^\top X=VD^2V^\top$</span></div>
+  <div class="kline"><span class="klbl">Ridge SVD形式</span><span class="keq">$$\hat{\beta}_\lambda = V(D^2+\lambda I)^{-1}DU^\top y$$</span></div>
+  <div class="kline"><span class="klbl">逐分量</span><span class="keq">$\tilde{\beta}_j=\dfrac{d_j}{d_j^2+\lambda}\cdot(u_j^\top y)$（$V$基下），对比OLS：$\dfrac{1}{d_j}\cdot(u_j^\top y)$；收缩因子 $\dfrac{d_j^2}{d_j^2+\lambda}\in(0,1)$</span></div>
+</div>
+    <div class="sol">
+      <strong>收缩机制（PDF P5）：</strong><br>
+      小奇异值 dⱼ ≪ √λ → sⱼ ≈ dⱼ/λ ≈ 0（<strong>强收缩</strong>：对应X的"弱"方向/多重共线方向）<br>
+      大奇异值 dⱼ ≫ √λ → sⱼ ≈ 1/dⱼ（<strong>轻微收缩</strong>：对应X的"强"方向）<br>
+      Ridge对条件数差（ill-conditioned）的方向收缩最强！
+    </div>
+  </div>
+
+  <h3>P6：Ridge 拟合值 = "软投影"（Soft Projection）</h3>
+  <div class="kformula">
+  <div class="kline"><span class="klbl">软投影</span><span class="keq">$\hat{y}_\lambda=U\cdot\text{diag}\!\left[\dfrac{d_j^2}{d_j^2+\lambda}\right]\cdot U^\top y$</span></div>
+  <div class="kline"><span class="klbl">对比</span><span class="keq">OLS（硬投影）：权重$=1$；Ridge（软投影）：权重 $w_j=d_j^2/(d_j^2+\lambda)\in(0,1)$；小$d_j$方向被强烈压缩</span></div>
+</div>
+
+  <h3>P7：Ridge 的偏差与方差（Bias-Variance分解）</h3>
+  <div class="example">
+    <div class="example-label">Derivation — Bias-Variance Tradeoff</div>
+    <h4>Ridge的Bias² + Variance vs OLS</h4>
+    <div class="kformula">
+  <div class="kline"><span class="klbl">偏差</span><span class="keq">$\text{Bias}(\tilde{\beta}_j)=-\dfrac{\lambda}{d_j^2+\lambda}\tilde{\beta}_j^*$（$\lambda>0$ 时有偏）</span></div>
+  <div class="kline"><span class="klbl">方差</span><span class="keq">$\text{Var}(\tilde{\beta}_j)=\dfrac{\sigma^2 d_j^2}{(d_j^2+\lambda)^2}$（vs OLS：$\sigma^2/d_j^2$，Ridge始终更小）</span></div>
+  <div class="kline"><span class="klbl">MSE</span><span class="keq">$MSE=\text{Bias}^2+\text{Var}$；$\lambda\uparrow\Rightarrow|\text{Bias}|\uparrow,\text{Var}\downarrow$；存在最优 $\lambda$ 使 MSE 最小</span></div>
+</div>
+    <div class="sol">
+      <strong>总结（PDF P7）：</strong><br>
+      λ↑ → 偏差↑，方差↓，用偏差换方差（bias-variance tradeoff）<br>
+      λ=0 → 退化为OLS（无偏，但方差最大）<br>
+      λ→∞ → β̂→0（最大偏差，最小方差）<br>
+      最优λ通过CV选取，使总MSE最小
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     §19  PCR vs Ridge (PDF Content)
+══════════════════════════════════════════ -->
+<section class="section" id="s19">
+  <div class="section-title"><span class="sec-num">19</span><h2>PCR vs Ridge 对比</h2></div>
+
+  <p>PCR和Ridge都是处理多重共线性/高维数据的降维方法，但机制不同。通过SVD视角可以清晰对比（来自PDF P8）。</p>
+
+  <h3>SVD视角下的统一框架</h3>
+  <div class="kformula">
+  <div class="kline"><span class="klbl">统一框架</span><span class="keq">$\hat{y}=U\cdot\text{diag}(w_j)\cdot U^\top y$，权重 $w_j$ 决定第 $j$ 个方向保留程度：</span></div>
+  <div class="kline"><span class="klbl">OLS</span><span class="keq">$w_j=1$（全保留）</span></div>
+  <div class="kline"><span class="klbl">Ridge</span><span class="keq">$w_j=d_j^2/(d_j^2+\lambda)\in(0,1)$（连续软收缩）</span></div>
+  <div class="kline"><span class="klbl">PCR</span><span class="keq">$w_j=\mathbf{1}[j\leq k]$（二元硬截断）</span></div>
+</div>
+
+  <table class="tbl">
+    <thead>
+      <tr><th>特性</th><th>Ridge</th><th>PCR</th></tr>
+    </thead>
+    <tbody>
+      <tr><td class="t-asmp">权重 wⱼ</td><td>dⱼ²/(dⱼ²+λ)（连续，软）</td><td>1[j≤k]（二元，硬）</td></tr>
+      <tr><td class="t-asmp">类型</td><td>软、连续（soft projection）</td><td>硬、离散（hard thresholding by direction）</td></tr>
+      <tr><td class="t-asmp">调参参数</td><td>λ > 0（连续）</td><td>k ∈ Z⁺（离散）</td></tr>
+      <tr><td class="t-asmp">对小奇异值的处理</td><td>强烈压缩（sⱼ≈dⱼ/λ≈0）</td><td>完全丢弃（wⱼ=0 for j>k）</td></tr>
+      <tr><td class="t-asmp">对大奇异值的处理</td><td>轻微压缩（sⱼ≈1/dⱼ）</td><td>完全保留（wⱼ=1）</td></tr>
+      <tr><td class="t-asmp">解析解</td><td class="t-tag">✓ 有（β̂=(XᵀX+λI)⁻¹Xᵀy）</td><td class="t-tag">✓ 有（PCA+OLS）</td></tr>
+      <tr><td class="t-asmp">适用场景</td><td>所有方向都有一定信息量</td><td>只有前k个PC有用，其余纯噪声</td></tr>
+    </tbody>
+  </table>
+
+  <div class="example">
+    <div class="example-label">Example — PCR的计算过程</div>
+    <h4>PCR步骤（PDF P8）</h4>
+    <ol class="steps">
+      <li><strong>SVD分解：</strong> X = UDVᵀ（thin SVD），取前k列得 Uₖ, Dₖ</li>
+      <li><strong>得分矩阵：</strong> Zₖ = XVₖ = UₖDₖ，满足 ZₖᵀZₖ = Dₖ²</li>
+      <li><strong>对Zₖ做OLS：</strong> ŷ_PCR = Zₖ(ZₖᵀZₖ)⁻¹Zₖᵀy = UₖDₖDₖ⁻²DₖUₖᵀy = UₖUₖᵀy</li>
+      <li><strong>转换回原β：</strong> β̂_PCR = Vₖ(ZₖᵀZₖ)⁻¹Zₖᵀy</li>
+    </ol>
+    <div class="sol"><strong>PCR ≠ 对PC做Ridge：</strong> PCR对前k个PC方向权重=1（完全保留），对后面权重=0（完全丢弃）。Ridge是连续过渡。PCR需要选离散的k，Ridge选连续的λ。</div>
+  </div>
+
+  <h3>Bias-Variance：Ridge vs PCR</h3>
+  <div class="kformula">
+  <div class="kline"><span class="klbl">Ridge方差</span><span class="keq">$\text{Var}(\tilde{\beta}_j^{Ridge})=\sigma^2 d_j^2/(d_j^2+\lambda)^2$（每个方向均被压缩）</span></div>
+  <div class="kline"><span class="klbl">PCR方差</span><span class="keq">$\text{Var}(\tilde{\beta}_j^{PCR})=\sigma^2/d_j^2\;(j\leq k)$，$0\;(j>k)$（保留方向无偏，其余为0）</span></div>
+</div>
+
+  <h3>模型选择准则（PDF内容）</h3>
+  <table class="tbl">
+    <thead><tr><th>准则</th><th>公式</th><th>目标</th><th>特点</th></tr></thead>
+    <tbody>
+      <tr><td class="t-tag">AIC</td><td class="t-asmp">IS Dev + 2·df</td><td>预测（渐近OOS偏差）</td><td>高维下df≈n时过拟合</td></tr>
+      <tr><td class="t-tag">BIC</td><td class="t-asmp">IS Dev + log(n)·df</td><td>模型选择（近似后验概率）</td><td>n>7时比AIC更节省参数（log n > 2）</td></tr>
+    </tbody>
+  </table>
+  <div class="warn"><strong>为什么两者会不一致？</strong> IS R²目标是解释X的方差；IC目标是一致地估计因子数；OOS目标是预测y；经济目标是找到可解释的风险源。不同目标 → 有限样本下不同的k选择。</div>
+</section>
+
+
+<!-- ══════════════════════════════════════════
+     §20  FWL THEOREM (Page 20 actual notes)
+══════════════════════════════════════════ -->
+<section class="section" id="s20">
+  <div class="section-title"><span class="sec-num">20</span><h2>Frisch-Waugh-Lovell（FWL）定理</h2></div>
+
+  <p>笔记Page 1补充：OLS y~x <strong>最小化Y方向竖直残差</strong>。OLS把X想像成无noise的；PCA x,y均有误差。在OLS中，一般 <span class="hi-r">p &lt; n</span>（p &lt; n/10有效经验）；否则近以奇异，(XᵀX)⁻¹爆炸。</p>
+
+  <div class="theorem">
+    <div class="theorem-title">Frisch-Waugh-Lovell 定理（笔记Page 20）</div>
+    <p>设 Y ~ Zβz + Wβw + ε，Z ∈ ℝⁿˣᵏ 为控制变量，W ∈ ℝⁿˣᵐ 为关注变量。</p>
+    <p style="margin-top:8px">令 Pz = Z(ZᵀZ)⁻¹Zᵀ，Mz = I − Pz，则：</p>
+    <p style="margin-top:8px">① Y~Z 残差：fy = Mz·Y　② W~Z 残差：fw = Mz·W</p>
+    <p style="margin-top:8px"><strong>fy ~ fw，β̂w = (WᵀMzW)⁻¹WᵀMzY = (fwᵀfw)⁻¹fwᵀfy</strong></p>
+  </div>
+
+  <h3>笔记中的直觉理解</h3>
+  <ul class="notes">
+    <li>想要W对Y的影响：① Y~Z，fy 减去Z对Y的影响；② W~Z，fw 减去Z对W的影响；③ fy ~ fw，如同标准OLS</li>
+    <li><strong>偏回归系数的含义：</strong>β̂w = "在控制Z之后，W对Y的净效应"</li>
+  </ul>
+
+  <h3>证明（来自笔记Page 20）</h3>
+  <div class="kformula">
+  <div class="kline"><span class="klbl">正则方程</span><span class="keq">$Z^\top(Y-Z\hat{\beta}_z-W\hat{\beta}_w)=0,\quad W^\top(Y-Z\hat{\beta}_z-W\hat{\beta}_w)=0$</span></div>
+  <div class="kline"><span class="klbl">代入消去</span><span class="keq">由第一式代入第二式：$W^\top(I-P_z)(Y-W\hat{\beta}_w)=0\;\Rightarrow\;W^\top M_z Y=W^\top M_z W\hat{\beta}_w$</span></div>
+  <div class="kline"><span class="klbl" style="color:var(--red)">结论</span><span class="keq">$$\hat{\beta}_w=(W^\top M_z W)^{-1}W^\top M_z Y=(f_w^\top f_w)^{-1}f_w^\top f_y\quad\checkmark$$</span></div>
+</div>
+
+  <div class="example">
+    <div class="example-label">Example（笔记Page 20完整推导）</div>
+    <h4>FWL 代数展开：Y ~ βz·Z + βw·W + ε</h4>
+    <p>设已中心化。令 f = Cov(Y,Z)/Var(Z)，γ = Cov(Z,W)/Var(Z)，则：</p>
+    <div class="kformula">
+  <div class="kline"><span class="klbl">残差</span><span class="keq">$f_y=M_z Y=Y-\frac{\text{Cov}(Y,Z)}{\text{Var}(Z)}Z$，$f_w=M_z W=W-\frac{\text{Cov}(Z,W)}{\text{Var}(Z)}Z$</span></div>
+  <div class="kline"><span class="klbl">偏回归系数</span><span class="keq">$\hat{\beta}_w=\dfrac{\text{Cov}(Y,W)-\frac{\text{Cov}(Y,Z)\text{Cov}(W,Z)}{\text{Var}(Z)}}{\text{Var}(W)-\frac{\text{Cov}(W,Z)^2}{\text{Var}(Z)}}$（多元回归偏回归系数的解析形式）</span></div>
+</div>
+    <div class="sol"><strong>特殊情形：</strong>若 Z = 1ₙ（截距），Mz·Y = Y−ȳ，Mz·W = W−W̄，FWL退化为有截距回归等价于中心化后的无截距回归。</div>
+  </div>
+
+  <div class="example">
+    <div class="example-label">Example（笔记Page 32）FWL应用：βz = c?</div>
+    <h4>Q: y ~ Xβ + βz·z + ε; y ~ Xβ + r, r = cz + u. 是否 β̂z = ĉ？</h4>
+    <div class="kformula">
+  <div class="kline"><span class="klbl">FWL</span><span class="keq">$\hat{\beta}_z=(z^\top M_x z)^{-1}z^\top M_x y$；残差回归：$\hat{c}=(z^\top z)^{-1}z^\top M_x y$</span></div>
+  <div class="kline"><span class="klbl">关系</span><span class="keq">$\hat{c}=\hat{\beta}_z\cdot\|M_x z\|^2/\|z\|^2\in[0,1]$</span></div>
+  <div class="kline"><span class="klbl" style="color:var(--green)">z⊥C(X)时</span><span class="keq">$M_x z=z\;\Rightarrow\;\hat{c}=\hat{\beta}_z$</span></div>
+  <div class="kline"><span class="klbl" style="color:var(--red)">z∈C(X)时</span><span class="keq">$M_x z=0\;\Rightarrow\;\hat{c}=0\neq\hat{\beta}_z$</span></div>
+</div>
+    <div class="sol"><strong>结论（笔记Page 33）：</strong>ĉ = β̂z · ‖Mxz‖²/‖z‖² ∈ [0,1]，等于β̂z乘以一个收缩因子。只有当z与X正交时两者相等。</div>
+  </div>
+
+  <div class="example">
+    <div class="example-label">Example — 固定效应（FE）Within Estimator</div>
+    <h4>面板数据：yᵢₜ = αᵢ + β·xᵢₜ + εᵢₜ</h4>
+    <div class="kformula">
+  <div class="kline"><span class="klbl">FE/Within估计</span><span class="keq">$Z$=个体虚拟矩阵，FWL $\Rightarrow$ demean：$M_z y_{it}=y_{it}-\bar{y}_i$，$M_z x_{it}=x_{it}-\bar{x}_i$</span></div>
+  <div class="kline"><span class="klbl">结果</span><span class="keq">$\hat{\beta}_{FE}=\dfrac{\sum_i\sum_t(x_{it}-\bar{x}_i)(y_{it}-\bar{y}_i)}{\sum_i\sum_t(x_{it}-\bar{x}_i)^2}$（无需构造大矩阵求逆）</span></div>
+</div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     §21  se WITH/WITHOUT INTERCEPT
+══════════════════════════════════════════ -->
+<section class="section" id="s21">
+  <div class="section-title"><span class="sec-num">21</span><h2>se(β̂) 有/无截距的区别</h2></div>
+
+  <table class="tbl">
+    <thead><tr><th>性质</th><th>有截距 y = α + βx + ε</th><th>无截距 y = βx + ε</th></tr></thead>
+    <tbody>
+      <tr><td class="t-asmp">β̂ 公式</td><td>Sxy/Sxx = Σ(xᵢ−x̄)(yᵢ−ȳ)/Σ(xᵢ−x̄)²</td><td>ΣxᵢYᵢ/Σxᵢ²</td></tr>
+      <tr><td class="t-asmp">se(β̂) 分母</td><td class="t-tag">√Sxx = √Σ(xᵢ−x̄)²（中心化）</td><td class="t-tag">√Σxᵢ²（原始，未中心化）</td></tr>
+      <tr><td class="t-asmp">自由度</td><td>σ̂² = RSS/(n−2)</td><td>σ̂² = RSS/(n−1)</td></tr>
+      <tr><td class="t-asmp">残差性质</td><td class="t-tag">Σêᵢ = 0（保证）</td><td class="t-viol">Σêᵢ ≠ 0（一般）</td></tr>
+      <tr><td class="t-asmp">R² 定义</td><td>标准R²，0≤R²≤1</td><td class="t-viol">需用R²₀ = ‖ŷ‖²/‖y‖²</td></tr>
+    </tbody>
+  </table>
+
+  <div class="example">
+    <div class="example-label">Example — x̄大时虚假精度</div>
+    <h4>x = [100,101,102,103,104], x̄ = 102</h4>
+    <div class="kformula">
+  <div class="kline"><span class="klbl">数值</span><span class="keq">$\sum x_i^2=52030,\;S_{xx}=10$</span></div>
+  <div class="kline"><span class="klbl">有截距</span><span class="keq">$\text{se}(\hat{\beta})=\hat{\sigma}/\sqrt{10}$</span></div>
+  <div class="kline"><span class="klbl">无截距</span><span class="keq">$\text{se}(\hat{\beta})=\hat{\sigma}/\sqrt{52030}$（小72倍！但这是虚假精度——若真实截距≠0则系数有偏）</span></div>
+</div>
+    <div class="sol">无截距强迫回归线过原点，若真实截距≠0则产生有偏估计（OVB）。更小的se反而更危险。</div>
+  </div>
+
+  <h3>β̂ 的总体矩形式（笔记Page 21）</h3>
+  <div class="kformula">
+  <div class="kline"><span class="klbl">总体形式</span><span class="keq">$\beta=(X^\top X)^{-1}X^\top y$；总体中：$X^\top X\to\Sigma_{xx},\;X^\top y\to\Sigma_{xy}$</span></div>
+  <div class="kline"><span class="klbl">已中心化</span><span class="keq">$\Sigma_{xx}=\text{Var}(X),\quad\Sigma_{xy}=\text{Cov}(X,y)$</span></div>
+  <div class="kline"><span class="klbl">未中心化</span><span class="keq">$\Sigma_{xx}=E[(X-\mu_x)(X-\mu_x)^\top],\quad\Sigma_{xy}=E[(X_i-\mu_x)(y_i-\mu_y)]$</span></div>
+</div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     §22  F-TEST, ADVANCED TOPICS
+══════════════════════════════════════════ -->
+<section class="section" id="s22">
+  <div class="section-title"><span class="sec-num">22</span><h2>F 检验 &amp; 高级专题</h2></div>
+
+  <h3>F 统计量</h3>
+  <div class="kformula">
+  <div class="kline"><span class="klbl">约束F检验</span><span class="keq">$H_0: R\beta=r$（$q$个约束）：$F=\dfrac{(RSS_r-RSS_u)/q}{RSS_u/(n-k)}\sim F(q,n-k)$</span></div>
+  <div class="kline"><span class="klbl">全局F检验</span><span class="keq">$F=\dfrac{R^2/k}{(1-R^2)/(n-k-1)}\sim F(k,n-k-1)$</span></div>
+  <div class="kline"><span class="klbl">Adj R²</span><span class="keq">$\bar{R}^2=1-(1-R^2)\cdot\dfrac{n-1}{n-p-1}$</span></div>
+</div>
+
+  <h3>Moore-Penrose 伪逆（笔记Page 22）</h3>
+  <div class="kformula">
+  <div class="kline"><span class="klbl">SVD</span><span class="keq">$X=U\Sigma V^\top$（$X_{n\times m}$），伪逆 $X^+=U\Sigma^+ V^\top$（$\Sigma^+$：非零奇异值取倒数后转置）</span></div>
+  <div class="kline"><span class="klbl">应用</span><span class="keq">若 $X^\top X$ 奇异，$\hat{\beta}=X^+ y$（范数最小解，最不"夸张"的解）</div>
+  <div class="kline"><span class="klbl" style="color:var(--red)">局限</span><span class="keq">没有平衡 bias-variance（不如Ridge稳健）</span></div>
+</div>
+
+  <h3>Online/Recursive OLS（笔记Page 24）</h3>
+  <div class="kformula">
+  <div class="kline"><span class="klbl">Online OLS</span><span class="keq">$\hat{\beta}_t=\arg\min_\beta\sum_{i=1}^t(y_i-x_i^\top\beta)^2$（逐步更新）</span></div>
+  <div class="kline"><span class="klbl">Sherman-Morrison</span><span class="keq">$(A+uv^\top)^{-1}=A^{-1}-\dfrac{A^{-1}uv^\top A^{-1}}{1+v^\top A^{-1}u}$（秩1更新，无需整体求逆）</span></div>
+  <div class="kline"><span class="klbl">分块OLS</span><span class="keq">$X^\top X=\sum_i x_ix_i^\top$（$p\times p$），$X^\top y=\sum_i x_iy_i$（$p\times 1$）；逐块累加，最后算一次 $(X^\top X)^{-1}X^\top y$</span></div>
+</div>
+
+  <h3>Ridge Feature复制定理（笔记Page 19）</h3>
+  <div class="example">
+    <div class="example-label">Theorem — Ridge与特征复制</div>
+    <h4>把X复制k份作为k个独立特征，Ridge的β如何变化？</h4>
+    <div class="kformula">
+  <div class="kline"><span class="klbl">设定</span><span class="keq">原模型 $y=X\beta+\varepsilon$（Ridge $\lambda$）；复制：$y=X\beta_1+X\beta_2+\cdots+X\beta_k+\varepsilon$（Ridge $\lambda$）</span></div>
+  <div class="kline"><span class="klbl">对称性</span><span class="keq">$\beta_1=\cdots=\beta_k=b$，$\gamma=\sum\beta_j=kb$；$L(b)=\|y-X\gamma\|^2+(\lambda/k)\gamma^2$</span></div>
+  <div class="kline"><span class="klbl">等价</span><span class="keq">$\lambda\to\lambda/k$（正则化减弱）$\Rightarrow\gamma>\hat{\beta}_{ridge}$；$k\to\infty:\gamma\to X^\top Y/X^\top X=\hat{\beta}_{OLS}$</span></div>
+</div>
+    <div class="sol"><strong>Lasso的情况：</strong>Lasso会把k-1个β设为0，保留1个β（减少penalty），让Lasso极不稳定。所以Lasso对特征复制非常敏感。</div>
+  </div>
+
+  <h3>Newey-West HAC 完整推导（笔记Page 9）</h3>
+  <div class="kformula">
+  <div class="kline"><span class="klbl">设定</span><span class="keq">$y_t=x_t^\top\beta+u_t$；若存在异方差+自相关，真实方差：$\text{Var}(\hat{\beta})=(X^\top X)^{-1}\Omega(X^\top X)^{-1}$，$\Omega=\sum_{j=-\infty}^\infty\Gamma_j$</span></div>
+  <div class="kline"><span class="klbl">定义</span><span class="keq">$\phi_t=x_t u_t$，$\Gamma_j=E[\phi_t\phi_{t-j}^\top]$；$\hat{\Gamma}_j=\frac{1}{T}\sum_{t=j+1}^T\phi_t\phi_{t-j}^\top$</span></div>
+  <div class="kline"><span class="klbl">NW估计</span><span class="keq">$\hat{\Omega}_{NW}=\hat{\Gamma}_0+\sum_{j=1}^L w_j(\hat{\Gamma}_j+\hat{\Gamma}_j^\top)$，$w_j=1-\frac{j}{L+1}$（Bartlett核）</span></div>
+  <div class="kline"><span class="klbl">HAC方差</span><span class="keq">$\widehat{\text{Var}}_{NW}(\hat{\beta})=(X^\top X)^{-1}\hat{\Omega}_{NW}(X^\top X)^{-1}$（HAC consistent）</span></div>
+</div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     §23  EXAM QUESTIONS COLLECTION (Pages 25-33)
+══════════════════════════════════════════ -->
+<section class="section" id="s23">
+  <div class="section-title"><span class="sec-num">23</span><h2>笔记例题精选集</h2></div>
+
+  <p>来自笔记Pages 25–33的全部例题，完整保留推导过程。</p>
+
+  <div class="example">
+    <div class="example-label">Q1（Page 25）</div>
+    <h4>Y~X，X和Y iid正态，做线性回归，E[R²] = ？</h4>
+    <p>真实R²=0，但样本R²>0（模型用了n个自由度）。</p>
+    <div class="kformula">
+  <div class="kline"><span class="klbl">一元推导</span><span class="keq">$T=\dfrac{R\sqrt{n-2}}{\sqrt{1-R^2}}\sim t(n-2)\;\Rightarrow\;R^2=\dfrac{T^2}{T^2+n-2}$</span></div>
+  <div class="kline"><span class="klbl">分布</span><span class="keq">$T^2\sim F(1,n-2)$，由 $F\sim F(d_1,d_2)\Rightarrow\dfrac{d_1 F}{d_1 F+d_2}\sim\text{Beta}(d_1/2,d_2/2)$，故 $R^2\sim\text{Beta}(1/2,\frac{n-2}{2})$</span></div>
+  <div class="kline"><span class="klbl" style="color:var(--red)">一元结论</span><span class="keq">$E[R^2]=\dfrac{1/2}{1/2+(n-2)/2}=\dfrac{1}{n-1}$</span></div>
+  <div class="kline"><span class="klbl">多元（$\beta=0$）</span><span class="keq">$F=\dfrac{R^2/k}{(1-R^2)/(n-k-1)}\sim F(k,n-k-1)\;\Rightarrow\;R^2\sim\text{Beta}(k/2,\frac{n-k-1}{2})\;\Rightarrow\;E[R^2]=\dfrac{k}{n-1}$</span></div>1) ~ Beta(k/2, (n−k−1)/2)<br>
+      <span class="red">E[R²] = k/(n−1)</span>
+    </div>
+    <div class="sol"><strong>直觉：</strong>即使真实无关，样本内R²的期望随变量数k增加而增加，这正是为什么要用Adj R²和OOS R²来做模型选择。</div>
+  </div>
+
+  <div class="example">
+    <div class="example-label">Q2（Page 25-26）</div>
+    <h4>OLS vs Ridge vs Lasso：feature复制k份，β如何变化？</h4>
+    <div class="kformula">
+  <div class="kline"><span class="klbl">OLS</span><span class="keq">不可分辨各 $\beta_j$；$\gamma=\sum\beta_j=\beta_{ori}$，解不唯一</span></div>
+  <div class="kline"><span class="klbl">Ridge</span><span class="keq">$\beta_1=\cdots=\beta_k=b$，$\gamma=kb\;\Rightarrow\;\lambda\to\lambda/k$，$\gamma>\hat{\beta}_{ridge}$（正则化减弱）</span></div>
+  <div class="kline"><span class="klbl">Lasso</span><span class="keq">把 $k-1$ 个 $\beta$ 设为0，保留1个减少L1 penalty $\Rightarrow$ 结果极不稳定</span></div>
+</div>
+    <div class="sol"><strong>数据复制（行，Page 26）：</strong>OLS β不变；Ridge λ→λ/k×k²=λk（λ变大，正则化加强，β↓）；Lasso同理λ→2λ，shrink↑，更多β=0。</div>
+  </div>
+
+  <div class="example">
+    <div class="example-label">Q3（Page 26）</div>
+    <h4>y = β₀+β₁x+ε，β₁=1，R²=0.05。求 Var(y)/Var(x)=？</h4>
+    <div class="kformula">
+  <div class="kline"><span class="klbl">由β₁=1</span><span class="keq">$\text{Cov}(x,y)/\text{Var}(x)=1\;\Rightarrow\;\text{Cov}(x,y)=\text{Var}(x)$</span></div>
+  <div class="kline"><span class="klbl">代入R²</span><span class="keq">$R^2=\text{Cov}(x,y)^2/(\text{Var}(x)\cdot\text{Var}(y))=\text{Var}(x)/\text{Var}(y)=0.05$</span></div>
+  <div class="kline"><span class="klbl" style="color:var(--red)">结论</span><span class="keq">$\text{Var}(y)/\text{Var}(x)=20$</span></div>
+</div>
+    <div class="sol">β₁=1但R²仅0.05，说明y的大部分方差来自误差ε，而非x。系数显著≠R²高！</div>
+  </div>
+
+  <div class="example">
+    <div class="example-label">Q4（Page 26）</div>
+    <h4>y~x → β₁，x~y → β₂，哪个斜率更大？</h4>
+    <div class="kformula">
+  <div class="kline"><span class="klbl">计算</span><span class="keq">$\hat{\beta}_1=\text{Cov}(x,y)/\text{Var}(x)$，$\hat{\beta}_2=\text{Cov}(x,y)/\text{Var}(y)$</span></div>
+  <div class="kline"><span class="klbl" style="color:var(--red)">结论</span><span class="keq">$\hat{\beta}_1/\hat{\beta}_2=\text{Var}(y)/\text{Var}(x)=1/\rho^2\geq 1\;\Rightarrow\;\hat{\beta}_1\geq\hat{\beta}_2$</span></div>
+</div>
+    <div class="sol">两个回归斜率的几何均值 = √(β₁·β₂) = ρ（相关系数），两者乘积 = ρ²。</div>
+  </div>
+
+  <div class="example">
+    <div class="example-label">Q5（Page 26）</div>
+    <h4>如何检验一枚硬币是否公平？</h4>
+    <div class="kformula">
+  <div class="kline"><span class="klbl">假设</span><span class="keq">$H_0$：公平硬币，$X=\sum X_i$，$E[X]=N/2$，$\text{Var}(X)=N/4$，$\sigma=\sqrt{N}/2$</span></div>
+  <div class="kline"><span class="klbl">t统计量</span><span class="keq">$t=(X-N/2)/(\sqrt{N}/2)$；若 $|t|>1.96$（2.575），95%（99%）置信拒绝 $H_0$</span></div>
+</div>
+    <div class="sol">这是最简单的单比例z检验，等价于对伯努利随机变量做均值的t检验。</div>
+  </div>
+
+  <div class="example">
+    <div class="example-label">Q6（Page 26）</div>
+    <h4>系数显著但样本内R²低，如何理解？</h4>
+    <div class="sol">
+      <strong>答案（笔记原话）：</strong> coefficient means the trend（系数衡量的是趋势/方向）；R² represents the scatter around the line（R²衡量的是数据围绕趋势线的散布程度）。<br>
+      β₁显著 → x与y有稳定的线性关系（信噪比高）<br>
+      R²低 → 误差方差大（x只能解释y方差的一小部分）<br>
+      金融数据中极为常见：收益率有显著预测因子，但R²仍只有1-5%。
+    </div>
+  </div>
+
+  <div class="example">
+    <div class="example-label">Q7（Page 27）重要！</div>
+    <h4>Y~X，a. 使用样本A；b. 把A复制一份用合并样本。比较β̂和t。</h4>
+    <div class="kformula">
+  <div class="kline"><span class="klbl">β̂不变</span><span class="keq">$\hat{\beta}_{new}=[(2X^\top)(2X)]^{-1}(2X^\top)(2Y)=(X^\top X)^{-1}X^\top Y=\hat{\beta}\;\checkmark$</span></div>
+  <div class="kline"><span class="klbl">σ̂²</span><span class="keq">$RSS^*=2RSS$，$\hat{\sigma}^{*2}=2RSS/(2n-p)\approx\hat{\sigma}^2$（略小）</span></div>
+  <div class="kline"><span class="klbl">se变化</span><span class="keq">$\sum(x_i-\bar{x})^2_{new}=2S_{xx}\;\Rightarrow\;\text{se}(\hat{\beta}^*)\approx\text{se}(\hat{\beta})/\sqrt{2}$</span></div>
+  <div class="kline"><span class="klbl" style="color:var(--red)">结论</span><span class="keq">$\tilde{t}=t\cdot\sqrt{(2n-p)/(n-p)}\approx t\cdot\sqrt{2}$（增大 $\sqrt{2}$ 倍）；复制 $m$ 次：$t_m=t\cdot\sqrt{m}$</span></div>
+</div>
+    <div class="sol"><strong>⚠ 注意：</strong>复制数据 → t增大，看似更显著 → 这是虚假的！实际信息量没有增加。若沿列复制（特征复制）→ 完美多重共线性，根本无法做线性回归。</div>
+  </div>
+
+  <div class="example">
+    <div class="example-label">Q8（Page 27）</div>
+    <h4>Y~X，给X加额外噪声。β̂会怎样变？</h4>
+    <div class="kformula">
+  <div class="kline"><span class="klbl">加X噪声</span><span class="keq">$\hat{\beta}'=\dfrac{\text{Cov}(x^*+\eta,y)}{\text{Var}(x^*+\eta)}=\dfrac{\beta\sigma_x^2}{\sigma_x^2+\sigma_\eta^2}$</span></div>
+  <div class="kline"><span class="klbl" style="color:var(--red)">衰减偏差</span><span class="keq">$|\hat{\beta}'|<|\hat{\beta}|$（系数被低估）</span></div>
+  <div class="kline"><span class="klbl">加Y噪声</span><span class="keq">$\hat{\beta}''=\text{Cov}(X,y+\eta)/\text{Var}(X)=\hat{\beta}$（不变，只影响se）</span></div>
+</div>
+    <div class="sol">向X加噪声 → 系数被低估（attenuation bias）；向Y加噪声 → 系数不变，只是se增大。</div>
+  </div>
+
+  <div class="example">
+    <div class="example-label">Q9（Page 28）</div>
+    <h4>Y~10X vs Y~X，R²有何区别？</h4>
+    <div class="kformula">
+  <div class="kline"><span class="klbl">计算</span><span class="keq">$R^2=\dfrac{\text{Cov}(10x,y)^2}{\text{Var}(10x)\text{Var}(y)}=\dfrac{100\text{Cov}(x,y)^2}{100\text{Var}(x)\text{Var}(y)}=\rho^2$</span></div>
+  <div class="kline"><span class="klbl" style="color:var(--red)">结论</span><span class="keq">$R^2$ 是尺度不变的（scale invariant），只取决于相关性，与变量的量纲无关</span></div>
+</div>
+  </div>
+
+  <div class="example">
+    <div class="example-label">Q10（Page 28）重要！</div>
+    <h4>已知 Corr(Y,X₁)>0，Corr(Y,X₂)=0，Corr(X₁,X₂)>0<br>① y = aX₁+ε；② y = b₁X₁+b₂X₂+ε，a与b₁的关系？</h4>
+    <div class="kformula">
+  <div class="kline"><span class="klbl">求b₂</span><span class="keq">$\text{Cov}(Y,X_2)=0\;\Rightarrow\;b_1\text{Cov}(X_1,X_2)+b_2\text{Var}(X_2)=0\;\Rightarrow\;b_2=-b_1\cdot\dfrac{\text{Cov}(X_1,X_2)}{\text{Var}(X_2)}<0$</span></div>
+  <div class="kline"><span class="klbl">求a</span><span class="keq">$a=\dfrac{\text{Cov}(Y,X_1)}{\text{Var}(X_1)}=b_1+b_2\cdot\dfrac{\text{Cov}(X_1,X_2)}{\text{Var}(X_1)}=b_1(1-\rho_{12}^2)<b_1$</span></div>
+  <div class="kline"><span class="klbl" style="color:var(--red)">结论</span><span class="keq">$b_2<0<a<b_1$</span></div>
+</div>
+    <div class="sol"><strong>直觉：</strong>OVB（省略X₂）让a高估了b₁，因为X₁部分"代替"了X₂的作用。多元回归中b₂为负（压制X₁的影响），使b₁>a。</div>
+  </div>
+
+  <div class="example">
+    <div class="example-label">Q11（Page 28）</div>
+    <h4>y=a₁X₁+a₂X₂+ε vs y=b₁X₁+ε₁, ε₁=b₂X₂+ε₂，若a₁=b₁, a₂=b₂？</h4>
+    <div class="kformula">
+  <div class="kline"><span class="klbl">FWL公式</span><span class="keq">$a_1=\dfrac{\text{Cov}(Y,X_1)-\text{Cov}(Y,X_2)\text{Cov}(X_1,X_2)/\text{Var}(X_2)}{\text{Var}(X_1)-\text{Cov}(X_1,X_2)^2/\text{Var}(X_2)}$</span></div>
+  <div class="kline"><span class="klbl">独立时</span><span class="keq">若 $\text{Cov}(X_1,X_2)=0$：$a_1=b_1,\;a_2=b_2\;\checkmark$</span></div>
+  <div class="kline"><span class="klbl">相关时</span><span class="keq">$\text{Cov}(X_1,X_2)\neq 0$：$a_1\neq b_1$（OVB）</span></div>
+</div>
+  </div>
+
+  <div class="example">
+    <div class="example-label">Q12（Page 28）</div>
+    <h4>应该总是选R²更高的模型吗？</h4>
+    <div class="sol">
+      <strong>不应该。</strong>需要考虑：<br>
+      ① Adjusted R² = 1 − (1−R²)·(n−1)/(n−p−1)（惩罚额外的X变量）<br>
+      ② OOS R²（样本外，防止过拟合）<br>
+      ③ AIC = 2k − 2ln(L)，k=变量数，L=最大似然估计值（好的预测）<br>
+      ④ BIC = ln(n)·k − 2ln(L)，n=样本量（好的解释，更严格）<br>
+      AIC找高精度预测模型；BIC找真实简单模型（更倾向稀疏）
+    </div>
+  </div>
+
+  <div class="example">
+    <div class="example-label">Q13（Page 29）</div>
+    <h4>y = aX₁+ε，X₂ = 100X₁，y = bX₂+ε，a与b的关系？</h4>
+    <div class="kformula">
+  <div class="kline"><span class="klbl">计算</span><span class="keq">$b=\dfrac{\text{Cov}(100X_1,y)}{\text{Var}(100X_1)}=\dfrac{100\text{Cov}(X_1,y)}{100^2\text{Var}(X_1)}=\dfrac{a}{100}$</span></div>
+  <div class="kline"><span class="klbl" style="color:var(--red)">结论</span><span class="keq">$a=100b$</span></div>
+</div>
+    <div class="sol">系数与变量单位成反比。X₂=100X₁时，一单位X₂的效应 = a/100 = b，这正是单位一致性。</div>
+  </div>
+
+  <div class="example">
+    <div class="example-label">Q14（Page 29）</div>
+    <h4>CI(y) 与 PI(y) 的关系？</h4>
+    <div class="kformula">
+  <div class="kline"><span class="klbl">CI（均值）</span><span class="keq">$\hat{y}_0\pm t^{\alpha/2}_{n-p}\cdot\hat{\sigma}\cdot\sqrt{\dfrac{1}{n}+\dfrac{(x_0-\bar{x})^2}{\sum(x_i-\bar{x})^2}}$</span></div>
+  <div class="kline"><span class="klbl">PI（新值）</span><span class="keq">$\hat{y}_0\pm t^{\alpha/2}_{n-p}\cdot\hat{\sigma}\cdot\sqrt{1+\dfrac{1}{n}+\dfrac{(x_0-\bar{x})^2}{\sum(x_i-\bar{x})^2}}$</span></div>
+  <div class="kline"><span class="klbl">比较</span><span class="keq">$PI>CI$；$n\to\infty$：CI宽度$	o 0$，PI宽度仍有 $\hat{\sigma}$ 下限</span></div>
+</div>
+  </div>
+
+  <div class="example">
+    <div class="example-label">Q15（Page 29）</div>
+    <h4>y = ax+ε，x = by+ε，a=1，b=？</h4>
+    <div class="kformula">
+  <div class="kline"><span class="klbl">由a=1</span><span class="keq">$\text{Cov}(X,Y)/\text{Var}(X)=1\;\Rightarrow\;\text{Cov}(X,Y)=\text{Var}(X)$</span></div>
+  <div class="kline"><span class="klbl">求b</span><span class="keq">$b=\text{Cov}(X,Y)/\text{Var}(Y)=\text{Var}(X)/\text{Var}(Y)=\rho^2\in[0,1]$</span></div>
+</div>
+    <div class="sol">两个回归方向的斜率乘积 = ρ²（相关系数的平方），这正是R²的含义。两者相等（a=b）当且仅当ρ=1（完全相关）。</div>
+  </div>
+
+  <div class="example">
+    <div class="example-label">Q16（Page 30）贝叶斯推断</div>
+    <h4>已知 Y = X+ε，X~N(0,1)，ε~N(0,σ²)，观测到Y，求X的估计</h4>
+    <div class="kformula">
+  <div class="kline"><span class="klbl">后验</span><span class="keq">$P(X|Y)\propto P(Y|X)\cdot P(X)\propto\exp\!\left[-\frac{(y-x)^2}{2\sigma^2}-\frac{x^2}{2}\right]$</span></div>
+  <div class="kline"><span class="klbl">化简</span><span class="keq">$\propto\exp\!\left[-\frac{1+\sigma^2}{2\sigma^2}\left(x-\frac{y}{1+\sigma^2}\right)^2\right]$</span></div>
+  <div class="kline"><span class="klbl" style="color:var(--red)">结论</span><span class="keq">$X|Y\sim N\!\left(\dfrac{Y}{1+\sigma^2},\,\dfrac{\sigma^2}{1+\sigma^2}\right)$；$E[X|Y]=\dfrac{Y}{1+\sigma^2}$（贝叶斯收缩，即Ridge的贝叶斯解释）</span></div>
+</div>
+    <div class="sol"><strong>直觉：</strong>当σ²→0（无测量误差）：E[X|Y]→Y；当σ²→∞（纯噪声）：E[X|Y]→0（先验均值）。这正是Ridge regression的贝叶斯解释！</div>
+  </div>
+
+  <div class="example">
+    <div class="example-label">Q17（Page 31）</div>
+    <h4>回归 Y~X，已知X和Y在[0,1]上iid均匀，且X+Y&gt;1，求β̂</h4>
+    <div class="kformula">
+  <div class="kline"><span class="klbl">设定</span><span class="keq">$X,Y\sim\text{Uniform}[0,1]$独立，条件 $X+Y>1$，$P(X+Y>1)=1/2$</span></div>
+  <div class="kline"><span class="klbl">条件期望</span><span class="keq">$E[X|X+Y>1]=\dfrac{\int_0^1\int_{1-x}^1 x\,dy\,dx}{1/2}=\dfrac{1/3}{1/2}=\dfrac{2}{3}$，同理 $E[Y|X+Y>1]=2/3$</span></div>
+  <div class="kline"><span class="klbl">E[XY]</span><span class="keq">$E[XY|X+Y>1]=\dfrac{\int_0^1 x(1-(1-x)^2)/2\,dx}{1/2}=\dfrac{5/24}{1/2}=\dfrac{5}{12}$</span></div>
+  <div class="kline"><span class="klbl" style="color:var(--red)">结论</span><span class="keq">$\hat{\beta}=\dfrac{E[XY]-E[X]E[Y]}{E[X^2]-E[X]^2}=\dfrac{5/12-4/9}{1/2-4/9}=-\dfrac{1}{2}$（负相关：约束下 $X$ 大则 $Y$ 小）</span></div> / (1/2 − 4/9) = (−35/36) / (1/18) = <span class="red">−1/2</span>
+    </div>
+    <div class="sol">负相关：在X+Y>1的条件下，X大则Y倾向于小（受约束影响），因此斜率为负。</div>
+  </div>
+
+  <div class="example">
+    <div class="example-label">Q18（Page 31）</div>
+    <h4>线性回归中，x复制，y改为[y; 0]，β̂和t-stat会怎样变化？</h4>
+    <div class="kformula">
+  <div class="kline"><span class="klbl">结论</span><span class="keq">$\hat{\beta}_{new}=(1/2)\hat{\beta}_{ori}$；$RSS^*=RSS+\frac{1}{2}\|\hat{y}\|^2$（增大），$\text{se}(\hat{\beta})\uparrow$，$t\downarrow$</span></div>
+</div>
+    <div class="sol">附加了n个(x, 0)观测 → 把y向零拉，系数减半；se增大；t统计量减小。</div>
+  </div>
+
+  <div class="example">
+    <div class="example-label">Q19（Page 32）重要！</div>
+    <h4>x,y iid，now xₜ* = (xₜ+xₜ₋₁)/2（滑动平均），y不变，新β̂和t-stat？</h4>
+    <div class="kformula">
+  <div class="kline"><span class="klbl">β̂不变</span><span class="keq">$\hat{\beta}'=\dfrac{\text{Cov}(x_t^*,y_t)}{\text{Var}(x_t^*)}=\dfrac{\frac{1}{2}\text{Cov}(x_t,y_t)}{\frac{1}{2}\text{Var}(x_t)}=\hat{\beta}\;\checkmark$</span></div>
+  <div class="kline"><span class="klbl">t减小</span><span class="keq">$\text{se}^2(\hat{\beta}')=\text{se}^2(\hat{\beta})\cdot(\hat{\beta}^2\sigma_x^2/\sigma^2+2)>\text{se}^2(\hat{\beta})$</span></div>
+  <div class="kline"><span class="klbl" style="color:var(--red)">结论</span><span class="keq">$\tilde{t}=\dfrac{t}{\sqrt{2+\hat{\beta}^2\sigma_x^2/\sigma^2}}<t$（滑动平均引入自相关，se增大，t减小；应用NW-SE）</span></div>n class="red">t̃ = β̂'/se(β̂') = t / √(2 + β̂²σ²x/σ²)  &lt; t（减小）</span>
+    </div>
+    <div class="sol">滑动平均引入了自相关（Corr(xₜ*, xₜ₊₁*) = 1/2），导致残差自相关，se增大，t减小——应该用Newey-West稳健标准误。</div>
+  </div>
+
+  <div class="example">
+    <div class="example-label">Q20（Page 32-33）FWL深化</div>
+    <h4>y~Xβ+βz·z+ε，同时 y~Xβ+r，r=cz+u，证明 β̂z 与 ĉ 的关系</h4>
+    <div class="kformula">
+  <div class="kline"><span class="klbl">FWL</span><span class="keq">$\hat{\beta}_z=(z^\top M_x z)^{-1}z^\top M_x y$；残差回归：$\hat{c}=(z^\top z)^{-1}z^\top M_x y$</span></div>
+  <div class="kline"><span class="klbl">关系</span><span class="keq">$\hat{c}/\hat{\beta}_z=\|M_x z\|^2/\|z\|^2\in[0,1]$；$z\perp C(X)\Rightarrow\hat{c}=\hat{\beta}_z$；$z\in C(X)\Rightarrow\hat{c}=0\neq\hat{\beta}_z$</span></div>
+</div>
+    <div class="sol"><strong>金融应用：</strong>z是某因子，X是已知控制变量。"残差因子定价"（先做r̂=Mxy，再回归r̂~z）与完整回归得到的βz不相等（除非z与X正交）。常见错误！</div>
+  </div>
+
+  <div class="example">
+    <div class="example-label">Q21（Page 33）</div>
+    <h4>n对(yᵢ,xᵢ)，t-stat为t₁；把每对做平均得(ȳᵢ',x̄ᵢ')，t-stat为t₂，比较？</h4>
+    <div class="kformula">
+  <div class="kline"><span class="klbl">β̂不变</span><span class="keq">$\hat{\beta}'=\dfrac{\text{Cov}(x_t',y_t')}{\text{Var}(x_t')}=\dfrac{\frac{1}{2}\text{Cov}(X,Y)}{\frac{1}{2}\text{Var}(X)}=\hat{\beta}\;\checkmark$</span></div>
+  <div class="kline"><span class="klbl">t近似不变</span><span class="keq">$\sigma^2$ 和 $\text{Var}(X)$ 按相同比例缩放，仍用旧方法计算 $\text{se}$ 时 $t$ 近乎不变</span></div>
+</div>
+  </div>
+
+  <div class="example">
+    <div class="example-label">Q22（Page 28）模型比较</div>
+    <h4>y=ax₁+ε vs y=b₁x₁+b₂x₂+ε，若b₂=0，则b₁=a？</h4>
+    <div class="kformula">
+  <div class="kline"><span class="klbl">证明</span><span class="keq">$b_2=0\;\Rightarrow\;\min\sum(y-b_1x_1-b_2x_2)^2=\min\sum(y-b_1x_1)^2\;\Rightarrow\;b_1=a\;\checkmark$</span></div>
+</div>
+    <div class="sol">FWL推论：若X₂对y无独立影响（β₂=0），多元回归中X₁的系数等于单元回归中的系数。这只在β₂=0时成立，β₂=0≠Corr(X₁,X₂)=0！</div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════
+     §24  SIMPLE LINEAR REGRESSION — WITH INTERCEPT
+     Source: Simple_Linear_Regression.pdf Pages 1–3
+══════════════════════════════════════════ -->
+<section class="section" id="s24">
+  <div class="section-title"><span class="sec-num">24</span><h2>简单线性回归——带截距项完整推导</h2></div>
+
+  <p>来自笔记 <em>Simple_Linear_Regression.pdf</em> 的完整、系统推导，使用 KaTeX 渲染所有公式。</p>
+
+  <h3>模型设定</h3>
+  <div class="kformula">
+    <div class="kline"><span class="klbl">模型</span><span class="keq">$y_i = \alpha + \beta x_i + \varepsilon_i, \quad i=1,2,\ldots,n$</span></div>
+    <div class="kline"><span class="klbl">假设</span><span class="keq">$E[\varepsilon_i \mid X_i]=0, \quad \text{Var}(\varepsilon_i \mid X_i)=\sigma^2, \quad \varepsilon_i \sim N(0,\sigma^2)$</span></div>
+    <div class="kline"><span class="klbl">定义</span><span class="keq">$\bar{x}=\dfrac{1}{n}\sum_{i=1}^n x_i, \quad \bar{y}=\dfrac{1}{n}\sum_{i=1}^n y_i$</span></div>
+    <div class="kline"><span class="klbl">定义</span><span class="keq">$S_{xx}=\sum_{i=1}^n(x_i-\bar{x})^2, \quad S_{xy}=\sum_{i=1}^n(x_i-\bar{x})(y_i-\bar{y})$</span></div>
+  </div>
+
+  <h3>OLS 推导——一阶条件</h3>
+  <div class="kformula">
+    <div class="kline"><span class="klbl">目标</span><span class="keq">$\min_{\alpha,\beta}\; Q(\alpha,\beta)=\sum_{i=1}^n (y_i-\alpha-\beta x_i)^2$</span></div>
+    <div class="kline"><span class="klbl">FOC ①</span><span class="keq">$\dfrac{\partial Q}{\partial \alpha}=-2\sum(y_i-\alpha-\beta x_i)=0 \;\Rightarrow\; \sum y_i = n\alpha + \beta\sum x_i$</span></div>
+    <div class="knote">$\Rightarrow\; \hat{\alpha}=\bar{y}-\hat{\beta}\bar{x}$ ——回归线必过点 $(\bar{x},\,\bar{y})$</div>
+    <div class="kline"><span class="klbl">FOC ②</span><span class="keq">$\dfrac{\partial Q}{\partial \beta}=-2\sum x_i(y_i-\alpha-\beta x_i)=0 \;\Rightarrow\; \sum x_i y_i - \alpha\sum x_i - \beta\sum x_i^2=0$</span></div>
+    <div class="knote">代入 $\hat{\alpha}=\bar{y}-\hat{\beta}\bar{x}$：</div>
+    <div class="keq" style="padding-left:84px; margin:6px 0">$\sum x_i y_i - n\bar{x}\bar{y} + \hat{\beta}n\bar{x}^2 - \hat{\beta}\sum x_i^2 = 0$</div>
+    <div class="keq" style="padding-left:84px; margin:6px 0">$\hat{\beta}\!\left(\sum x_i^2 - n\bar{x}^2\right) = \sum x_i y_i - n\bar{x}\bar{y}$</div>
+    <div class="knote">注意：$\sum x_i^2 - n\bar{x}^2 = \sum(x_i-\bar{x})^2 = S_{xx}$；$\sum x_i y_i - n\bar{x}\bar{y}=\sum(x_i-\bar{x})(y_i-\bar{y})=S_{xy}$</div>
+    <div class="kline"><span class="klbl" style="color:var(--red)">结论</span><span class="keq">$$\hat{\beta}=\frac{S_{xy}}{S_{xx}}=\frac{\sum_{i=1}^n(x_i-\bar{x})(y_i-\bar{y})}{\sum_{i=1}^n(x_i-\bar{x})^2} = \frac{\widehat{\text{Cov}}(x,y)}{\widehat{\text{Var}}(x)}, \qquad \hat{\alpha}=\bar{y}-\hat{\beta}\bar{x}$$</span></div>
+  </div>
+
+  <h3>残差的三条性质</h3>
+  <div class="kformula">
+    <div class="kline"><span class="klbl">定义</span><span class="keq">$\hat{\varepsilon}_i = y_i - \hat{y}_i = y_i - \hat{\alpha} - \hat{\beta}x_i$</span></div>
+    <div class="kline"><span class="klbl">性质①</span><span class="keq">$\sum_{i=1}^n\hat{\varepsilon}_i = 0$ &ensp;（由 $\alpha$ 的一阶条件）</span></div>
+    <div class="kline"><span class="klbl">性质②</span><span class="keq">$\sum_{i=1}^n x_i\hat{\varepsilon}_i = 0$ &ensp;（由 $\beta$ 的一阶条件）</span></div>
+    <div class="kline"><span class="klbl">性质③</span><span class="keq">$\bar{\hat{y}} = \bar{y}$，即 $\dfrac{1}{n}\sum\hat{y}_i = \bar{y}$</span></div>
+    <div class="knote">证明③：$\hat{y}_i = \hat{\alpha}+\hat{\beta}x_i \Rightarrow \bar{\hat{y}} = \hat{\alpha}+\hat{\beta}\bar{x} = (\bar{y}-\hat{\beta}\bar{x})+\hat{\beta}\bar{x} = \bar{y}$ ✓</div>
+  </div>
+
+  <h3>$\hat{\beta}$ 的无偏性与方差</h3>
+  <div class="kformula">
+    <div class="kline"><span class="klbl">关键恒等式</span><span class="keq">$\sum(x_i-\bar{x})y_i = \sum(x_i-\bar{x})(y_i-\bar{y}) = S_{xy}$</span></div>
+    <div class="knote">（后一项 $-\bar{y}\sum(x_i-\bar{x})=0$，故两式相等）</div>
+    <div class="kline"><span class="klbl">展开</span><span class="keq">$\hat{\beta}=\dfrac{\sum(x_i-\bar{x})y_i}{S_{xx}} = \dfrac{\sum(x_i-\bar{x})(\alpha+\beta x_i+\varepsilon_i)}{S_{xx}}$</span></div>
+    <div class="knote">由于 $\sum(x_i-\bar{x})\alpha=0$，$\sum(x_i-\bar{x})\beta x_i = \beta S_{xx}$：</div>
+    <div class="kline"><span class="klbl"></span><span class="keq">$\hat{\beta} = \beta + \dfrac{\sum(x_i-\bar{x})\,\varepsilon_i}{S_{xx}}$</span></div>
+    <div class="kline"><span class="klbl">无偏性</span><span class="keq">$E[\hat{\beta}\mid X] = \beta + \dfrac{\sum(x_i-\bar{x})\,E[\varepsilon_i\mid X]}{S_{xx}} = \beta$ ✓</span></div>
+    <div class="knote" style="color:var(--red)">关键：用到 $E[\varepsilon_i\mid X]=0$，而非 $\sum\hat{\varepsilon}_i=0$（样本中大概率成立，但不是假设）</div>
+    <div class="kline"><span class="klbl">方差</span><span class="keq">$\text{Var}(\hat{\beta}\mid X)=\text{Var}\!\left(\dfrac{\sum(x_i-\bar{x})\varepsilon_i}{S_{xx}}\bigg|X\right) = \dfrac{1}{S_{xx}^2}\sum(x_i-\bar{x})^2\sigma^2 = \dfrac{\sigma^2}{S_{xx}}$</span></div>
+    <div class="kline"><span class="klbl">结论</span><span class="keq">$$\boxed{\text{Var}(\hat{\beta}\mid X)=\frac{\sigma^2}{S_{xx}}}, \qquad \text{se}(\hat{\beta})=\sqrt{\frac{\sigma^2}{S_{xx}}}$$但需要估计 $\sigma$</span></div>
+  </div>
+
+  <h3>$\sigma^2$ 的无偏估计：$s^2 = RSS/(n-2)$</h3>
+  <div class="kformula">
+    <div class="kline"><span class="klbl">定义</span><span class="keq">$RSS = \sum_{i=1}^n\hat{\varepsilon}_i^2, \quad s^2=\dfrac{RSS}{n-2}$ &ensp;（误差方差的无偏估计，自由度 $n-2$）</span></div>
+    <div class="kline"><span class="klbl">结论</span><span class="keq">$$\widehat{\text{se}}(\hat{\beta}) = \sqrt{\frac{s^2}{S_{xx}}} = \sqrt{\frac{RSS/(n-2)}{S_{xx}}} = \sqrt{\frac{\sum\hat{\varepsilon}_i^2}{(n-2)\sum(x_i-\bar{x})^2}}$$</span></div>
+  </div>
+
+  <h3>误差分解：TSS = ESS + RSS</h3>
+  <div class="kformula">
+    <div class="kline"><span class="klbl">定义</span><span class="keq">$TSS=\sum(y_i-\bar{y})^2=S_{yy}, \quad RSS=\sum(y_i-\hat{y}_i)^2=\sum\hat{\varepsilon}_i^2, \quad ESS=\sum(\hat{y}_i-\bar{y})^2$</span></div>
+    <div class="kline"><span class="klbl">证明</span><span class="keq">$y_i-\bar{y} = (y_i-\hat{y}_i)+(\hat{y}_i-\bar{y}) = \hat{\varepsilon}_i + (\hat{y}_i-\bar{y})$</span></div>
+    <div class="keq" style="padding-left:84px; margin:6px 0">$\sum(y_i-\bar{y})^2 = \sum\hat{\varepsilon}_i^2 + \sum(\hat{y}_i-\bar{y})^2 + 2\sum\hat{\varepsilon}_i(\hat{y}_i-\bar{y})$</div>
+    <div class="kline"><span class="klbl">关键</span><span class="keq">$\sum\hat{\varepsilon}_i(\hat{y}_i-\bar{y}) = \sum\hat{\varepsilon}_i\cdot\hat{\beta}(x_i-\bar{x}) = \hat{\beta}\sum x_i\hat{\varepsilon}_i - \hat{\beta}\bar{x}\sum\hat{\varepsilon}_i = 0$</span></div>
+    <div class="knote">（利用性质①②：$\sum\hat{\varepsilon}_i=0$，$\sum x_i\hat{\varepsilon}_i=0$）</div>
+    <div class="kline"><span class="klbl" style="color:var(--red)">结论</span><span class="keq">$$TSS = RSS + ESS$$</span></div>
+    <div class="knote" style="color:var(--red)">直觉：OLS是投影，$\hat{\varepsilon}_i\perp x_i$，$\hat{\varepsilon}_i\perp$常数项 → $\hat{\varepsilon}_i\perp$X的线性空间，而$\hat{y}_i-\bar{y}$是X的线性函数，故正交。<br>注意：若 no intercept，则 $\sum\hat{\varepsilon}_i=0$ 不一定成立，此分解不一定成立。</div>
+  </div>
+
+  <h3>$R^2$ 与样本相关系数</h3>
+  <div class="kformula">
+    <div class="kline"><span class="klbl">定义</span><span class="keq">$R^2 = \dfrac{ESS}{TSS} = 1 - \dfrac{RSS}{TSS}$ &ensp; y的样本波动有多大比例被模型解释了</span></div>
+    <div class="kline"><span class="klbl">样本相关</span><span class="keq">$r = \dfrac{\widehat{\text{Cov}}(x,y)}{\hat{\sigma}_x\hat{\sigma}_y} = \dfrac{\frac{1}{n}\sum(x_i-\bar{x})(y_i-\bar{y})}{\sqrt{\frac{1}{n}\sum(x_i-\bar{x})^2}\cdot\sqrt{\frac{1}{n}\sum(y_i-\bar{y})^2}} = \dfrac{S_{xy}}{\sqrt{S_{xx}S_{yy}}}$</span></div>
+    <div class="kline"><span class="klbl">推导</span><span class="keq">$\hat{y}_i-\bar{y} = \hat{\beta}(x_i-\bar{x})$ &ensp;（利用 $\hat{\alpha}=\bar{y}-\hat{\beta}\bar{x}$）</span></div>
+    <div class="keq" style="padding-left:84px; margin:4px 0">$ESS=\sum(\hat{y}_i-\bar{y})^2=\hat{\beta}^2 S_{xx} = \dfrac{S_{xy}^2}{S_{xx}}$</div>
+    <div class="keq" style="padding-left:84px; margin:4px 0">$R^2 = \dfrac{ESS}{TSS} = \dfrac{S_{xy}^2/S_{xx}}{S_{yy}} = \dfrac{S_{xy}^2}{S_{xx}S_{yy}} = r^2$</div>
+    <div class="kline"><span class="klbl" style="color:var(--red)">结论</span><span class="keq">$$\boxed{R^2 = r^2}$$</span></div>
+    <div class="kline"><span class="klbl">系数形式</span><span class="keq">$\hat{\beta} = \dfrac{S_{xy}}{S_{xx}} = \dfrac{S_{xy}}{\sqrt{S_{xx}S_{yy}}}\cdot\dfrac{\sqrt{S_{yy}}}{\sqrt{S_{xx}}} = r\cdot\dfrac{S_y}{S_x}$</span></div>
+    <div class="knote">$S_y,\,S_x$ 分别为样本标准差，故 $\hat{\beta} = r\cdot S_y/S_x$</div>
+  </div>
+
+  <h3>t 统计量的显式推导</h3>
+  <div class="kformula">
+    <div class="kline"><span class="klbl">t统计</span><span class="keq">$t = \dfrac{\hat{\beta}-\beta_0}{\widehat{\text{se}}(\hat{\beta})}, \quad$ 令 $\beta_0=0$：$\quad t=\dfrac{\hat{\beta}}{\widehat{\text{se}}(\hat{\beta})}\sim t_{n-2}$</span></div>
+    <div class="kline"><span class="klbl">代入</span><span class="keq">$\hat{\beta}=r\sqrt{S_{yy}/S_{xx}}, \quad \widehat{\text{se}}(\hat{\beta})=\sqrt{\dfrac{(1-r^2)S_{yy}}{(n-2)S_{xx}}}$</span></div>
+    <div class="knote">（由 $RSS = TSS-ESS = S_{yy} - r^2 S_{yy} = (1-r^2)S_{yy}$，$s^2=RSS/(n-2)$）</div>
+    <div class="kline"><span class="klbl"></span><span class="keq">$t = r\sqrt{\dfrac{S_{yy}}{S_{xx}}}\cdot\sqrt{\dfrac{(n-2)S_{xx}}{(1-r^2)S_{yy}}} = r\sqrt{\dfrac{n-2}{1-r^2}}$</span></div>
+    <div class="kline"><span class="klbl" style="color:var(--red)">结论</span><span class="keq">$$\boxed{t = r\sqrt{\frac{n-2}{1-r^2}}}, \qquad t^2 = \frac{r^2(n-2)}{1-r^2} = \frac{R^2(n-2)}{1-R^2}$$</span></div>
+    <div class="kline"><span class="klbl">反推</span><span class="keq">$$R^2 = \frac{t^2}{t^2+n-2}$$</span></div>
+  </div>
+
+  <h3>Adjusted $R^2$ 与 F 统计量</h3>
+  <div class="kformula">
+    <div class="kline"><span class="klbl">Adj R²</span><span class="keq">$\bar{R}^2 = 1 - \dfrac{RSS/(n-2)}{TSS/(n-1)}$，自变量个数1，总参数个数2</span></div>
+    <div class="kline"><span class="klbl">F统计量</span><span class="keq">$F = t^2$ &ensp;（简单回归中 F 检验等价于 t 检验的平方）</span></div>
+    <div class="kline"><span class="klbl">一般F</span><span class="keq">$F = \dfrac{R^2/k}{(1-R^2)/(n-k-1)} \sim F(k,\,n-k-1)$ &ensp; ($k$=自变量个数)</span></div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     §25  SIMPLE LINEAR REGRESSION — WITHOUT INTERCEPT
+     Source: Simple_Linear_Regression.pdf Page 4
+══════════════════════════════════════════ -->
+<section class="section" id="s25">
+  <div class="section-title"><span class="sec-num">25</span><h2>简单线性回归——无截距项完整推导</h2></div>
+
+  <h3>模型与 OLS 估计</h3>
+  <div class="kformula">
+    <div class="kline"><span class="klbl">模型</span><span class="keq">$y_i = \beta x_i + \varepsilon_i$</span></div>
+    <div class="kline"><span class="klbl">目标</span><span class="keq">$\min_{\beta}\; Q(\beta)=\sum_{i=1}^n(y_i-\beta x_i)^2$</span></div>
+    <div class="kline"><span class="klbl">FOC</span><span class="keq">$\dfrac{\partial Q}{\partial \beta}=-2\sum x_i(y_i-\beta x_i)=0 \;\Rightarrow\; \sum x_i y_i - \beta\sum x_i^2=0$</span></div>
+    <div class="kline"><span class="klbl" style="color:var(--red)">结论</span><span class="keq">$$\hat{\beta}=\frac{\sum x_i y_i}{\sum x_i^2} \quad \text{（无中心化！）}$$</span></div>
+  </div>
+
+  <h3>$\hat{\beta}$ 的无偏性与方差</h3>
+  <div class="kformula">
+    <div class="kline"><span class="klbl">展开</span><span class="keq">$\hat{\beta}=\dfrac{\sum x_i y_i}{\sum x_i^2}=\dfrac{\sum x_i(\beta x_i+\varepsilon_i)}{\sum x_i^2}=\beta+\dfrac{\sum x_i\varepsilon_i}{\sum x_i^2}$</span></div>
+    <div class="kline"><span class="klbl">无偏性</span><span class="keq">$E[\hat{\beta}\mid X]=\beta+\dfrac{\sum x_i\,E[\varepsilon_i\mid X]}{\sum x_i^2}=\beta$ ✓ &ensp;（用到 $E[x_i\varepsilon_i\mid X]=0$）</span></div>
+    <div class="kline"><span class="klbl">方差</span><span class="keq">$\text{Var}(\hat{\beta}\mid X)=\text{Var}\!\left(\dfrac{\sum x_i\varepsilon_i}{\sum x_i^2}\bigg|X\right)=\dfrac{1}{(\sum x_i^2)^2}\cdot\sum x_i^2\cdot\sigma^2=\dfrac{\sigma^2}{\sum x_i^2}$</span></div>
+    <div class="kline"><span class="klbl">结论</span><span class="keq">$$\text{Var}(\hat{\beta}\mid X)=\frac{\sigma^2}{\sum x_i^2}, \qquad \text{se}(\hat{\beta})=\frac{\sigma}{\sqrt{\sum x_i^2}}$$</span></div>
+    <div class="kline"><span class="klbl">估计</span><span class="keq">$\hat{\varepsilon}_i=y_i-\hat{\beta}x_i,\quad s^2=\dfrac{RSS}{n-1}$（无偏，仅损失1个自由度）</span></div>
+    <div class="kline"><span class="klbl"></span><span class="keq">$$\widehat{\text{se}}(\hat{\beta})=\sqrt{\frac{s^2}{\sum x_i^2}}=\sqrt{\frac{RSS}{(n-1)\sum x_i^2}}$$</span></div>
+  </div>
+
+  <h3>无截距时的残差性质</h3>
+  <div class="kformula">
+    <div class="kline"><span class="klbl">仍成立</span><span class="keq">$\sum x_i\hat{\varepsilon}_i = 0$ &ensp;（由 $\beta$ 一阶条件）</span></div>
+    <div class="kline"><span class="klbl">不再成立</span><span class="keq">$\sum\hat{\varepsilon}_i \neq 0$ &ensp;（一般情形）</span></div>
+    <div class="kline"><span class="klbl">R² 需修改</span><span class="keq">原 $R^2 = 1-\dfrac{RSS}{TSS}=1-\dfrac{RSS}{\sum(y_i-\bar{y})^2}$ 不适用（分解不成立）</span></div>
+    <div class="kline"><span class="klbl">Uncentered</span><span class="keq">$$\bar{R}^2_0 = 1-\frac{\sum(y_i-\hat{y}_i)^2}{\sum y_i^2}$$ 不再考虑均值影响，在和原点比较</span></div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     §26  COMPARISON TABLE: WITH vs WITHOUT INTERCEPT
+     Source: Simple_Linear_Regression.pdf Page 5
+══════════════════════════════════════════ -->
+<section class="section" id="s26">
+  <div class="section-title"><span class="sec-num">26</span><h2>有截距 vs 无截距——完整对比</h2></div>
+
+  <p>笔记 Page 5 的完整比较表，所有公式用 KaTeX 渲染。</p>
+
+  <div class="compare-grid">
+    <!-- Header row -->
+    <div class="cg-cell header">性质</div>
+    <div class="cg-cell header">有截距 &ensp; $y_i=\alpha+\beta x_i+\varepsilon_i$</div>
+    <div class="cg-cell header">无截距 &ensp; $y_i=\beta x_i+\varepsilon_i$</div>
+
+    <div class="cg-cell row-label alt">$\hat{\beta}$</div>
+    <div class="cg-cell alt">$\hat{\beta}=\dfrac{S_{xy}}{S_{xx}}=\dfrac{\sum(x_i-\bar{x})(y_i-\bar{y})}{\sum(x_i-\bar{x})^2}$</div>
+    <div class="cg-cell alt">$\hat{\beta}=\dfrac{\sum x_i y_i}{\sum x_i^2}$ &ensp; 无中心化</div>
+
+    <div class="cg-cell row-label">$\hat{\alpha}$</div>
+    <div class="cg-cell">$\hat{\alpha}=\bar{y}-\hat{\beta}\bar{x}$</div>
+    <div class="cg-cell">$\hat{\alpha}=0$（强制）</div>
+
+    <div class="cg-cell row-label alt">$\text{Var}(\hat{\beta}\mid X)$</div>
+    <div class="cg-cell alt">$\dfrac{\sigma^2}{\sum(x_i-\bar{x})^2}=\dfrac{\sigma^2}{S_{xx}}$</div>
+    <div class="cg-cell alt">$\dfrac{\sigma^2}{\sum x_i^2}$</div>
+
+    <div class="cg-cell row-label">$s^2$（$\sigma^2$估计）</div>
+    <div class="cg-cell">$s^2=\dfrac{RSS}{n-2}$ &ensp; 自由度 $n-2$</div>
+    <div class="cg-cell">$s^2=\dfrac{RSS}{n-1}$ &ensp; 自由度 $n-1$</div>
+
+    <div class="cg-cell row-label alt">t 分布</div>
+    <div class="cg-cell alt">$t\sim t_{n-2}$</div>
+    <div class="cg-cell alt">$t\sim t_{n-1}$</div>
+
+    <div class="cg-cell row-label">$\sum\hat{\varepsilon}_i$</div>
+    <div class="cg-cell">$\sum\hat{\varepsilon}_i=0$ &ensp; （保证）</div>
+    <div class="cg-cell" style="color:var(--red)">$\sum\hat{\varepsilon}_i\neq 0$ &ensp; 一般情形</div>
+
+    <div class="cg-cell row-label alt">$\sum x_i\hat{\varepsilon}_i$</div>
+    <div class="cg-cell alt">$\sum x_i\hat{\varepsilon}_i=0$ &ensp; （保证）</div>
+    <div class="cg-cell alt">$\sum x_i\hat{\varepsilon}_i=0$ &ensp; （保证）</div>
+
+    <div class="cg-cell row-label">$R^2$</div>
+    <div class="cg-cell">$R^2=1-\dfrac{RSS}{TSS}=r_{xy}^2$ &ensp; $\in[0,1]$</div>
+    <div class="cg-cell" style="color:var(--red)">$\bar{R}^2_0=1-\dfrac{\sum(y_i-\hat{y}_i)^2}{\sum y_i^2}$ &ensp; 无中心化版本</div>
+
+    <div class="cg-cell row-label alt">TSS = ESS+RSS</div>
+    <div class="cg-cell alt">成立 &ensp;（$\sum\hat{\varepsilon}_i=0$ 保证正交）</div>
+    <div class="cg-cell alt" style="color:var(--red)">不一定成立 &ensp;（$\sum\hat{\varepsilon}_i\neq 0$）</div>
+
+    <div class="cg-cell row-label">$\hat{\beta}$ 与 $r$</div>
+    <div class="cg-cell">$\hat{\beta}=r\cdot\dfrac{S_y}{S_x}$</div>
+    <div class="cg-cell">无此关系（无中心化）</div>
+
+    <div class="cg-cell row-label alt">$t$ 与 $R^2$</div>
+    <div class="cg-cell alt">$t=r\sqrt{\dfrac{n-2}{1-r^2}},\quad R^2=\dfrac{t^2}{t^2+n-2}$</div>
+    <div class="cg-cell alt">使用无中心化 $\bar{R}^2_0$，关系不同</div>
+  </div>
+
+  <div class="warn" style="margin-top:16px">
+    <strong>虚假精度陷阱：</strong>无截距时 $\sum x_i^2 \gg S_{xx}=\sum(x_i-\bar{x})^2$（当 $\bar{x}$ 很大时），导致 $\text{se}(\hat{\beta})$ 虚假地更小、t统计量虚假地更大。若真实模型有截距，强行去掉截距会产生偏差（OVB），更小的se反而更危险。
+  </div>
+
+  <div class="example">
+    <div class="example-label">Example — 带截距 se(β̂) 的矩阵推导验证</div>
+    <h4>从 $(X^\top X)^{-1}$ 推导 se(β̂₁) 和 se(α̂)</h4>
+    <div class="kformula">
+      <div class="kline"><span class="klbl">设计矩阵</span><span class="keq">$X=\begin{bmatrix}1&x_1\\\vdots&\vdots\\1&x_n\end{bmatrix},\quad X^\top X=\begin{bmatrix}n&\sum x_i\\\sum x_i&\sum x_i^2\end{bmatrix}$</span></div>
+      <div class="kline"><span class="klbl">逆矩阵</span><span class="keq">$(X^\top X)^{-1}=\dfrac{1}{nS_{xx}}\begin{bmatrix}\sum x_i^2&-\sum x_i\\-\sum x_i&n\end{bmatrix}$</span></div>
+      <div class="knote">分母 $= n\sum x_i^2-(\sum x_i)^2 = n\sum x_i^2-n^2\bar{x}^2 = n\cdot S_{xx}$</div>
+      <div class="kline"><span class="klbl">$\beta$ 对角元</span><span class="keq">$[(X^\top X)^{-1}]_{22}=\dfrac{n}{nS_{xx}}=\dfrac{1}{S_{xx}}$ &ensp; $\Rightarrow$ &ensp; $\text{Var}(\hat{\beta})=\dfrac{\sigma^2}{S_{xx}}$ ✓</span></div>
+      <div class="kline"><span class="klbl">$\alpha$ 对角元</span><span class="keq">$[(X^\top X)^{-1}]_{11}=\dfrac{\sum x_i^2}{nS_{xx}}=\dfrac{1}{n}+\dfrac{\bar{x}^2}{S_{xx}}$ &ensp; $\Rightarrow$ &ensp; $\text{Var}(\hat{\alpha})=\sigma^2\!\left(\dfrac{1}{n}+\dfrac{\bar{x}^2}{S_{xx}}\right)$</span></div>
+    </div>
+    <div class="sol">两个方差的矩阵推导与标量推导完全一致，这验证了 $\text{Var}(\hat{\beta})=\sigma^2(X^\top X)^{-1}$ 的一般公式在简单回归中的具体形式。</div>
+  </div>
+</section>
+
+</div><!-- /main -->
+
+<!-- ══════════════════════════════════════════
+     §27  E[R²] — 四种推导方法
+══════════════════════════════════════════ -->
+<div class="main">
+<section class="section" id="s27">
+  <div class="section-title"><span class="sec-num">27</span><h2>面经题：Y~X，iid normal，E[R²] = ？四种推导</h2></div>
+
+  <p>X 和 Y 完全独立（iid 正态），理论上真实 $R^2=0$，但<strong>有限样本中存在随机拟合</strong>，样本 $R^2 > 0$。四种方法推导其期望值。</p>
+
+  <div class="warn">
+    <strong>核心考点：</strong>这道题考察的是 $R^2$ 的<strong>样本偏差</strong>——即使无关变量也会虚增 $R^2$。这正是需要 Adjusted $R^2$、OOS $R^2$、AIC/BIC 等指标的根本原因。
+  </div>
+
+  <!-- ── 方法一 ── -->
+  <h3>方法一：F分布路径（最严格）</h3>
+  <p>一元情形（$Y \sim X$，单特征）。在 $H_0: \beta=0$ 下，t 统计量服从 $t(n-2)$，而 $R^2$ 与 $t^2$ 精确关联：</p>
+  <div class="kformula">
+    <div class="kline"><span class="klbl">t-stat 与 R²</span><span class="keq">$T = \dfrac{\hat\beta}{\text{se}(\hat\beta)} = \dfrac{R\sqrt{n-2}}{\sqrt{1-R^2}} \sim t(n-2)$，解得 $R^2 = \dfrac{T^2}{T^2 + n-2}$</span></div>
+    <div class="kline"><span class="klbl">分布转换</span><span class="keq">$T^2 \sim F(1,\, n-2)$，令 $W = T^2$，则 $R^2 = \dfrac{W}{W + (n-2)}$</span></div>
+    <div class="kline"><span class="klbl">Beta 分布</span><span class="keq">若 $W \sim F(d_1, d_2)$，则 $\dfrac{d_1 W}{d_1 W + d_2} \sim \text{Beta}\!\left(\dfrac{d_1}{2}, \dfrac{d_2}{2}\right)$</span></div>
+    <div class="kline"><span class="klbl">代入 $d_1=1,d_2=n-2$</span><span class="keq">$R^2 = \dfrac{W}{W+(n-2)} \sim \text{Beta}\!\left(\dfrac{1}{2},\, \dfrac{n-2}{2}\right)$</span></div>
+    <div class="kline"><span class="klbl" style="color:var(--red)">期望公式</span><span class="keq">$E[R^2] = \dfrac{a}{a+b} = \dfrac{1/2}{1/2 + (n-2)/2} = \dfrac{1}{n-1}$</span></div>
+  </div>
+  <div class="sol">
+    <strong>一元结论：</strong>$E[R^2] = \dfrac{1}{n-1} \approx \dfrac{1}{n}$（大样本时两者几乎相同）。
+  </div>
+
+  <h3>方法一推广：k 个特征</h3>
+  <p>多元情形（$Y \sim X_1 + \cdots + X_k$，所有 $\beta = 0$）。F 统计量服从 $F(k, n-k-1)$：</p>
+  <div class="kformula">
+    <div class="kline"><span class="klbl">F-stat</span><span class="keq">$F = \dfrac{R^2/k}{(1-R^2)/(n-k-1)} \sim F(k,\, n-k-1)$</span></div>
+    <div class="kline"><span class="klbl">Beta 分布</span><span class="keq">$R^2 \sim \text{Beta}\!\left(\dfrac{k}{2},\, \dfrac{n-k-1}{2}\right)$</span></div>
+    <div class="kline"><span class="klbl" style="color:var(--red)">多元结论</span><span class="keq">$E[R^2] = \dfrac{k/2}{k/2 + (n-k-1)/2} = \dfrac{k}{n-1}$</span></div>
+  </div>
+
+  <!-- ── 方法二 ── -->
+  <h3>方法二：自由度直觉法（最快）</h3>
+  <p>OLS 把 $n$ 个数据点拟合一条有 $k+1$ 个参数（含截距）的直线/超平面，消耗了 $k+1$ 个自由度。即使 $y$ 与所有 $x$ 完全无关，仅凭随机性也能"解释"这 $k+1$ 个方向的方差。</p>
+  <div class="kformula">
+    <div class="kline"><span class="klbl">自由度论证</span><span class="keq">$k$ 个特征在 $n-1$ 个"有效"自由度（去掉均值后）中恰好占 $k$ 个，因此期望被解释比例 $= k/(n-1)$</span></div>
+    <div class="kline"><span class="klbl">更简洁近似</span><span class="keq">当 $n$ 大时 $n-1 \approx n$，所以 $E[R^2] \approx k/n$（面试口答版本）</span></div>
+  </div>
+  <div class="sol">
+    <strong>直觉：</strong>每个额外的特征（即使无关）平均"偷走"约 $1/n$ 的方差解释量。$k$ 个特征共偷走约 $k/n$。这也是 Adjusted $R^2$ 惩罚 $k$ 的直接动机。
+  </div>
+
+  <!-- ── 方法三 ── -->
+  <h3>方法三：Adjusted R² 逆推（面试答题路径）</h3>
+  <p>Adjusted $R^2$ 的定义正好修正了这个偏差：</p>
+  <div class="kformula">
+    <div class="kline"><span class="klbl">定义</span><span class="keq">$\bar R^2 = 1 - \dfrac{RSS/(n-k-1)}{TSS/(n-1)} = 1 - \dfrac{n-1}{n-k-1}(1-R^2)$</span></div>
+    <div class="kline"><span class="klbl">零模型下</span><span class="keq">当真实 $\beta = 0$ 时：$E\!\left[\dfrac{RSS}{n-k-1}\right] = \sigma^2 = E\!\left[\dfrac{TSS}{n-1}\right]$（均无偏估计 $\sigma^2$）</span></div>
+    <div class="kline"><span class="klbl" style="color:var(--green)">推出</span><span class="keq">$E[\bar R^2] = 0$（Adjusted $R^2$ 在零模型下期望为 0，无偏）</span></div>
+    <div class="kline"><span class="klbl">反推</span><span class="keq">$E[\bar R^2]=0 \;\Rightarrow\; 1-\dfrac{n-1}{n-k-1}(1-E[R^2])=0 \;\Rightarrow\; E[R^2] = \dfrac{k}{n-1}$</span></div>
+  </div>
+  <div class="sol">
+    <strong>这条路径在面试中最优雅：</strong>先说"Adjusted $R^2$ 恰好修正了这个偏差（期望为 0）"，再反推出 $E[R^2] = k/(n-1)$，展示了你对两个量之间关系的深刻理解。
+  </div>
+
+  <!-- ── 方法四 ── -->
+  <h3>方法四：几何路径（最有直觉）</h3>
+  <p>在正态假设下，经过中心化后，$\hat y$（拟合值向量）是 $y$ 向 $k$ 维特征空间的投影。</p>
+  <div class="kformula">
+    <div class="kline"><span class="klbl">$R^2$ 的几何定义</span><span class="keq">$R^2 = \cos^2\theta$，其中 $\theta$ 是 $\tilde y = y - \bar y$ 与其投影 $\hat{\tilde y}$ 之间的夹角</span></div>
+    <div class="kline"><span class="klbl">独立时</span><span class="keq">$y$ 是均匀分布在 $n-1$ 维球面上的方向（已中心化，去掉截距方向），特征空间占 $k$ 维</span></div>
+    <div class="kline"><span class="klbl">投影期望</span><span class="keq">随机向量投影到 $k$ 维子空间的期望平方比例 $= k/(n-1)$（均匀分布性质）</span></div>
+    <div class="kline"><span class="klbl" style="color:var(--red)">几何结论</span><span class="keq">$E[R^2] = E[\cos^2\theta] = \dfrac{k}{n-1}$</span></div>
+  </div>
+  <div class="sol">
+    <strong>几何直觉：</strong>把 $y$ 想象成 $n-1$ 维空间里的随机方向（箭头），特征空间是 $k$ 维子空间。$R^2$ 就是这个随机箭头在子空间上投影的平方比例。均匀随机时，期望投影比例 $= k/(n-1)$，与子空间维度成正比。
+  </div>
+
+  <!-- ── 汇总 ── -->
+  <h3>四种方法汇总对比</h3>
+  <div class="kformula">
+    <div class="kline"><span class="klbl">方法一（严格）</span><span class="keq">$T^2 \sim F(1,n-2) \Rightarrow R^2 \sim \text{Beta}(1/2,(n-2)/2) \Rightarrow E[R^2] = 1/(n-1)$；多元推广：$k/(n-1)$</span></div>
+    <div class="kline"><span class="klbl">方法二（直觉）</span><span class="keq">$k$ 个无关特征"偷走" $k/(n-1)$ 比例的方差；大样本近似 $\approx k/n$</span></div>
+    <div class="kline"><span class="klbl">方法三（逆推）</span><span class="keq">Adj $R^2$ 在零模型下期望 $=0$，反推 $E[R^2]=k/(n-1)$</span></div>
+    <div class="kline"><span class="klbl" style="color:var(--red)">方法四（几何）</span><span class="keq">随机方向投影到 $k$ 维子空间的期望平方比例 $= k/(n-1)$</span></div>
+    <div class="kline"><span class="klbl">面试口答</span><span class="keq">$E[R^2] \approx k/n$（一元：$1/n$）；精确版：$k/(n-1)$</span></div>
+  </div>
+
+  <div class="warn" style="margin-top:16px">
+    <strong>实际含义与 Adjusted R²：</strong>
+    $$\bar R^2 = 1 - \frac{n-1}{n-k-1}(1-R^2) = R^2 - \frac{k(1-R^2)}{n-k-1}$$
+    Adjusted $R^2$ 恰好减去了这个偏差（近似），使得在零模型下 $E[\bar R^2]=0$。<strong>加入无关变量时 $R^2$ 一定不降，但 $\bar R^2$ 可能降低</strong>——这是做模型选择应用 $\bar R^2$ 而非 $R^2$ 的根本原因。
+  </div>
+
+  <div class="example">
+    <div class="example-label">数值验证</div>
+    <h4>n=100，k=5 的无关特征，E[R²] ≈ ？</h4>
+    <div class="kformula">
+      <div class="kline"><span class="klbl">精确值</span><span class="keq">$E[R^2] = 5/(100-1) \approx 5.05\%$</span></div>
+      <div class="kline"><span class="klbl">近似值</span><span class="keq">$E[R^2] \approx 5/100 = 5\%$</span></div>
+      <div class="kline"><span class="klbl">解读</span><span class="keq">5个完全无关的特征，仅凭随机噪声就能"解释"约5%的y方差——用样本内$R^2$选模型是危险的</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     §28  有/无截距时 β̂ 的公式区别
+══════════════════════════════════════════ -->
+<section class="section" id="s28">
+  <div class="section-title"><span class="sec-num">28</span><h2>面经题：回归斜率——有/无截距时公式的区别</h2></div>
+
+  <p>面经题9问 $Y \sim X$ 和 $X \sim Y$ 的斜率之积，公式用的是 $\hat\beta = \operatorname{Cov}/\operatorname{Var}$。<strong>这只在有截距时成立。</strong></p>
+
+  <!-- ── 有截距 ── -->
+  <h3>有截距：$y = \alpha + \beta x + \varepsilon$</h3>
+  <p>最小化 $\sum(y_i - \alpha - \beta x_i)^2$，对 $\alpha$ 和 $\beta$ 分别求偏导：</p>
+  <div class="kformula">
+    <div class="kline"><span class="klbl">$\partial/\partial\alpha = 0$</span><span class="keq">$\sum(y_i - \alpha - \beta x_i) = 0 \;\Rightarrow\; \bar y = \alpha + \beta \bar x$（回归线过均值点）</span></div>
+    <div class="kline"><span class="klbl">$\partial/\partial\beta = 0$</span><span class="keq">$\sum x_i(y_i - \alpha - \beta x_i) = 0$</span></div>
+    <div class="kline"><span class="klbl">联立解</span><span class="keq">将 $\alpha = \bar y - \beta\bar x$ 代入第二方程：$\sum x_i(y_i - \bar y - \beta(x_i - \bar x)) = 0$</span></div>
+    <div class="kline"><span class="klbl"></span><span class="keq">$\sum (x_i - \bar x)(y_i - \bar y) - \beta\sum(x_i-\bar x)^2 = 0$（利用 $\sum x_i(y_i-\bar y) = \sum(x_i-\bar x)(y_i-\bar y)$）</span></div>
+    <div class="kline"><span class="klbl" style="color:var(--red)">有截距公式</span><span class="keq">$\hat\beta_{\text{with}} = \dfrac{\sum(x_i-\bar x)(y_i - \bar y)}{\sum(x_i-\bar x)^2} = \dfrac{S_{xy}}{S_{xx}} = \dfrac{\operatorname{Cov}(X,Y)}{\operatorname{Var}(X)}$</span></div>
+  </div>
+
+  <!-- ── 无截距 ── -->
+  <h3>无截距：$y = \beta x + \varepsilon$（强制过原点）</h3>
+  <p>最小化 $\sum(y_i - \beta x_i)^2$，只对 $\beta$ 求偏导：</p>
+  <div class="kformula">
+    <div class="kline"><span class="klbl">$\partial/\partial\beta = 0$</span><span class="keq">$-2\sum x_i(y_i - \beta x_i) = 0 \;\Rightarrow\; \sum x_i y_i = \beta \sum x_i^2$</span></div>
+    <div class="kline"><span class="klbl" style="color:var(--red)">无截距公式</span><span class="keq">$\hat\beta_{\text{no}} = \dfrac{\sum x_i y_i}{\sum x_i^2} = \dfrac{E[XY]}{E[X^2]}$（样本均值版本）</span></div>
+  </div>
+
+  <!-- ── 关键区别 ── -->
+  <h3>关键区别：何时两者相等？</h3>
+  <div class="kformula">
+    <div class="kline"><span class="klbl">有截距分子</span><span class="keq">$S_{xy} = \sum(x_i-\bar x)(y_i-\bar y) = \sum x_i y_i - n\bar x\bar y$</span></div>
+    <div class="kline"><span class="klbl">无截距分子</span><span class="keq">$\sum x_i y_i = S_{xy} + n\bar x\bar y$（多出 $n\bar x\bar y$ 项）</span></div>
+    <div class="kline"><span class="klbl">有截距分母</span><span class="keq">$S_{xx} = \sum(x_i-\bar x)^2 = \sum x_i^2 - n\bar x^2$</span></div>
+    <div class="kline"><span class="klbl">无截距分母</span><span class="keq">$\sum x_i^2 = S_{xx} + n\bar x^2$（多出 $n\bar x^2$ 项）</span></div>
+    <div class="kline"><span class="klbl" style="color:var(--green)">相等条件</span><span class="keq">当且仅当 $\bar x = 0$ 且 $\bar y = 0$ 时：$\hat\beta_{\text{no}} = \hat\beta_{\text{with}}$</span></div>
+  </div>
+  <div class="sol">
+    <strong>结论：</strong>只有在 $\mathbb{E}[X] = \mathbb{E}[Y] = 0$ 的特殊情形下，有截距和无截距的斜率公式才一致。这也是为什么在均值为零的正态分布假设（如面经题9）下可以直接用 $\operatorname{Cov}/\operatorname{Var}$ ——数学上，当 $\bar x = \bar y = 0$ 时，无截距回归的 $\hat\beta = E[XY]/E[X^2] = \operatorname{Cov}(X,Y)/\operatorname{Var}(X)$，两式等价。
+  </div>
+
+  <!-- ── 双向回归 ── -->
+  <h3>双向回归斜率之积：有截距 vs 无截距</h3>
+  <div class="kformula">
+    <div class="kline"><span class="klbl">有截距 $\times$</span><span class="keq">$\hat\beta_1^{\text{with}} \cdot \hat\beta_2^{\text{with}} = \dfrac{\operatorname{Cov}(X,Y)}{\operatorname{Var}(X)} \cdot \dfrac{\operatorname{Cov}(X,Y)}{\operatorname{Var}(Y)} = \rho^2 \in [0,1]$</span></div>
+    <div class="kline"><span class="klbl">无截距 $\times$</span><span class="keq">$\hat\beta_1^{\text{no}} \cdot \hat\beta_2^{\text{no}} = \dfrac{\sum x_i y_i}{\sum x_i^2} \cdot \dfrac{\sum x_i y_i}{\sum y_i^2} = \dfrac{(\sum x_i y_i)^2}{\sum x_i^2 \cdot \sum y_i^2}$</span></div>
+    <div class="kline"><span class="klbl">Cauchy-Schwarz</span><span class="keq">由 Cauchy-Schwarz 不等式：$(\sum x_i y_i)^2 \leq \sum x_i^2 \cdot \sum y_i^2$，所以乘积 $\in [0,1]$</span></div>
+    <div class="kline"><span class="klbl" style="color:var(--red)">无截距结论</span><span class="keq">乘积同样 $\in [0,1]$，等于"未中心化相关系数"的平方，但<strong>不等于</strong> $R^2_{\text{with}}$</span></div>
+  </div>
+
+  <!-- ── 表格总结 ── -->
+  <h3>完整对比表</h3>
+  <div class="kformula">
+    <div class="kline"><span class="klbl">项目</span><span class="keq" style="display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:0.92em"><span style="color:var(--blue);font-weight:500">有截距</span><span style="color:var(--red);font-weight:500">无截距</span></span></div>
+    <div class="kline"><span class="klbl">模型</span><span class="keq" style="display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:0.92em"><span>$y = \alpha + \beta x + \varepsilon$</span><span>$y = \beta x + \varepsilon$</span></span></div>
+    <div class="kline"><span class="klbl">$\hat\beta$ 公式</span><span class="keq" style="display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:0.92em"><span>$S_{xy}/S_{xx} = \operatorname{Cov}/\operatorname{Var}$</span><span>$\sum x_iy_i / \sum x_i^2 = E[XY]/E[X^2]$</span></span></div>
+    <div class="kline"><span class="klbl">相等条件</span><span class="keq" style="display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:0.92em"><span>—</span><span>$\bar x = \bar y = 0$（均值为零）</span></span></div>
+    <div class="kline"><span class="klbl">$\beta_1\times\beta_2$</span><span class="keq" style="display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:0.92em"><span>$\rho^2 = R^2_{\text{with}} \in [0,1]$</span><span>$(未中心化相关)^2 \in [0,1]$</span></span></div>
+    <div class="kline"><span class="klbl">$\hat\alpha$</span><span class="keq" style="display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:0.92em"><span>$\hat\alpha = \bar y - \hat\beta\bar x$</span><span>不存在（强制 $\alpha=0$）</span></span></div>
+    <div class="kline"><span class="klbl">$R^2$ 定义</span><span class="keq" style="display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:0.92em"><span>$1 - RSS/TSS$，$TSS = \sum(y_i-\bar y)^2$</span><span>$1 - \sum(y_i-\hat y_i)^2/\sum y_i^2$（无中心化！）</span></span></div>
+  </div>
+
+  <div class="warn" style="margin-top:16px">
+    <strong>无截距的 $R^2$ 可以为负！</strong>无截距模型用的是未中心化的 TSS（$\sum y_i^2$），若强行套用有截距的公式会得到错误结论。Python 的 <code>sklearn</code> 默认用中心化 TSS 计算 $R^2$，导致无截距时可能报出负值，就是这个原因。
+  </div>
+
+  <div class="example">
+    <div class="example-label">面经题 9 的完整解答（有截距，均值可非零）</div>
+    <h4>$Y \sim X$ 得 $\theta_1$，$X \sim Y$ 得 $\theta_2$，$\theta_1 \times \theta_2$ 的范围</h4>
+    <div class="kformula">
+      <div class="kline"><span class="klbl">正向回归</span><span class="keq">$\theta_1 = \dfrac{\operatorname{Cov}(X,Y)}{\operatorname{Var}(X)} = \rho\dfrac{\sigma_Y}{\sigma_X}$</span></div>
+      <div class="kline"><span class="klbl">反向回归</span><span class="keq">$\theta_2 = \dfrac{\operatorname{Cov}(X,Y)}{\operatorname{Var}(Y)} = \rho\dfrac{\sigma_X}{\sigma_Y}$</span></div>
+      <div class="kline"><span class="klbl" style="color:var(--red)">乘积</span><span class="keq">$\theta_1 \times \theta_2 = \rho^2 \in [0,1]$，等于两次回归共同的 $R^2$</span></div>
+      <div class="kline"><span class="klbl">几何意义</span><span class="keq">两条回归线夹角满足：两斜率的几何均值 $= \sqrt{\theta_1\theta_2} = |\rho|$（相关系数的绝对值）</span></div>
+    </div>
+    <div class="sol">
+      <strong>为什么有截距时用 Cov/Var？</strong>有截距 OLS 的残差正交条件为 $\sum x_i e_i = 0$（等价于 $\sum(x_i-\bar x)e_i = 0$），这自然导出中心化版本的公式 $\hat\beta = S_{xy}/S_{xx} = \operatorname{Cov}(X,Y)/\operatorname{Var}(X)$，无论 $\bar x$ 是否为零都成立。<br><br>
+      <strong>无截距时：</strong>残差正交条件为 $\sum x_i e_i = 0$（未中心化），导出 $\hat\beta = \sum x_iy_i/\sum x_i^2$，只有 $\bar x = 0$ 时才退化为 $\operatorname{Cov}/\operatorname{Var}$。
+    </div>
+  </div>
+</section>
+</div><!-- /main (new sections) -->
+// Active nav highlight on scroll
+const sections = document.querySelectorAll('.section');
+const navLinks = document.querySelectorAll('.sidebar a');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if(e.isIntersecting) {
+      navLinks.forEach(l => l.classList.remove('active'));
+      const link = document.querySelector(`.sidebar a[href="#${e.target.id}"]`);
+      if(link) link.classList.add('active');
+    }
+  });
+}, { threshold: 0.3 });
+sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>

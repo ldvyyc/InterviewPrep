@@ -1,0 +1,3640 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Systematic Volatility Trading — Complete Reference</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080c10;
+    --surface: #0d1117;
+    --panel: #111820;
+    --border: #1e2d3d;
+    --accent: #00d4ff;
+    --accent2: #ff6b35;
+    --accent3: #7fff7f;
+    --accent4: #c084fc;
+    --text: #c9d1d9;
+    --text-dim: #6e7f8f;
+    --text-bright: #f0f6fc;
+    --gold: #ffd700;
+    --red: #ff4d6a;
+    --green: #39d353;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    line-height: 1.7;
+    font-size: 15px;
+  }
+
+  /* HERO */
+  .hero {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    overflow: hidden;
+    padding: 40px 20px;
+  }
+
+  .hero-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,212,255,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,255,0.04) 1px, transparent 1px);
+    background-size: 60px 60px;
+    animation: gridPulse 8s ease-in-out infinite;
+  }
+
+  @keyframes gridPulse {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+  }
+
+  .hero-glow {
+    position: absolute;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(0,212,255,0.08) 0%, transparent 70%);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    animation: glowPulse 4s ease-in-out infinite;
+  }
+
+  @keyframes glowPulse {
+    0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.8; }
+    50% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
+  }
+
+  .hero-tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.2s forwards;
+  }
+
+  .hero h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(42px, 7vw, 88px);
+    line-height: 1.05;
+    color: var(--text-bright);
+    letter-spacing: -1px;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.4s forwards;
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero h1 em {
+    color: var(--accent);
+    font-style: italic;
+  }
+
+  .hero-sub {
+    margin-top: 20px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.6s forwards;
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero-toc {
+    margin-top: 50px;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.8s forwards;
+    position: relative;
+    z-index: 1;
+  }
+
+  .toc-pill {
+    padding: 8px 18px;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    text-decoration: none;
+    transition: all 0.2s;
+    background: rgba(255,255,255,0.02);
+  }
+
+  .toc-pill:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(0,212,255,0.05);
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* LAYOUT */
+  .main-wrap {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 24px 100px;
+  }
+
+  /* SECTION */
+  .section {
+    margin-bottom: 80px;
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.6s, transform 0.6s;
+  }
+
+  .section.visible {
+    opacity: 1;
+    transform: none;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    margin-bottom: 32px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+
+  .section-header::before {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 60px;
+    height: 2px;
+    background: var(--accent);
+  }
+
+  .section-num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 2px;
+    padding: 3px 8px;
+    border: 1px solid rgba(0,212,255,0.3);
+    border-radius: 2px;
+  }
+
+  .section h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(26px, 3.5vw, 38px);
+    color: var(--text-bright);
+    font-weight: 400;
+  }
+
+  .section h3 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 22px;
+    color: var(--text-bright);
+    font-weight: 400;
+    margin: 32px 0 16px;
+  }
+
+  .section h4 {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    color: var(--accent2);
+    letter-spacing: 1px;
+    margin: 24px 0 12px;
+    text-transform: uppercase;
+  }
+
+  p { margin-bottom: 14px; color: var(--text); }
+
+  /* FORMULA BLOCKS */
+  .formula-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 4px;
+    padding: 24px 28px;
+    margin: 20px 0;
+    font-family: 'IBM Plex Mono', monospace;
+    overflow-x: auto;
+  }
+
+  .formula-block.orange { border-left-color: var(--accent2); }
+  .formula-block.green { border-left-color: var(--accent3); }
+  .formula-block.purple { border-left-color: var(--accent4); }
+  .formula-block.gold { border-left-color: var(--gold); }
+
+  .formula-title {
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+
+  .formula-main {
+    font-size: 16px;
+    color: var(--text-bright);
+    line-height: 2;
+  }
+
+  .formula-main .sym { color: var(--accent); }
+  .formula-main .sym-o { color: var(--accent2); }
+  .formula-main .sym-g { color: var(--accent3); }
+  .formula-main .sym-p { color: var(--accent4); }
+  .formula-main .sym-gold { color: var(--gold); }
+  .formula-main .op { color: var(--text-dim); }
+  .formula-main .cmt { color: var(--text-dim); font-size: 12px; font-style: italic; }
+
+  .formula-notes {
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+    font-size: 12px;
+    color: var(--text-dim);
+    line-height: 1.8;
+  }
+
+  /* GREEK TABLE / CARD GRID */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 16px;
+    margin: 20px 0;
+  }
+
+  .greek-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 20px;
+    transition: border-color 0.2s, transform 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .greek-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+  }
+
+  .greek-card.delta::before { background: var(--accent); }
+  .greek-card.gamma::before { background: var(--accent2); }
+  .greek-card.vega::before { background: var(--accent3); }
+  .greek-card.theta::before { background: var(--red); }
+  .greek-card.rho::before { background: var(--gold); }
+  .greek-card.vanna::before { background: var(--accent4); }
+  .greek-card.volga::before { background: #ff9f43; }
+  .greek-card.charm::before { background: #a29bfe; }
+
+  .greek-card:hover {
+    border-color: rgba(255,255,255,0.15);
+    transform: translateY(-2px);
+  }
+
+  .gc-symbol {
+    font-family: 'DM Serif Display', serif;
+    font-size: 48px;
+    line-height: 1;
+    margin-bottom: 8px;
+    font-style: italic;
+  }
+
+  .gc-name {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+  }
+
+  .gc-formula {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    color: var(--text-bright);
+    background: var(--panel);
+    padding: 8px 12px;
+    border-radius: 3px;
+    margin: 10px 0;
+    border: 1px solid var(--border);
+  }
+
+  .gc-desc {
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 1.6;
+  }
+
+  .gc-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 2px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    margin-top: 8px;
+  }
+
+  .badge-call { background: rgba(0,212,255,0.1); color: var(--accent); border: 1px solid rgba(0,212,255,0.3); }
+  .badge-put { background: rgba(255,107,53,0.1); color: var(--accent2); border: 1px solid rgba(255,107,53,0.3); }
+  .badge-2nd { background: rgba(127,255,127,0.1); color: var(--accent3); border: 1px solid rgba(127,255,127,0.3); }
+  .badge-cross { background: rgba(192,132,252,0.1); color: var(--accent4); border: 1px solid rgba(192,132,252,0.3); }
+
+  /* DATA TABLE */
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    margin: 20px 0;
+    overflow: hidden;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+  }
+
+  .data-table thead tr {
+    background: var(--panel);
+  }
+
+  .data-table th {
+    padding: 12px 16px;
+    text-align: left;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--accent);
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+    font-weight: 500;
+  }
+
+  .data-table td {
+    padding: 11px 16px;
+    border-bottom: 1px solid rgba(30,45,61,0.5);
+    color: var(--text);
+    vertical-align: top;
+  }
+
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+  .data-table .pos { color: var(--green); }
+  .data-table .neg { color: var(--red); }
+  .data-table .neu { color: var(--text-dim); }
+  .data-table .hi { color: var(--text-bright); font-weight: 500; }
+
+  /* VOL SURFACE DIAGRAM */
+  .vol-surface-container {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 30px;
+    margin: 20px 0;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  canvas {
+    max-width: 100%;
+    border-radius: 3px;
+  }
+
+  /* CALLOUT BOXES */
+  .callout {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 20px 24px;
+    margin: 20px 0;
+    position: relative;
+  }
+
+  .callout.info { border-left: 3px solid var(--accent); }
+  .callout.warn { border-left: 3px solid var(--gold); }
+  .callout.danger { border-left: 3px solid var(--red); }
+  .callout.success { border-left: 3px solid var(--green); }
+
+  .callout-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .callout.info .callout-title { color: var(--accent); }
+  .callout.warn .callout-title { color: var(--gold); }
+  .callout.danger .callout-title { color: var(--red); }
+  .callout.success .callout-title { color: var(--green); }
+
+  /* PAYOFF DIAGRAMS */
+  .payoff-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 16px;
+    margin: 20px 0;
+  }
+
+  .payoff-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 16px;
+  }
+
+  .payoff-card h5 {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  /* STRATEGY TABLE */
+  .strat-row {
+    display: grid;
+    grid-template-columns: 160px 1fr;
+    gap: 24px;
+    padding: 20px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .strat-row:last-child { border-bottom: none; }
+
+  .strat-name {
+    font-family: 'DM Serif Display', serif;
+    font-size: 18px;
+    color: var(--text-bright);
+  }
+
+  .strat-tags {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 6px;
+  }
+
+  .tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 2px;
+    border: 1px solid;
+  }
+
+  .tag-long-vol { color: var(--accent3); border-color: rgba(127,255,127,0.4); background: rgba(127,255,127,0.05); }
+  .tag-short-vol { color: var(--red); border-color: rgba(255,77,106,0.4); background: rgba(255,77,106,0.05); }
+  .tag-neutral { color: var(--text-dim); border-color: var(--border); }
+  .tag-defined { color: var(--gold); border-color: rgba(255,215,0,0.4); background: rgba(255,215,0,0.05); }
+
+  /* DIVIDER */
+  .divider {
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--border), transparent);
+    margin: 60px 0;
+  }
+
+  /* MONOSPACE CODE */
+  code {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--accent);
+    background: rgba(0,212,255,0.08);
+    padding: 2px 6px;
+    border-radius: 3px;
+    border: 1px solid rgba(0,212,255,0.15);
+  }
+
+  /* HIGHLIGHT */
+  .hl { color: var(--accent); }
+  .hl-o { color: var(--accent2); }
+  .hl-g { color: var(--accent3); }
+  .hl-p { color: var(--accent4); }
+  .hl-gold { color: var(--gold); }
+  .hl-r { color: var(--red); }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+  /* NAV */
+  .sidenav {
+    position: fixed;
+    right: 24px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    z-index: 100;
+  }
+
+  .nav-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--border);
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+  }
+
+  .nav-dot:hover, .nav-dot.active {
+    background: var(--accent);
+    transform: scale(1.5);
+  }
+
+  .nav-dot:hover::after {
+    content: attr(data-label);
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--panel);
+    border: 1px solid var(--border);
+    padding: 4px 10px;
+    border-radius: 3px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--text);
+    white-space: nowrap;
+    letter-spacing: 1px;
+  }
+
+  @media (max-width: 768px) {
+    .sidenav { display: none; }
+    .strat-row { grid-template-columns: 1fr; }
+  }
+
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin: 20px 0;
+  }
+
+  @media (max-width: 700px) { .two-col { grid-template-columns: 1fr; } }
+
+  .mini-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 18px;
+  }
+
+  .mini-panel h5 {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  ul.mono-list {
+    list-style: none;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    line-height: 2;
+    color: var(--text);
+  }
+
+  ul.mono-list li::before {
+    content: '→ ';
+    color: var(--accent);
+  }
+
+  .big-formula {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: clamp(13px, 1.6vw, 18px);
+    color: var(--text-bright);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 28px 32px;
+    margin: 20px 0;
+    line-height: 2.2;
+    overflow-x: auto;
+    position: relative;
+  }
+
+  .big-formula .label {
+    position: absolute;
+    top: 10px;
+    right: 16px;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--text-dim);
+  }
+
+  /* ===== GREEK CHARTS EMBED ===== */
+  .greek-chart-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 24px;
+    margin: 28px 0;
+  }
+  .gc-controls {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 18px;
+    margin-bottom: 24px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .gc-ctrl label {
+    display: block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 6px;
+  }
+  .gc-ctrl .gc-val {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 16px;
+    color: var(--text-bright);
+    display: block;
+    margin-bottom: 6px;
+  }
+  input.gc-slider {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    outline: none;
+  }
+  input.gc-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 13px; height: 13px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+    border: 2px solid var(--bg);
+    transition: transform 0.15s;
+  }
+  input.gc-slider:hover::-webkit-slider-thumb { transform: scale(1.4); }
+  input.gc-slider.orange::-webkit-slider-thumb { background: var(--accent2); }
+  input.gc-slider.green::-webkit-slider-thumb  { background: var(--accent3); }
+  input.gc-slider.gold::-webkit-slider-thumb   { background: var(--gold); }
+
+  .gc-charts-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+  }
+  @media(max-width:900px) { .gc-charts-grid { grid-template-columns: 1fr 1fr; } }
+  @media(max-width:560px) { .gc-charts-grid { grid-template-columns: 1fr; } }
+
+  .gc-chart-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 14px;
+    position: relative;
+    cursor: crosshair;
+    transition: border-color 0.2s;
+  }
+  .gc-chart-card:hover { border-color: rgba(255,255,255,0.15); }
+  .gc-chart-card.gc-span2 { grid-column: span 2; }
+  @media(max-width:900px) { .gc-chart-card.gc-span2 { grid-column: span 1; } }
+  .gc-chart-card .gc-top {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    margin-bottom: 10px;
+  }
+  .gc-chart-card .gc-sym {
+    font-family: 'DM Serif Display', serif;
+    font-size: 32px;
+    font-style: italic;
+    line-height: 1;
+  }
+  .gc-chart-card .gc-right { text-align: right; }
+  .gc-chart-card .gc-right .gc-gname {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+  .gc-chart-card .gc-right .gc-gfml {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--text);
+  }
+  .gc-chart-card canvas { width: 100%; display: block; border-radius: 2px; }
+  .gc-tt {
+    position: absolute;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 8px 12px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    pointer-events: none;
+    z-index: 50;
+    opacity: 0;
+    transition: opacity 0.1s;
+    white-space: nowrap;
+  }
+  .gc-tt.show { opacity: 1; }
+  .gc-tt .tt-hd { color: var(--text-dim); font-size: 9px; margin-bottom: 4px; }
+  .gc-tt .tt-c  { color: var(--accent); }
+  .gc-tt .tt-p  { color: var(--accent2); }
+  .gc-legend {
+    display: flex; gap: 20px; justify-content: center;
+    margin-bottom: 18px; font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+  }
+  .gc-legend-item { display: flex; align-items: center; gap: 8px; color: var(--text-dim); }
+  .gc-ll { width: 24px; height: 2px; border-radius: 1px; }
+  .gc-ll-dash { width: 24px; height: 2px;
+    background: repeating-linear-gradient(90deg, var(--accent2) 0, var(--accent2) 5px, transparent 5px, transparent 9px); }
+
+  /* ===== DERIVATIVES SECTION ===== */
+  .deriv-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 22px;
+    margin-bottom: 16px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .deriv-card:hover { border-color: rgba(255,255,255,0.15); }
+  .deriv-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+  }
+  .deriv-card.d-ir::before   { background: var(--gold); }
+  .deriv-card.d-eq::before   { background: var(--accent); }
+  .deriv-card.d-cr::before   { background: var(--red); }
+  .deriv-card.d-fx::before   { background: var(--accent3); }
+  .deriv-card.d-ex::before   { background: var(--accent4); }
+  .deriv-card.d-comm::before { background: var(--accent2); }
+
+  .deriv-tag {
+    display: inline-block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 2px;
+    margin-bottom: 10px;
+  }
+  .deriv-tag.ir   { background: rgba(255,215,0,0.1);    color: var(--gold);    border: 1px solid rgba(255,215,0,0.3); }
+  .deriv-tag.eq   { background: rgba(0,212,255,0.1);    color: var(--accent);  border: 1px solid rgba(0,212,255,0.3); }
+  .deriv-tag.cr   { background: rgba(255,77,106,0.1);   color: var(--red);     border: 1px solid rgba(255,77,106,0.3); }
+  .deriv-tag.fx   { background: rgba(127,255,127,0.1);  color: var(--accent3); border: 1px solid rgba(127,255,127,0.3); }
+  .deriv-tag.ex   { background: rgba(192,132,252,0.1);  color: var(--accent4); border: 1px solid rgba(192,132,252,0.3); }
+
+  .deriv-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 22px;
+    color: var(--text-bright);
+    margin-bottom: 8px;
+    font-weight: 400;
+  }
+  .deriv-body { font-size: 13px; color: var(--text); line-height: 1.7; }
+  .deriv-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-top: 14px;
+  }
+  @media(max-width:680px) { .deriv-grid { grid-template-columns: 1fr; } }
+  .deriv-sub {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 14px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    line-height: 1.8;
+    color: var(--text);
+  }
+  .deriv-sub strong { color: var(--text-bright); }
+</style>
+</head>
+<body>
+
+<!-- SIDE NAV -->
+<nav class="sidenav" id="sidenav">
+  <div class="nav-dot" data-label="INTRO" data-target="s0"></div>
+  <div class="nav-dot" data-label="OPTIONS BASICS" data-target="s1"></div>
+  <div class="nav-dot" data-label="BLACK-SCHOLES" data-target="s2"></div>
+  <div class="nav-dot" data-label="GREEKS" data-target="s3"></div>
+  <div class="nav-dot" data-label="HIGHER ORDER" data-target="s4"></div>
+  <div class="nav-dot" data-label="PUT-CALL PARITY" data-target="s5"></div>
+  <div class="nav-dot" data-label="VOL SURFACE" data-target="s6"></div>
+  <div class="nav-dot" data-label="VOL MODELS" data-target="s7"></div>
+  <div class="nav-dot" data-label="STRATEGIES" data-target="s8"></div>
+  <div class="nav-dot" data-label="SYS TRADING" data-target="s9"></div>
+  <div class="nav-dot" data-label="HEDGING" data-target="s10"></div>
+  <div class="nav-dot" data-label="RISK" data-target="s11"></div>
+  <div class="nav-dot" data-label="DERIVATIVES" data-target="s12"></div>
+  <div class="nav-dot" data-label="ATM APPROX" data-target="s13"></div>
+  <div class="nav-dot" data-label="IV-RV CARRY" data-target="s14"></div>
+  <div class="nav-dot" data-label="INTERVIEW QA" data-target="s15"></div>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="s0">
+  <div class="hero-grid"></div>
+  <div class="hero-glow"></div>
+  <div class="hero-tag">Quantitative Finance · Complete Reference</div>
+  <h1>Systematic<br><em>Volatility</em><br>Trading</h1>
+  <p class="hero-sub">Black-Scholes · Greeks · Vol Surface · PCP · Strategies · Risk</p>
+  <div class="hero-toc">
+    <a class="toc-pill" href="#s1">Options Basics</a>
+    <a class="toc-pill" href="#s2">Black-Scholes</a>
+    <a class="toc-pill" href="#s3">Greeks</a>
+    <a class="toc-pill" href="#s4">Higher Order</a>
+    <a class="toc-pill" href="#s5">Put-Call Parity</a>
+    <a class="toc-pill" href="#s6">Vol Surface</a>
+    <a class="toc-pill" href="#s7">Vol Models</a>
+    <a class="toc-pill" href="#s8">Strategies</a>
+    <a class="toc-pill" href="#s9">Systematic Trading</a>
+    <a class="toc-pill" href="#s10">Hedging</a>
+    <a class="toc-pill" href="#s11">Risk Mgmt</a>
+    <a class="toc-pill" href="#s12">Derivatives Zoo</a>
+    <a class="toc-pill" href="#s13">ATM Approximations</a>
+    <a class="toc-pill" href="#s14">IV–RV Carry</a>
+    <a class="toc-pill" href="#s15">Interview Q&amp;A</a>
+  </div>
+</section>
+
+<div class="main-wrap">
+
+<!-- ========== SECTION 1: OPTIONS BASICS ========== -->
+<section class="section" id="s1">
+  <div class="section-header">
+    <span class="section-num">01</span>
+    <h2>Options Basics</h2>
+  </div>
+
+  <p>期权是一种赋予持有者<span class="hl">权利而非义务</span>在特定日期或之前以特定价格买卖标的资产的金融衍生品。</p>
+
+  <div class="two-col">
+    <div class="mini-panel">
+      <h5>Call Option · 看涨期权</h5>
+      <p style="font-size:13px;">赋予持有者以 Strike Price <span class="hl">K</span> 买入标的资产的权利</p>
+      <div class="formula-block" style="margin:12px 0; padding:14px 18px;">
+        <div class="formula-main" style="font-size:14px;">
+          <span class="sym">Payoff<sub>Call</sub></span> <span class="op"> = </span> <span class="sym">max(S<sub>T</sub> − K, 0)</span>
+        </div>
+      </div>
+      <ul class="mono-list">
+        <li>Delta: 0 到 1 之间</li>
+        <li>ITM: S &gt; K</li>
+        <li>ATM: S ≈ K</li>
+        <li>OTM: S &lt; K</li>
+      </ul>
+    </div>
+    <div class="mini-panel">
+      <h5>Put Option · 看跌期权</h5>
+      <p style="font-size:13px;">赋予持有者以 Strike Price <span class="hl-o">K</span> 卖出标的资产的权利</p>
+      <div class="formula-block orange" style="margin:12px 0; padding:14px 18px;">
+        <div class="formula-main" style="font-size:14px;">
+          <span class="sym-o">Payoff<sub>Put</sub></span> <span class="op"> = </span> <span class="sym-o">max(K − S<sub>T</sub>, 0)</span>
+        </div>
+      </div>
+      <ul class="mono-list" style="--accent: var(--accent2);">
+        <li>Delta: -1 到 0 之间</li>
+        <li>ITM: S &lt; K</li>
+        <li>ATM: S ≈ K</li>
+        <li>OTM: S &gt; K</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>Option Value Components</h3>
+  <div class="formula-block gold">
+    <div class="formula-title">Option Price Decomposition</div>
+    <div class="formula-main">
+      <span class="sym-gold">Option Price</span> <span class="op"> = </span>
+      <span class="sym-gold">Intrinsic Value</span> <span class="op"> + </span>
+      <span class="sym-gold">Time Value</span><br><br>
+      <span class="cmt">Intrinsic Value (Call) = max(S − K, 0)</span><br>
+      <span class="cmt">Time Value = f(σ, T−t, r, q) — decays as expiry approaches</span>
+    </div>
+  </div>
+
+  <h3>Moneyness 度量</h3>
+  <table class="data-table">
+    <thead><tr>
+      <th>Moneyness</th><th>Call Condition</th><th>Put Condition</th><th>Intrinsic Value</th><th>特点</th>
+    </tr></thead>
+    <tbody>
+      <tr><td class="hi">Deep ITM</td><td class="pos">S ≫ K</td><td class="neg">S ≪ K</td><td class="pos">高</td><td>Δ≈±1, 行为接近线性</td></tr>
+      <tr><td class="hi">In-the-Money</td><td class="pos">S &gt; K</td><td class="neg">S &lt; K</td><td class="pos">正</td><td>高内在价值</td></tr>
+      <tr><td class="hi">At-the-Money</td><td class="neu">S = K</td><td class="neu">S = K</td><td class="neu">0</td><td>最大 Gamma/Vega, Δ≈±0.5</td></tr>
+      <tr><td class="hi">Out-of-the-Money</td><td class="neg">S &lt; K</td><td class="pos">S &gt; K</td><td class="neu">0</td><td>纯时间价值</td></tr>
+      <tr><td class="hi">Deep OTM</td><td class="neg">S ≪ K</td><td class="pos">S ≫ K</td><td class="neu">0</td><td>Δ≈0, lottery-like</td></tr>
+    </tbody>
+  </table>
+
+  <h3>American vs European</h3>
+  <div class="two-col">
+    <div class="callout info">
+      <div class="callout-title">European Option</div>
+      <p style="font-size:13px;">只能在<strong style="color:var(--text-bright)">到期日</strong>行权。标准 BSM 适用。适用于指数期权 (SPX, VIX)。</p>
+    </div>
+    <div class="callout warn">
+      <div class="callout-title">American Option</div>
+      <p style="font-size:13px;">可以在<strong style="color:var(--text-bright)">任意时间</strong>行权。存在 early exercise premium。股票期权 (AAPL, SPY) 通常为美式。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ========== SECTION 2: BLACK-SCHOLES ========== -->
+<section class="section" id="s2">
+  <div class="section-header">
+    <span class="section-num">02</span>
+    <h2>Black-Scholes-Merton Model</h2>
+  </div>
+
+  <p>BSM 模型（1973）是期权定价的基石，假设标的资产价格遵循<span class="hl">几何布朗运动 (GBM)</span>。</p>
+
+  <h3>核心假设 (Assumptions)</h3>
+  <div class="callout warn">
+    <div class="callout-title">Model Assumptions — 均为理想化</div>
+    <p style="font-size:13px;">① 连续交易，无摩擦市场（无交易成本、税收）&nbsp;&nbsp;
+    ② 标的资产遵循对数正态 GBM，波动率 σ 为常数&nbsp;&nbsp;
+    ③ 无风险利率 r 为常数&nbsp;&nbsp;
+    ④ 标的资产不支付股息（或已调整）&nbsp;&nbsp;
+    ⑤ 无套利，无做空限制&nbsp;&nbsp;
+    ⑥ 欧式期权（到期日行权）</p>
+  </div>
+
+  <h3>GBM 随机微分方程</h3>
+  <div class="formula-block">
+    <div class="formula-title">Geometric Brownian Motion</div>
+    <div class="formula-main">
+      <span class="sym">dS</span> <span class="op"> = </span> <span class="sym">μS dt</span> <span class="op"> + </span> <span class="sym">σS dW<sub>t</sub></span><br><br>
+      <span class="cmt">// dW_t = √dt · ε，ε ~ N(0,1) 标准布朗运动增量</span><br>
+      <span class="cmt">// μ: 漂移率 (drift), σ: 波动率, W_t: 维纳过程</span><br><br>
+      <span class="sym">ln(S<sub>T</sub>/S<sub>0</sub>)</span> <span class="op"> ~ </span> <span class="sym">N( (μ − σ²/2)T , σ²T )</span>
+    </div>
+  </div>
+
+  <h3>BS PDE (Partial Differential Equation)</h3>
+  <div class="formula-block purple">
+    <div class="formula-title">Black-Scholes PDE — 核心方程</div>
+    <div class="formula-main">
+      <span class="sym-p">∂V/∂t</span> <span class="op"> + </span>
+      <span class="sym-p">½σ²S² ∂²V/∂S²</span> <span class="op"> + </span>
+      <span class="sym-p">rS ∂V/∂S</span> <span class="op"> − </span>
+      <span class="sym-p">rV</span> <span class="op"> = </span> <span class="sym-p">0</span><br><br>
+      <span class="cmt">// Θ + ½σ²S²Γ + rSΔ − rV = 0</span><br>
+      <span class="cmt">// 即: 时间价值衰减 + Gamma收益 + Delta收益 = 无风险收益</span>
+    </div>
+  </div>
+
+  <h3>BSM 定价公式</h3>
+  <div class="big-formula">
+    <span class="label">BSM PRICING</span>
+    <span style="color:var(--accent);">C</span> = <span style="color:var(--text-bright);">S · N(d₁) − K · e<sup>−rT</sup> · N(d₂)</span><br>
+    <span style="color:var(--accent2);">P</span> = <span style="color:var(--text-bright);">K · e<sup>−rT</sup> · N(−d₂) − S · N(−d₁)</span><br><br>
+    <span style="color:var(--text-dim);">d₁ = [ ln(S/K) + (r + σ²/2)T ] / (σ√T)</span><br>
+    <span style="color:var(--text-dim);">d₂ = d₁ − σ√T</span>
+  </div>
+
+  <div class="formula-notes" style="background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:20px;margin-top:-10px;">
+    <strong style="color:var(--text-bright); font-family:'IBM Plex Mono',monospace; font-size:11px;">PARAMETER LEGEND</strong><br><br>
+    <code>S</code> 当前标的资产价格 &nbsp;|&nbsp;
+    <code>K</code> 行权价 (Strike) &nbsp;|&nbsp;
+    <code>T</code> 到期时间（年）&nbsp;|&nbsp;
+    <code>r</code> 无风险利率 &nbsp;|&nbsp;
+    <code>σ</code> 年化波动率 &nbsp;|&nbsp;
+    <code>N(·)</code> 标准正态 CDF &nbsp;|&nbsp;
+    <code>d₁</code> 风险调整后 moneyness &nbsp;|&nbsp;
+    <code>d₂</code> 风险中性概率对应值
+  </div>
+
+  <h3>有股息调整 (Merton, 1973)</h3>
+  <div class="formula-block green">
+    <div class="formula-title">Continuous Dividend Adjustment</div>
+    <div class="formula-main">
+      <span class="sym-g">d₁</span> <span class="op"> = </span>
+      <span class="sym-g">[ ln(S/K) + (r − q + σ²/2)T ] / (σ√T)</span><br>
+      <span class="sym-g">d₂</span> <span class="op"> = </span>
+      <span class="sym-g">d₁ − σ√T</span><br><br>
+      <span class="cmt">// q: 连续股息率 (dividend yield)</span><br>
+      <span class="cmt">// 对于期货期权，用 r=0, q=0，前向价格 F = Se^(r-q)T 代替 S</span>
+    </div>
+    <div class="formula-notes">
+      <strong>Forward Price:</strong> <code>F = S·e^(r−q)T</code> &nbsp;→&nbsp; 用 F 替换 S 且 r=0 即得 Black-76 模型（常用于利率/商品期权）
+    </div>
+  </div>
+
+  <h3>隐含波动率 (Implied Volatility)</h3>
+  <p>市场上没有直接观测到的 σ，而是通过观测到的市场期权价格，<span class="hl">反向求解</span> BSM 方程得到的 σ，即为 <strong>IV</strong>。</p>
+  <div class="formula-block orange">
+    <div class="formula-title">IV — Inverse Problem</div>
+    <div class="formula-main">
+      <span class="sym-o">σ_IV</span> <span class="op"> = </span>
+      <span class="sym-o">BSM<sup>−1</sup>(C_market ; S, K, T, r)</span><br><br>
+      <span class="cmt">// 无解析解，需要数值方法：Newton-Raphson 迭代最常用</span><br>
+      <span class="cmt">// Newton: σ_{n+1} = σ_n − (BSM(σ_n) − C_mkt) / Vega(σ_n)</span>
+    </div>
+  </div>
+
+  <div class="callout info">
+    <div class="callout-title">Realized Vol vs Implied Vol</div>
+    <p style="font-size:13px;">
+      <strong style="color:var(--text-bright);">Realized Vol (RV / HV):</strong> 历史价格序列计算得到的已实现波动率，<code>σ_RV = std(log returns) × √252</code><br>
+      <strong style="color:var(--text-bright);">Implied Vol (IV):</strong> 市场价格隐含的对未来波动率的预期（含风险溢价）<br>
+      <strong style="color:var(--text-bright);">Variance Risk Premium (VRP):</strong> <code>VRP = IV² − E[RV²]</code> 通常为正，是 short-vol 策略的根基
+    </p>
+  </div>
+</section>
+
+<!-- ========== SECTION 3: GREEKS ========== -->
+<section class="section" id="s3">
+  <div class="section-header">
+    <span class="section-num">03</span>
+    <h2>The Greeks — 一阶敏感度</h2>
+  </div>
+
+  <p>Greeks 衡量期权价格相对于各市场参数的<span class="hl">偏导数（敏感度）</span>，是动态对冲和风险管理的核心工具。</p>
+
+  <div class="card-grid">
+
+    <!-- DELTA -->
+    <div class="greek-card delta">
+      <div class="gc-symbol" style="color:var(--accent);">Δ</div>
+      <div class="gc-name">Delta</div>
+      <div class="gc-formula">∂V / ∂S</div>
+      <p class="gc-desc">期权价格对标的资产价格变动的敏感度。也近似等于期权到期 ITM 的风险中性概率。</p>
+      <div class="gc-formula" style="margin-top:10px;">
+        Call: Δ = e<sup>−qT</sup> N(d₁)<br>
+        Put:  Δ = −e<sup>−qT</sup> N(−d₁)
+      </div>
+      <div>
+        <span class="gc-badge badge-call">Call: 0 ∼ +1</span>
+        <span class="gc-badge badge-put">Put: −1 ∼ 0</span>
+        <span class="gc-badge badge-call">ATM ≈ ±0.5</span>
+      </div>
+      <p class="gc-desc" style="margin-top:10px; font-size:12px;">
+        <strong style="color:var(--text-bright);">Delta Hedging:</strong> 持有 Δ 份标的可对冲一阶风险。Delta-neutral portfolio: 组合 Δ = 0。
+      </p>
+    </div>
+
+    <!-- GAMMA -->
+    <div class="greek-card gamma">
+      <div class="gc-symbol" style="color:var(--accent2);">Γ</div>
+      <div class="gc-name">Gamma</div>
+      <div class="gc-formula">∂²V / ∂S² = ∂Δ / ∂S</div>
+      <p class="gc-desc">Delta 相对于标的价格的变化率，衡量 Delta 的非线性程度。ATM 时最大，到期临近时急剧增大。</p>
+      <div class="gc-formula" style="margin-top:10px;">
+        Γ = e<sup>−qT</sup> N'(d₁) / (Sσ√T)<br>
+        Call = Put（同一合约）
+      </div>
+      <div>
+        <span class="gc-badge badge-call">Long: Γ &gt; 0</span>
+        <span class="gc-badge badge-put">Short: Γ &lt; 0</span>
+        <span class="gc-badge badge-2nd">2nd Order</span>
+      </div>
+      <p class="gc-desc" style="margin-top:10px; font-size:12px;">
+        <strong style="color:var(--text-bright);">Gamma PnL:</strong> ½Γ(ΔS)² — Long gamma 从大幅波动中获益，Short gamma 受损。Gamma vs Theta 是核心 trade-off。
+      </p>
+    </div>
+
+    <!-- VEGA -->
+    <div class="greek-card vega">
+      <div class="gc-symbol" style="color:var(--accent3);">ν</div>
+      <div class="gc-name">Vega</div>
+      <div class="gc-formula">∂V / ∂σ</div>
+      <p class="gc-desc">期权价格对隐含波动率的敏感度。Vega 不是标准希腊字母，通常用 ν 或 κ 表示。所有 long options 均有正 Vega。</p>
+      <div class="gc-formula" style="margin-top:10px;">
+        ν = S·e<sup>−qT</sup>·N'(d₁)·√T<br>
+        Call = Put（同一合约）
+      </div>
+      <div>
+        <span class="gc-badge badge-call">Long: ν &gt; 0</span>
+        <span class="gc-badge badge-put">Short: ν &lt; 0</span>
+      </div>
+      <p class="gc-desc" style="margin-top:10px; font-size:12px;">
+        ATM 期权 Vega 最大，随时间增加（∝√T）。Vol trading 的核心 greek —— 做多波动率 = 做多 Vega。通常以 <strong style="color:var(--text-bright);">每1% vol change 的美元盈亏</strong>表示。
+      </p>
+    </div>
+
+    <!-- THETA -->
+    <div class="greek-card theta">
+      <div class="gc-symbol" style="color:var(--red);">Θ</div>
+      <div class="gc-name">Theta</div>
+      <div class="gc-formula">∂V / ∂t</div>
+      <p class="gc-desc">期权价格随时间流逝的衰减速率。通常为负（time decay）。ATM 临近到期时 Theta 最大。</p>
+      <div class="gc-formula" style="margin-top:10px;">
+        Θ = −[S·N'(d₁)·σ·e<sup>−qT</sup>/(2√T)]<br>
+           − rKe<sup>−rT</sup>N(d₂) + qSe<sup>−qT</sup>N(d₁)
+      </div>
+      <div>
+        <span class="gc-badge" style="color:var(--red);border-color:rgba(255,77,106,0.4);background:rgba(255,77,106,0.05);">Long: Θ &lt; 0</span>
+        <span class="gc-badge badge-call">Short: Θ &gt; 0</span>
+      </div>
+      <p class="gc-desc" style="margin-top:10px; font-size:12px;">
+        <strong style="color:var(--text-bright);">Θ-Γ Trade-off:</strong> BS PDE 给出 Θ + ½σ²S²Γ = rV (approx 0)。Long gamma 必然支付 Theta，Short gamma 收取 Theta。
+      </p>
+    </div>
+
+    <!-- RHO -->
+    <div class="greek-card rho">
+      <div class="gc-symbol" style="color:var(--gold);">ρ</div>
+      <div class="gc-name">Rho</div>
+      <div class="gc-formula">∂V / ∂r</div>
+      <p class="gc-desc">期权价格对无风险利率的敏感度。对股票期权影响较小，但对利率衍生品至关重要。</p>
+      <div class="gc-formula" style="margin-top:10px;">
+        Call: ρ = KTe<sup>−rT</sup>N(d₂)<br>
+        Put:  ρ = −KTe<sup>−rT</sup>N(−d₂)
+      </div>
+      <div>
+        <span class="gc-badge badge-call">Call: ρ &gt; 0</span>
+        <span class="gc-badge badge-put">Put: ρ &lt; 0</span>
+      </div>
+    </div>
+
+  </div>
+
+  <h3>Greeks 快速参考汇总</h3>
+  <table class="data-table">
+    <thead><tr>
+      <th>Greek</th><th>定义</th><th>Call 符号</th><th>Put 符号</th><th>最大值位置</th><th>主要用途</th>
+    </tr></thead>
+    <tbody>
+      <tr>
+        <td class="hi">Δ Delta</td>
+        <td>∂V/∂S</td>
+        <td class="pos">0 ~ +1</td>
+        <td class="neg">−1 ~ 0</td>
+        <td>ATM ≈ ±0.5</td>
+        <td>方向性对冲，仓位规模</td>
+      </tr>
+      <tr>
+        <td class="hi">Γ Gamma</td>
+        <td>∂²V/∂S²</td>
+        <td class="pos">+</td>
+        <td class="pos">+</td>
+        <td>ATM，近到期最大</td>
+        <td>对冲频率，凸性风险</td>
+      </tr>
+      <tr>
+        <td class="hi">ν Vega</td>
+        <td>∂V/∂σ</td>
+        <td class="pos">+</td>
+        <td class="pos">+</td>
+        <td>ATM，长期限最大</td>
+        <td>Vol exposure，vol trading</td>
+      </tr>
+      <tr>
+        <td class="hi">Θ Theta</td>
+        <td>∂V/∂t</td>
+        <td class="neg">−</td>
+        <td class="neg">−</td>
+        <td>ATM，近到期最大</td>
+        <td>时间价值衰减管理</td>
+      </tr>
+      <tr>
+        <td class="hi">ρ Rho</td>
+        <td>∂V/∂r</td>
+        <td class="pos">+</td>
+        <td class="neg">−</td>
+        <td>深 ITM，长期限</td>
+        <td>利率敏感度</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- ===== INTERACTIVE GREEK CHARTS ===== -->
+  <h3>Interactive Greeks Charts — 实时 BSM 计算</h3>
+  <p style="font-size:13px;color:var(--text-dim);margin-bottom:16px;">拖动滑块实时观察每个 Greek 随 Spot 变化的曲线。<span style="color:var(--accent);">实线</span> = Call，<span style="color:var(--accent2);">虚线</span> = Put。鼠标悬停查看精确数值。</p>
+  <div class="greek-chart-wrap">
+    <div class="gc-controls">
+      <div class="gc-ctrl">
+        <label>Strike K</label>
+        <span class="gc-val" id="gc-kv">100</span>
+        <input class="gc-slider" type="range" id="gc-k" min="70" max="130" step="1" value="100">
+      </div>
+      <div class="gc-ctrl">
+        <label>Time T (yr)</label>
+        <span class="gc-val" id="gc-tv">0.50 yr</span>
+        <input class="gc-slider green" type="range" id="gc-t" min="0.05" max="2" step="0.05" value="0.5">
+      </div>
+      <div class="gc-ctrl">
+        <label>Volatility σ</label>
+        <span class="gc-val" id="gc-sv">20%</span>
+        <input class="gc-slider orange" type="range" id="gc-sig" min="5" max="80" step="1" value="20">
+      </div>
+      <div class="gc-ctrl">
+        <label>Rate r</label>
+        <span class="gc-val" id="gc-rv">5.0%</span>
+        <input class="gc-slider gold" type="range" id="gc-r" min="0" max="15" step="0.5" value="5">
+      </div>
+    </div>
+    <div class="gc-legend">
+      <div class="gc-legend-item"><div class="gc-ll" style="background:var(--accent)"></div> Call</div>
+      <div class="gc-legend-item"><div class="gc-ll-dash"></div> Put</div>
+      <div class="gc-legend-item"><div class="gc-ll" style="background:rgba(255,255,255,0.22);"></div> ATM</div>
+    </div>
+    <div class="gc-charts-grid">
+      <div class="gc-chart-card" id="gcc-delta">
+        <div class="gc-top">
+          <div class="gc-sym" style="color:var(--accent)">Δ</div>
+          <div class="gc-right"><div class="gc-gname">Delta</div><div class="gc-gfml">∂V/∂S</div></div>
+        </div>
+        <canvas id="gc-cv-delta" height="160"></canvas>
+        <div class="gc-tt" id="gc-tt-delta"></div>
+      </div>
+      <div class="gc-chart-card" id="gcc-gamma">
+        <div class="gc-top">
+          <div class="gc-sym" style="color:var(--accent2)">Γ</div>
+          <div class="gc-right"><div class="gc-gname">Gamma</div><div class="gc-gfml">∂²V/∂S²</div></div>
+        </div>
+        <canvas id="gc-cv-gamma" height="160"></canvas>
+        <div class="gc-tt" id="gc-tt-gamma"></div>
+      </div>
+      <div class="gc-chart-card" id="gcc-vega">
+        <div class="gc-top">
+          <div class="gc-sym" style="color:var(--accent3)">ν</div>
+          <div class="gc-right"><div class="gc-gname">Vega / 1%σ</div><div class="gc-gfml">∂V/∂σ</div></div>
+        </div>
+        <canvas id="gc-cv-vega" height="160"></canvas>
+        <div class="gc-tt" id="gc-tt-vega"></div>
+      </div>
+      <div class="gc-chart-card gc-span2" id="gcc-theta">
+        <div class="gc-top">
+          <div class="gc-sym" style="color:var(--red)">Θ</div>
+          <div class="gc-right"><div class="gc-gname">Theta (daily)</div><div class="gc-gfml">∂V/∂t ÷ 365</div></div>
+        </div>
+        <canvas id="gc-cv-theta" height="160"></canvas>
+        <div class="gc-tt" id="gc-tt-theta"></div>
+      </div>
+      <div class="gc-chart-card" id="gcc-rho">
+        <div class="gc-top">
+          <div class="gc-sym" style="color:var(--gold)">ρ</div>
+          <div class="gc-right"><div class="gc-gname">Rho / 1%r</div><div class="gc-gfml">∂V/∂r</div></div>
+        </div>
+        <canvas id="gc-cv-rho" height="160"></canvas>
+        <div class="gc-tt" id="gc-tt-rho"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== SECTION 4: HIGHER ORDER GREEKS ========== -->
+<section class="section" id="s4">
+  <div class="section-header">
+    <span class="section-num">04</span>
+    <h2>Higher-Order Greeks — 二阶及交叉偏导</h2>
+  </div>
+
+  <p>一阶 Greeks 无法捕捉的非线性风险需要用高阶 Greeks 来衡量，对于系统化波动率交易尤为重要。</p>
+
+  <div class="card-grid">
+
+    <!-- VANNA -->
+    <div class="greek-card vanna">
+      <div class="gc-symbol" style="color:var(--accent4); font-size:36px; margin-bottom:4px;">Vanna</div>
+      <div class="gc-name">Delta-Vol Cross Derivative</div>
+      <div class="gc-formula">∂²V / (∂S ∂σ) = ∂Δ/∂σ = ∂ν/∂S</div>
+      <p class="gc-desc">Delta 随隐含波动率的变化，或 Vega 随标的价格的变化。</p>
+      <div class="gc-formula" style="margin-top:8px;">
+        Vanna = −e<sup>−qT</sup> N'(d₁) d₂ / σ
+      </div>
+      <span class="gc-badge badge-cross">Cross Greek</span>
+      <p class="gc-desc" style="margin-top:8px; font-size:12px;">当市场大跌时 Vanna 流量：做市商 short put → 需要 delta hedge → buy vol → 形成 vol-spot correlation（"vol up when spot down"）</p>
+    </div>
+
+    <!-- VOLGA -->
+    <div class="greek-card volga">
+      <div class="gc-symbol" style="color:#ff9f43; font-size:36px; margin-bottom:4px;">Volga</div>
+      <div class="gc-name">Vomma / Vol Convexity</div>
+      <div class="gc-formula">∂²V / ∂σ² = ∂ν/∂σ</div>
+      <p class="gc-desc">Vega 相对波动率的凸性，衡量 vol-of-vol 的敞口。OTM 期权 Volga 最大。</p>
+      <div class="gc-formula" style="margin-top:8px;">
+        Volga = ν · d₁ · d₂ / σ
+      </div>
+      <span class="gc-badge badge-2nd">2nd Order Vol</span>
+      <p class="gc-desc" style="margin-top:8px; font-size:12px;">Long OTM strangle 有正 Volga——从 vol-of-vol 中获益。Exotic pricing 中 Volga 尤为关键（SABR, Bergomi）。</p>
+    </div>
+
+    <!-- CHARM -->
+    <div class="greek-card charm">
+      <div class="gc-symbol" style="color:#a29bfe; font-size:36px; margin-bottom:4px;">Charm</div>
+      <div class="gc-name">Delta Decay / DdeltaDtime</div>
+      <div class="gc-formula">∂²V / (∂S ∂t) = ∂Δ/∂t</div>
+      <p class="gc-desc">Delta 随时间的变化率，即 Delta 的时间衰减。管理 delta hedge 频率时需考虑。</p>
+      <div class="gc-formula" style="margin-top:8px;">
+        Charm = qe<sup>−qT</sup>N(d₁) − e<sup>−qT</sup>N'(d₁)[2(r−q)T − d₂σ√T] / (2Tσ√T)
+      </div>
+      <span class="gc-badge badge-cross">Time-Spot Cross</span>
+    </div>
+
+    <!-- SPEED -->
+    <div class="greek-card" style="border-top: none; border-top: none;">
+      <div style="position:absolute;top:0;left:0;right:0;height:2px;background:var(--green);"></div>
+      <div class="gc-symbol" style="color:var(--green); font-size:36px; margin-bottom:4px;">Speed</div>
+      <div class="gc-name">3rd Order / DgammaDspot</div>
+      <div class="gc-formula">∂³V / ∂S³ = ∂Γ/∂S</div>
+      <p class="gc-desc">Gamma 随标的价格的变化。衡量 Gamma 本身的非线性。在 pin risk 和 barrier 定价中重要。</p>
+      <div class="gc-formula" style="margin-top:8px;">
+        Speed = −Γ/S · (d₁/(σ√T) + 1)
+      </div>
+      <span class="gc-badge badge-2nd">3rd Order</span>
+    </div>
+
+    <!-- COLOR -->
+    <div class="greek-card" style="">
+      <div style="position:absolute;top:0;left:0;right:0;height:2px;background:#fd79a8;"></div>
+      <div class="gc-symbol" style="color:#fd79a8; font-size:36px; margin-bottom:4px;">Color</div>
+      <div class="gc-name">Gamma Decay / DgammaDtime</div>
+      <div class="gc-formula">∂³V / (∂S² ∂t) = ∂Γ/∂t</div>
+      <p class="gc-desc">Gamma 随时间的变化率。临近到期时 Color 急剧变化，影响日内对冲策略。</p>
+      <span class="gc-badge badge-cross">Time-Gamma Cross</span>
+    </div>
+
+    <!-- ZOMMA -->
+    <div class="greek-card" style="">
+      <div style="position:absolute;top:0;left:0;right:0;height:2px;background:#00cec9;"></div>
+      <div class="gc-symbol" style="color:#00cec9; font-size:36px; margin-bottom:4px;">Zomma</div>
+      <div class="gc-name">DgammaDvol</div>
+      <div class="gc-formula">∂³V / (∂S² ∂σ) = ∂Γ/∂σ</div>
+      <p class="gc-desc">Gamma 随波动率的变化。Vol jump 时 Zomma 影响 Gamma PnL。</p>
+      <div class="gc-formula" style="margin-top:8px;">
+        Zomma = Γ · (d₁d₂ − 1) / σ
+      </div>
+      <span class="gc-badge badge-cross">Vol-Gamma Cross</span>
+    </div>
+
+  </div>
+
+  <h3>Greeks 泰勒展开 (PnL Decomposition)</h3>
+  <div class="formula-block purple">
+    <div class="formula-title">Taylor Expansion — P&L Attribution</div>
+    <div class="formula-main">
+      <span class="sym-p">dV</span> <span class="op"> ≈ </span>
+      <span class="sym">Δ·dS</span>
+      <span class="op"> + </span><span class="sym-o">½Γ·(dS)²</span>
+      <span class="op"> + </span><span class="sym-p">Θ·dt</span>
+      <span class="op"> + </span><span class="sym-g">ν·dσ</span>
+      <span class="op"> + </span><span class="sym-p">½Volga·(dσ)²</span>
+      <span class="op"> + </span><span class="sym-p">Vanna·dS·dσ</span>
+      <span class="op"> + </span><span class="sym-gold">ρ·dr</span><br><br>
+      <span class="cmt">// Delta PnL + Gamma PnL + Time Decay + Vega PnL + Vol Convexity + Cross Terms + Rate PnL</span><br>
+      <span class="cmt">// Daily Gamma PnL: ½Γ(ΔS)² ≈ ½Γ·S²·σ²_realized·dt</span>
+    </div>
+  </div>
+
+  <h3>Gamma PnL vs Theta — 核心 Trade-off</h3>
+  <div class="formula-block green">
+    <div class="formula-title">Gamma-Theta Balance</div>
+    <div class="formula-main">
+      <span class="sym-g">Daily Gamma PnL</span> <span class="op"> = </span>
+      <span class="sym-g">½ · Γ · S² · (σ_realized² − σ_implied²) · dt</span><br><br>
+      <span class="cmt">// 如果 σ_realized > σ_implied (RV > IV): Long gamma 盈利</span><br>
+      <span class="cmt">// 如果 σ_realized < σ_implied (RV < IV): Short gamma 盈利（收 Theta）</span><br><br>
+      <span class="sym-g">Expected Daily PnL</span> <span class="op"> ≈ </span>
+      <span class="sym-g">½ · Γ · S² · (σ_RV² − σ_IV²) · dt</span>
+    </div>
+  </div>
+</section>
+
+<!-- ========== SECTION 5: PUT-CALL PARITY ========== -->
+<section class="section" id="s5">
+  <div class="section-header">
+    <span class="section-num">05</span>
+    <h2>Put-Call Parity (PCP)</h2>
+  </div>
+
+  <p>PCP 是期权市场中最基本的<span class="hl">无套利关系</span>，将同一标的、同一行权价、同一到期日的看涨和看跌期权价格联系起来。</p>
+
+  <div class="big-formula">
+    <span class="label">PUT-CALL PARITY</span>
+    <span style="color:var(--accent);">C</span>
+    <span style="color:var(--text-dim);"> − </span>
+    <span style="color:var(--accent2);">P</span>
+    <span style="color:var(--text-dim);"> = </span>
+    <span style="color:var(--text-bright);">S·e<sup>−qT</sup> − K·e<sup>−rT</sup></span>
+    <span style="color:var(--text-dim);"> = PV(F) − PV(K)</span>
+  </div>
+
+  <h3>推导：Replication Portfolio</h3>
+  <div class="formula-block">
+    <div class="formula-title">No-Arbitrage Proof</div>
+    <div class="formula-main">
+      <span class="sym">Portfolio A:</span> <span class="op"> Long Call + Long K·e<sup>−rT</sup> (cash)</span><br>
+      <span class="sym">Portfolio B:</span> <span class="op"> Long Put + Long S·e<sup>−qT</sup> (stock, forward)</span><br><br>
+      <span class="cmt">// 到期时两组合 Payoff 相同: max(S_T − K, 0) + K = max(K − S_T, 0) + S_T</span><br>
+      <span class="cmt">// No Arbitrage: A 和 B 当前价值必须相等</span><br>
+      <span class="cmt">// 因此: C + K·e^−rT = P + S·e^−qT</span>
+    </div>
+  </div>
+
+  <h3>PCP 变形与应用</h3>
+  <table class="data-table">
+    <thead><tr>
+      <th>Relationship</th><th>Formula</th><th>应用场景</th>
+    </tr></thead>
+    <tbody>
+      <tr>
+        <td class="hi">Standard PCP</td>
+        <td><code>C − P = S·e<sup>−qT</sup> − K·e<sup>−rT</sup></code></td>
+        <td>套利检测，合成组合</td>
+      </tr>
+      <tr>
+        <td class="hi">Synthetic Forward</td>
+        <td><code>C − P = F·e<sup>−rT</sup> − K·e<sup>−rT</sup></code></td>
+        <td>Long Call + Short Put = Long Forward</td>
+      </tr>
+      <tr>
+        <td class="hi">Synthetic Stock</td>
+        <td><code>S = C − P + K·e<sup>−rT</sup></code></td>
+        <td>Stock = Call − Put + Bond</td>
+      </tr>
+      <tr>
+        <td class="hi">Synthetic Call</td>
+        <td><code>C = P + S·e<sup>−qT</sup> − K·e<sup>−rT</sup></code></td>
+        <td>用 Put + Stock 合成 Call</td>
+      </tr>
+      <tr>
+        <td class="hi">Synthetic Put</td>
+        <td><code>P = C − S·e<sup>−qT</sup> + K·e<sup>−rT</sup></code></td>
+        <td>用 Call + Short Stock 合成 Put</td>
+      </tr>
+      <tr>
+        <td class="hi">IV PCP</td>
+        <td><code>IV_Call(K) ≈ IV_Put(K)</code></td>
+        <td>同 Strike call/put IV 应相同（欧式）</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>PCP 套利策略 (Conversions & Reversals)</h3>
+  <div class="two-col">
+    <div class="callout success">
+      <div class="callout-title">Conversion</div>
+      <p style="font-size:13px;">
+        <strong style="color:var(--text-bright);">当 C − P > Forward:</strong><br>
+        Long Put + Long Stock + Short Call<br>
+        ≡ 锁定无风险收益。价格回归时平仓。
+      </p>
+    </div>
+    <div class="callout danger">
+      <div class="callout-title">Reversal</div>
+      <p style="font-size:13px;">
+        <strong style="color:var(--text-bright);">当 C − P &lt; Forward:</strong><br>
+        Long Call + Short Stock + Short Put<br>
+        ≡ 反向套利。
+      </p>
+    </div>
+  </div>
+
+  <div class="callout warn">
+    <div class="callout-title">PCP 的 IV 含义</div>
+    <p style="font-size:13px;">PCP 意味着同一行权价的 call 和 put 的隐含波动率必须相等（对欧式期权）。若 <strong style="color:var(--text-bright);">IV_call ≠ IV_put</strong>，存在套利机会（或者是反映 carry, borrow cost, 美式提前行权溢价等）。这是 vol surface 在每个 strike 上 call/put 一致性的基础。</p>
+  </div>
+</section>
+
+<!-- ========== SECTION 6: VOL SURFACE ========== -->
+<section class="section" id="s6">
+  <div class="section-header">
+    <span class="section-num">06</span>
+    <h2>Volatility Surface</h2>
+  </div>
+
+  <p>Vol Surface 是 <span class="hl">IV(K, T)</span> 的二维曲面——同一标的不同行权价和不同到期日的隐含波动率矩阵。BSM 假设 σ 为常数，现实中 IV 随 K 和 T 变化，形成三种主要结构。</p>
+
+  <div class="vol-surface-container">
+    <canvas id="volCanvas" width="700" height="350"></canvas>
+    <p style="font-size:11px;color:var(--text-dim);margin-top:12px;font-family:'IBM Plex Mono',monospace;">FIGURE: Illustrative Equity Volatility Surface — IV(Strike, Tenor)</p>
+  </div>
+
+  <h3>Vol Surface 三大维度</h3>
+
+  <h4>1. Volatility Smile / Skew</h4>
+  <p>沿 Strike 维度，IV 随 moneyness 变化的形状：</p>
+  <div class="two-col">
+    <div class="mini-panel">
+      <h5>Equity Skew (Negative Skew)</h5>
+      <p style="font-size:13px;">股票期权中 OTM Put 的 IV > OTM Call 的 IV，形成<span class="hl-r">左偏斜（Negative Skew）</span>。</p>
+      <ul class="mono-list">
+        <li>反映崩盘保护需求（Crashophobia）</li>
+        <li>25Δ Put IV > 25Δ Call IV（Risk Reversal &lt; 0）</li>
+        <li>Skew = IV(K_low) − IV(K_high)</li>
+        <li>25RR = IV(25Δ Call) − IV(25Δ Put)</li>
+      </ul>
+    </div>
+    <div class="mini-panel">
+      <h5>FX / Commodity Smile</h5>
+      <p style="font-size:13px;">外汇/商品期权两侧 OTM 期权 IV 均高于 ATM，形成<span class="hl">对称微笑</span>。</p>
+      <ul class="mono-list">
+        <li>反映肥尾分布（fat tails）</li>
+        <li>Butterfly = IV(Wing) − IV(ATM)</li>
+        <li>25BF = ½[IV(25Δ C) + IV(25Δ P)] − IV(ATM)</li>
+        <li>RR ≈ 0（对称），BF &gt; 0</li>
+      </ul>
+    </div>
+  </div>
+
+  <h4>2. Term Structure (时间结构)</h4>
+  <div class="formula-block">
+    <div class="formula-title">Vol Term Structure</div>
+    <div class="formula-main">
+      <span class="sym">Normal (Contango):</span> <span class="cmt">短期 IV &lt; 长期 IV — 市场平静，预期未来不确定性增加</span><br>
+      <span class="sym">Inverted (Backwardation):</span> <span class="cmt">短期 IV > 长期 IV — 危机状态，短期恐慌更高</span><br>
+      <span class="sym">Flat:</span> <span class="cmt">各期限 IV 大致相同</span><br><br>
+      <span class="cmt">// VIX = 30天 IV。VIX3M/VIX比值衡量 term structure 斜率</span><br>
+      <span class="cmt">// 正向: 卖近月买远月（Vol Calendar Spread）有利</span>
+    </div>
+  </div>
+
+  <h4>3. Vol Surface Parameterization</h4>
+
+  <table class="data-table">
+    <thead><tr>
+      <th>参数/指标</th><th>定义</th><th>市场含义</th><th>计算方式</th>
+    </tr></thead>
+    <tbody>
+      <tr>
+        <td class="hi">ATM Vol</td>
+        <td>S≈K 时的 IV</td>
+        <td>市场对未来整体波动的预期基准</td>
+        <td>IV(S, T)</td>
+      </tr>
+      <tr>
+        <td class="hi">25Δ Risk Reversal</td>
+        <td>25Δ Call IV − 25Δ Put IV</td>
+        <td>Skew 方向和大小；负值 = 下行保护需求高</td>
+        <td>25RR = σ_C25 − σ_P25</td>
+      </tr>
+      <tr>
+        <td class="hi">25Δ Butterfly</td>
+        <td>½(σ_C25 + σ_P25) − σ_ATM</td>
+        <td>肥尾程度；Kurtosis 代理变量</td>
+        <td>25BF = ½(σ_C25+σ_P25) − σ_ATM</td>
+      </tr>
+      <tr>
+        <td class="hi">IVTS (Term Structure)</td>
+        <td>长期 IV / 短期 IV</td>
+        <td>Vol term premium；危机指标</td>
+        <td>VIX3M / VIX</td>
+      </tr>
+      <tr>
+        <td class="hi">Vol of Vol</td>
+        <td>IV 自身的波动率</td>
+        <td>模型参数；VVIX 是 VIX 的 vol</td>
+        <td>std(ΔIV)/ΔT</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Sticky Strike vs Sticky Delta</h3>
+  <div class="two-col">
+    <div class="callout info">
+      <div class="callout-title">Sticky Strike</div>
+      <p style="font-size:13px;">当标的价格移动时，<strong style="color:var(--text-bright);">同一 Strike</strong> 的 IV 保持不变。IV 是 K 的函数，而非 moneyness。股票期权市场更常见。</p>
+    </div>
+    <div class="callout warn">
+      <div class="callout-title">Sticky Delta</div>
+      <p style="font-size:13px;">当标的价格移动时，<strong style="color:var(--text-bright);">同一 Delta</strong>（moneyness）对应的 IV 保持不变。FX 期权市场更常见。导致额外 Delta 调整。</p>
+    </div>
+  </div>
+
+  <h3>Vol Surface 套利约束 (No-Arbitrage Conditions)</h3>
+  <div class="formula-block orange">
+    <div class="formula-title">Arbitrage-Free Constraints</div>
+    <div class="formula-main">
+      <span class="sym-o">Calendar Spread:</span> <span class="cmt">T₁ &lt; T₂ → σ_T1² · T₁ ≤ σ_T2² · T₂（Total Variance 单调递增）</span><br>
+      <span class="sym-o">Butterfly:</span> <span class="cmt">∂²C/∂K² ≥ 0（Call 价格关于 K 的二阶导非负）</span><br>
+      <span class="sym-o">Slope:</span> <span class="cmt">0 ≤ −∂C/∂K ≤ e^(−qT)（Call 关于 K 单调递减）</span><br>
+      <span class="sym-o">Density:</span> <span class="cmt">Risk-neutral density = e^(rT) ∂²C/∂K² ≥ 0（风险中性密度非负）</span>
+    </div>
+  </div>
+</section>
+
+<!-- ========== SECTION 7: VOL MODELS ========== -->
+<section class="section" id="s7">
+  <div class="section-header">
+    <span class="section-num">07</span>
+    <h2>Volatility Models</h2>
+  </div>
+
+  <h3>Local Volatility (局部波动率)</h3>
+  <div class="formula-block">
+    <div class="formula-title">Dupire Local Vol</div>
+    <div class="formula-main">
+      <span class="sym">dS</span> <span class="op"> = </span> <span class="sym">μS dt + σ_local(S,t) · S · dW</span><br><br>
+      <span class="sym">σ²_local(K,T)</span> <span class="op"> = </span>
+      <span class="sym">[∂C/∂T + (r−q)K∂C/∂K + qC] / [½K²∂²C/∂K²]</span><br><br>
+      <span class="cmt">// Dupire公式: 从市场期权价格直接提取 local vol surface</span><br>
+      <span class="cmt">// 完美拟合当前 vol surface，但动态性差（smile dynamics 不真实）</span>
+    </div>
+  </div>
+
+  <h3>Stochastic Volatility Models</h3>
+  <table class="data-table">
+    <thead><tr>
+      <th>Model</th><th>波动率过程</th><th>特点</th><th>参数</th>
+    </tr></thead>
+    <tbody>
+      <tr>
+        <td class="hi">Heston (1993)</td>
+        <td><code>dv = κ(θ−v)dt + ξ√v dW_v</code></td>
+        <td>均值回复 CIR 过程，有解析公式，最广泛使用</td>
+        <td>κ, θ, ξ, ρ, v₀</td>
+      </tr>
+      <tr>
+        <td class="hi">SABR</td>
+        <td><code>dσ = ασ dW_σ</code></td>
+        <td>对利率衍生品极为流行，近似解析公式</td>
+        <td>α, β, ρ, ν</td>
+      </tr>
+      <tr>
+        <td class="hi">Rough Heston</td>
+        <td><code>dv = fractional BM (H&lt;0.5)</code></td>
+        <td>Rough vol (Hurst H≈0.1)，更好地捕捉短期 skew</td>
+        <td>H, λ, ν, ρ, V₀</td>
+      </tr>
+      <tr>
+        <td class="hi">Bergomi (2005)</td>
+        <td><code>Forward var curve model</code></td>
+        <td>多因子，正确描述 vol of vol 结构</td>
+        <td>ω, ρ, k₁, k₂...</td>
+      </tr>
+      <tr>
+        <td class="hi">SVI (Gatheral)</td>
+        <td><code>w(k) = a+b[ρ(k−m)+√((k−m)²+σ²)]</code></td>
+        <td>参数化 vol surface，无套利保证</td>
+        <td>a, b, ρ, m, σ</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Heston Model 详解</h3>
+  <div class="formula-block purple">
+    <div class="formula-title">Heston Stochastic Volatility Model</div>
+    <div class="formula-main">
+      <span class="sym-p">dS</span> <span class="op"> = </span> <span class="sym-p">μS dt + √v · S · dW_S</span><br>
+      <span class="sym-p">dv</span> <span class="op"> = </span> <span class="sym-p">κ(θ − v) dt + ξ√v · dW_v</span><br><br>
+      <span class="cmt">// corr(dW_S, dW_v) = ρ dt — 通常 ρ &lt; 0 (equity: vol rises when price falls)</span><br>
+      <span class="cmt">// κ: mean reversion speed   θ: long-run variance   ξ: vol of vol</span><br>
+      <span class="cmt">// Feller condition: 2κθ > ξ² (保证方差不为负)</span><br><br>
+      <span class="sym-p">Heston Price</span> <span class="op"> = </span>
+      <span class="sym-p">½(S·e^{−qT} − K·e^{−rT}) + (1/π)∫Re[e^{−iKu}f(u)]/iu du</span><br>
+      <span class="cmt">// 特征函数求解，半解析</span>
+    </div>
+  </div>
+
+  <h3>VIX — 市场恐慌指数</h3>
+  <div class="formula-block green">
+    <div class="formula-title">CBOE VIX Formula (Model-Free IV)</div>
+    <div class="formula-main">
+      <span class="sym-g">VIX²</span> <span class="op"> = </span>
+      <span class="sym-g">(2/T) · [Σ (ΔK_i/K_i²) · e^{rT} · Q(K_i) − (F/K₀ − 1)²]</span><br><br>
+      <span class="cmt">// Model-free: 不依赖 BSM，直接从期权价格积分得到</span><br>
+      <span class="cmt">// Q(K_i): mid-price of OTM option at strike K_i</span><br>
+      <span class="cmt">// 等价于 variance swap 的 fair value: E[∫₀ᵀ σ²_t dt]</span><br>
+      <span class="cmt">// Replication: Long portfolio of OTM options weighted by 1/K²</span>
+    </div>
+  </div>
+
+  <h3>Variance Swap</h3>
+  <div class="formula-block orange">
+    <div class="formula-title">Variance Swap Payoff & Fair Strike</div>
+    <div class="formula-main">
+      <span class="sym-o">Payoff</span> <span class="op"> = </span>
+      <span class="sym-o">N_var · (σ²_realized − K_var)</span><br><br>
+      <span class="sym-o">K_var</span> <span class="op"> = </span>
+      <span class="sym-o">(2/T) · [rT − (F/S₀ − 1) + ln(S₀/F) + ∫₀ᶠ P(K)/K² dK + ∫ᶠ∞ C(K)/K² dK]</span><br><br>
+      <span class="cmt">// Variance swap 是最纯粹的 volatility instrument</span><br>
+      <span class="cmt">// Vega 为常数（dollar vega 不随 vol 变化），Gamma ∝ 1/S²</span><br>
+      <span class="cmt">// Long var swap = Long realized var, Short implied var</span>
+    </div>
+  </div>
+</section>
+
+<!-- ========== SECTION 8: STRATEGIES ========== -->
+<section class="section" id="s8">
+  <div class="section-header">
+    <span class="section-num">08</span>
+    <h2>Options Strategies</h2>
+  </div>
+
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:24px;margin-bottom:24px;">
+
+    <!-- STRADDLE -->
+    <div class="strat-row">
+      <div>
+        <div class="strat-name">Straddle</div>
+        <div class="strat-tags">
+          <span class="tag tag-long-vol">Long Vol</span>
+          <span class="tag tag-neutral">Delta Neutral</span>
+        </div>
+      </div>
+      <div>
+        <p style="font-size:13px; margin-bottom:8px;">买入等 Strike 的 Call + Put，到期时盈利来自大幅方向性移动。ATM Straddle 是最纯粹的 Vega/Gamma 多头。</p>
+        <div class="gc-formula">Long ATM Call + Long ATM Put (same K, same T)</div>
+        <p style="font-size:12px;color:var(--text-dim);margin-top:6px;">Max Loss = Net Premium | Payoff: |S_T − K| − Premium | Break-even: K ± Premium</p>
+      </div>
+    </div>
+
+    <!-- STRANGLE -->
+    <div class="strat-row">
+      <div>
+        <div class="strat-name">Strangle</div>
+        <div class="strat-tags">
+          <span class="tag tag-long-vol">Long Vol</span>
+          <span class="tag tag-defined">Cheaper</span>
+        </div>
+      </div>
+      <div>
+        <p style="font-size:13px; margin-bottom:8px;">买入 OTM Call + OTM Put，比 Straddle 便宜但需要更大幅度移动才能盈利。Long Strangle 有正 Volga（收益于 vol-of-vol）。</p>
+        <div class="gc-formula">Long OTM Call (K_H) + Long OTM Put (K_L)，K_L &lt; S &lt; K_H</div>
+      </div>
+    </div>
+
+    <!-- BUTTERFLY -->
+    <div class="strat-row">
+      <div>
+        <div class="strat-name">Butterfly</div>
+        <div class="strat-tags">
+          <span class="tag tag-short-vol">Short Vol</span>
+          <span class="tag tag-defined">Limited Risk</span>
+        </div>
+      </div>
+      <div>
+        <p style="font-size:13px; margin-bottom:8px;">Long 1 低 K Call + Short 2 中 K Call + Long 1 高 K Call（等间距）。卖出 ATM Straddle + 买入 Wing 保护。<span class="hl">Short Gamma + Limited Risk</span>。</p>
+        <div class="gc-formula">Long C(K−w) + Short 2·C(K) + Long C(K+w)</div>
+        <p style="font-size:12px;color:var(--text-dim);margin-top:6px;">最大盈利: 到期时 S = K | 最大亏损: Net Debit</p>
+      </div>
+    </div>
+
+    <!-- CONDOR -->
+    <div class="strat-row">
+      <div>
+        <div class="strat-name">Iron Condor</div>
+        <div class="strat-tags">
+          <span class="tag tag-short-vol">Short Vol</span>
+          <span class="tag tag-defined">Range-bound</span>
+        </div>
+      </div>
+      <div>
+        <p style="font-size:13px; margin-bottom:8px;">Short OTM Put Spread + Short OTM Call Spread。收取权利金，预期标的在一定区间内。适合高 IV 环境做多 Theta。</p>
+        <div class="gc-formula">Short P(K2) + Long P(K1) + Short C(K3) + Long C(K4)，K1&lt;K2&lt;S&lt;K3&lt;K4</div>
+      </div>
+    </div>
+
+    <!-- CALENDAR SPREAD -->
+    <div class="strat-row">
+      <div>
+        <div class="strat-name">Calendar Spread</div>
+        <div class="strat-tags">
+          <span class="tag tag-long-vol">Theta+</span>
+          <span class="tag tag-neutral">Term Structure</span>
+        </div>
+      </div>
+      <div>
+        <p style="font-size:13px; margin-bottom:8px;">Buy long-dated option + Sell short-dated option at same strike。利用 Theta 衰减速度差异（近月衰减更快）。Vol term structure 正向时有优势。</p>
+        <div class="gc-formula">Short C(K, T₁) + Long C(K, T₂)，T₁ &lt; T₂</div>
+      </div>
+    </div>
+
+    <!-- RISK REVERSAL -->
+    <div class="strat-row">
+      <div>
+        <div class="strat-name">Risk Reversal</div>
+        <div class="strat-tags">
+          <span class="tag tag-neutral">Skew Trade</span>
+          <span class="tag tag-defined">Directional</span>
+        </div>
+      </div>
+      <div>
+        <p style="font-size:13px; margin-bottom:8px;">Long OTM Call + Short OTM Put（或反向）。主要用于交易 Skew，也有方向性敞口。25Δ RR 是 FX 市场核心 skew 报价。</p>
+        <div class="gc-formula">25RR = σ(25Δ Call) − σ(25Δ Put)</div>
+        <p style="font-size:12px;color:var(--text-dim);margin-top:6px;">负 RR (equity skew): 下行保护溢价 > 上行参与</p>
+      </div>
+    </div>
+
+    <!-- RATIO SPREAD -->
+    <div class="strat-row">
+      <div>
+        <div class="strat-name">Ratio Spread</div>
+        <div class="strat-tags">
+          <span class="tag tag-short-vol">Gamma Short</span>
+          <span class="tag tag-neutral">Vega Neutral</span>
+        </div>
+      </div>
+      <div>
+        <p style="font-size:13px; margin-bottom:8px;">Long 1x ATM + Short 2x OTM（或其他比例）。可以构建 Vega 中性但有 Skew 敞口的组合。常用于 vol surface 相对价值交易。</p>
+        <div class="gc-formula">Long 1 ATM Call, Short N OTM Calls（Ratio N = Vega_ATM / Vega_OTM）</div>
+      </div>
+    </div>
+  </div>
+
+  <h3>Greeks Profile 对比</h3>
+  <table class="data-table">
+    <thead><tr>
+      <th>Strategy</th><th>Delta</th><th>Gamma</th><th>Vega</th><th>Theta</th><th>Volga</th><th>Vanna</th>
+    </tr></thead>
+    <tbody>
+      <tr><td class="hi">Long Straddle</td><td class="neu">≈ 0</td><td class="pos">+</td><td class="pos">+</td><td class="neg">−</td><td class="pos">+</td><td class="neu">≈ 0</td></tr>
+      <tr><td class="hi">Short Straddle</td><td class="neu">≈ 0</td><td class="neg">−</td><td class="neg">−</td><td class="pos">+</td><td class="neg">−</td><td class="neu">≈ 0</td></tr>
+      <tr><td class="hi">Long Strangle</td><td class="neu">≈ 0</td><td class="pos">+</td><td class="pos">+</td><td class="neg">−</td><td class="pos">++</td><td class="neu">≈ 0</td></tr>
+      <tr><td class="hi">Long Butterfly</td><td class="neu">≈ 0</td><td class="neg">−</td><td class="neg">−</td><td class="pos">+</td><td class="neg">−</td><td class="neu">≈ 0</td></tr>
+      <tr><td class="hi">Calendar Spread</td><td class="neu">≈ 0</td><td class="neg">−</td><td class="pos">+</td><td class="pos">+</td><td class="neu">small</td><td class="neu">small</td></tr>
+      <tr><td class="hi">Risk Reversal</td><td class="pos">+</td><td class="neu">small</td><td class="neu">small</td><td class="neu">small</td><td class="pos">+</td><td class="pos">+</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ========== SECTION 9: SYSTEMATIC TRADING ========== -->
+<section class="section" id="s9">
+  <div class="section-header">
+    <span class="section-num">09</span>
+    <h2>Systematic Volatility Trading</h2>
+  </div>
+
+  <h3>Variance Risk Premium (VRP) 策略</h3>
+  <div class="callout success">
+    <div class="callout-title">Core Alpha: Short Volatility</div>
+    <p style="font-size:13px;">历史上 IV > RV（平均 VRP ≈ 2-4 vol points），因此系统性卖出波动率是盈利的。VRP 来源于投资者为对冲下行风险支付的溢价。<br><br>
+    <strong style="color:var(--text-bright);">策略:</strong> 每月卖出 ATM Straddle/Strangle，Delta 中性，持至到期 → 捕获 VRP。Sharp Ratio ≈ 0.5–1.5（有尾部风险）。</p>
+  </div>
+
+  <h3>系统化信号构建框架</h3>
+  <table class="data-table">
+    <thead><tr>
+      <th>信号类型</th><th>指标</th><th>逻辑</th><th>做多/做空 Vol</th>
+    </tr></thead>
+    <tbody>
+      <tr>
+        <td class="hi">IV vs RV</td>
+        <td><code>VRP = IV − RV_trailing</code></td>
+        <td>IV 显著高于 RV → Short Vol（收益于均值回复）</td>
+        <td class="neg">Short Vol</td>
+      </tr>
+      <tr>
+        <td class="hi">Vol Momentum</td>
+        <td><code>MA(IV, 20) vs MA(IV, 5)</code></td>
+        <td>短期 IV 上升趋势 → Long Vol（趋势跟随）</td>
+        <td class="pos">Long Vol</td>
+      </tr>
+      <tr>
+        <td class="hi">Term Structure</td>
+        <td><code>IVTS = VIX3M/VIX</code></td>
+        <td>IVTS &lt; 1（倒挂）→ 危机状态，减少 short vol</td>
+        <td class="pos">Long Vol</td>
+      </tr>
+      <tr>
+        <td class="hi">Skew Signal</td>
+        <td><code>25RR normalized</code></td>
+        <td>Skew 极端偏斜 → Skew mean reversion 机会</td>
+        <td>Skew Trade</td>
+      </tr>
+      <tr>
+        <td class="hi">Vol of Vol</td>
+        <td><code>VVIX level</code></td>
+        <td>VVIX 高 → Vol 本身不稳定，减仓 short vol</td>
+        <td class="pos">Reduce Short</td>
+      </tr>
+      <tr>
+        <td class="hi">Earnings/Events</td>
+        <td><code>IV jump before earnings</code></td>
+        <td>Earnings vol crush → Short IV before event</td>
+        <td class="neg">Short Vol</td>
+      </tr>
+      <tr>
+        <td class="hi">Intraday Microstructure</td>
+        <td><code>Option flow imbalance</code></td>
+        <td>大量 call buying → 期权做市商 Vega 短头寸 → IV 上涨</td>
+        <td class="pos">Long Vol</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Feature Engineering for Vol Signals</h3>
+  <div class="two-col">
+    <div class="mini-panel">
+      <h5>Vol Surface Features</h5>
+      <ul class="mono-list">
+        <li>ATM IV level (各期限)</li>
+        <li>25Δ Risk Reversal (skew)</li>
+        <li>25Δ Butterfly (smile curvature)</li>
+        <li>Term structure slope (IVTS)</li>
+        <li>Vol surface curvature</li>
+        <li>IV rank / IV percentile</li>
+        <li>IV z-score (normalized)</li>
+        <li>Vol cone comparison</li>
+      </ul>
+    </div>
+    <div class="mini-panel">
+      <h5>Price/Volume Features</h5>
+      <ul class="mono-list">
+        <li>RV (trailing: 5/10/20/60d)</li>
+        <li>Parkinson / GARCH vol</li>
+        <li>RV-IV spread (VRP proxy)</li>
+        <li>Return autocorrelation</li>
+        <li>Intraday vol pattern</li>
+        <li>Put/Call ratio</li>
+        <li>Option open interest</li>
+        <li>Vol surface PCA factors</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>Signal Combination & Portfolio Construction</h3>
+  <div class="formula-block gold">
+    <div class="formula-title">Sharpe-based Dynamic Signal Combining</div>
+    <div class="formula-main">
+      <span class="sym-gold">w_i</span> <span class="op"> = </span>
+      <span class="sym-gold">SR_i / Σ|SR_j|</span> <span class="cmt">  // Sharpe-ratio weighted combination</span><br><br>
+      <span class="sym-gold">Final Signal</span> <span class="op"> = </span>
+      <span class="sym-gold">Σ w_i · signal_i</span><br><br>
+      <span class="cmt">// Rolling Sharpe: SR_i = mean(ret_i) / std(ret_i) × √252</span><br>
+      <span class="cmt">// Adaptive: w 随时间更新，近期表现差的信号权重降低</span><br>
+      <span class="cmt">// Position size: notional = Signal × Vol_budget / predicted_vol</span>
+    </div>
+  </div>
+
+  <h3>Vol Forecasting Models</h3>
+  <table class="data-table">
+    <thead><tr>
+      <th>Model</th><th>方程</th><th>优点</th><th>适用场景</th>
+    </tr></thead>
+    <tbody>
+      <tr>
+        <td class="hi">GARCH(1,1)</td>
+        <td><code>σ²_t = ω + α·ε²_{t-1} + β·σ²_{t-1}</code></td>
+        <td>经典，可解释，捕捉 vol clustering</td>
+        <td>短期 RV 预测</td>
+      </tr>
+      <tr>
+        <td class="hi">HAR-RV</td>
+        <td><code>RV_t = α + β_d·RV_{d} + β_w·RV_w + β_m·RV_m</code></td>
+        <td>多尺度，RV 的长记忆性</td>
+        <td>日/周级别预测</td>
+      </tr>
+      <tr>
+        <td class="hi">EGARCH</td>
+        <td><code>ln(σ²_t) = ... asymmetric leverage</code></td>
+        <td>捕捉 leverage effect（负收益→更高 vol）</td>
+        <td>股票 vol 预测</td>
+      </tr>
+      <tr>
+        <td class="hi">ML/LSTM</td>
+        <td><code>σ_pred = LSTM([IV, RV, skew, ...])</code></td>
+        <td>捕捉非线性关系，多特征输入</td>
+        <td>综合信号预测</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ========== SECTION 10: HEDGING ========== -->
+<section class="section" id="s10">
+  <div class="section-header">
+    <span class="section-num">10</span>
+    <h2>Dynamic Hedging</h2>
+  </div>
+
+  <h3>Delta Hedging</h3>
+  <p>持有 <span class="hl">Δ 份标的资产</span>对冲期权的方向性风险，使组合 Delta = 0（Delta-neutral）。需要持续再平衡（动态对冲）。</p>
+
+  <div class="formula-block">
+    <div class="formula-title">Delta Hedge P&L (Hedging Error)</div>
+    <div class="formula-main">
+      <span class="sym">Daily P&L (delta-hedged)</span> <span class="op"> = </span>
+      <span class="sym">½Γ(dS)² + Θ·dt + ν·dσ + ...</span><br><br>
+      <span class="cmt">// Delta PnL 被对冲抵消，剩余：Gamma PnL + Theta decay + Vega PnL</span><br>
+      <span class="cmt">// 连续对冲时: E[PnL] ∝ (σ²_realized − σ²_implied) × Gamma</span>
+    </div>
+  </div>
+
+  <h3>Hedging Frequency Trade-off</h3>
+  <div class="two-col">
+    <div class="callout info">
+      <div class="callout-title">High-Frequency Hedging</div>
+      <p style="font-size:13px;">更精确地锁定 IV vs RV 的差异。Replication error 小。但<strong style="color:var(--text-bright);">交易成本高，bid-ask spread 侵蚀</strong>。适合做市商和 HFT。</p>
+    </div>
+    <div class="callout warn">
+      <div class="callout-title">Low-Frequency Hedging</div>
+      <p style="font-size:13px;">交易成本低，但 Delta residual 风险大。对于 Buy-Side，通常每日或当 |Delta| > threshold 时再平衡（<strong style="color:var(--text-bright);">Band hedging</strong>）。</p>
+    </div>
+  </div>
+
+  <h3>Vega Hedging</h3>
+  <div class="formula-block green">
+    <div class="formula-title">Vega Neutralization</div>
+    <div class="formula-main">
+      <span class="sym-g">Portfolio Vega</span> <span class="op"> = </span>
+      <span class="sym-g">Σ n_i · ν_i</span> <span class="op"> = </span> <span class="sym-g">0</span><br><br>
+      <span class="cmt">// 常见方法: 用另一期权对冲 Vega</span><br>
+      <span class="sym-g">n_hedge</span> <span class="op"> = </span>
+      <span class="sym-g">−ν_original / ν_hedge</span><br><br>
+      <span class="cmt">// 注意: Vega hedge 后 Delta 改变，需要重新 Delta hedge</span><br>
+      <span class="cmt">// Vol surface hedge: 分别对冲 Level (ATM Vega), Skew (Vanna), Curvature (Volga)</span>
+    </div>
+  </div>
+
+  <h3>Greeks Neutralization Priority</h3>
+  <table class="data-table">
+    <thead><tr>
+      <th>对冲顺序</th><th>Greek</th><th>工具</th><th>说明</th>
+    </tr></thead>
+    <tbody>
+      <tr><td class="hi">1st</td><td>Vega</td><td>Other options</td><td>先用期权对冲 Vega（Vega 只能用期权对冲）</td></tr>
+      <tr><td class="hi">2nd</td><td>Gamma</td><td>Other options</td><td>同步对冲 Gamma（需要新的期权合约）</td></tr>
+      <tr><td class="hi">3rd</td><td>Delta</td><td>Underlying / Futures</td><td>最后用标的资产对冲 Delta（调整最灵活）</td></tr>
+      <tr><td class="hi">Optional</td><td>Rho</td><td>Interest rate swaps</td><td>利率风险对冲（长期头寸必要）</td></tr>
+    </tbody>
+  </table>
+
+  <h3>P&L Attribution (PnL 拆解)</h3>
+  <div class="formula-block purple">
+    <div class="formula-title">Daily PnL Attribution</div>
+    <div class="formula-main">
+      <span class="sym-p">Total PnL</span> <span class="op"> = </span>
+      <span class="sym">Δ PnL</span> <span class="op"> + </span>
+      <span class="sym-o">Γ PnL</span> <span class="op"> + </span>
+      <span class="sym-p">Θ PnL</span> <span class="op"> + </span>
+      <span class="sym-g">ν PnL</span> <span class="op"> + </span>
+      <span class="sym-p">Vanna PnL</span> <span class="op"> + </span>
+      <span class="sym-p">Volga PnL</span> <span class="op"> + </span>
+      <span class="sym-gold">Unexplained</span><br><br>
+      <span class="cmt">Δ PnL  = Δ × ΔS</span><br>
+      <span class="cmt">Γ PnL  = ½ × Γ × (ΔS)²</span><br>
+      <span class="cmt">Θ PnL  = Θ × Δt</span><br>
+      <span class="cmt">ν PnL  = ν × Δσ_ATM</span><br>
+      <span class="cmt">Vanna  = Vanna × ΔS × Δσ</span><br>
+      <span class="cmt">Volga  = ½ × Volga × (Δσ)²</span>
+    </div>
+  </div>
+</section>
+
+<!-- ========== SECTION 11: RISK ========== -->
+<section class="section" id="s11">
+  <div class="section-header">
+    <span class="section-num">11</span>
+    <h2>Risk Management</h2>
+  </div>
+
+  <h3>Vol Trading 特有风险</h3>
+  <div class="card-grid">
+    <div class="callout danger" style="margin:0;">
+      <div class="callout-title">Gamma / Pin Risk</div>
+      <p style="font-size:13px;">临近到期 ATM 期权 Gamma 极大，标的微小移动导致 Delta 剧变。到期日价格"钉"在行权价附近时 (pin risk) 对冲困难。</p>
+    </div>
+    <div class="callout danger" style="margin:0;">
+      <div class="callout-title">Vol Regime Change</div>
+      <p style="font-size:13px;">市场从 low-vol 突然进入 high-vol（危机）。Short vol 策略在 vol spike 中会有极端亏损（negative convexity）。2018 Vol-mageddon 典型案例。</p>
+    </div>
+    <div class="callout warn" style="margin:0;">
+      <div class="callout-title">Model Risk</div>
+      <p style="font-size:13px;">BSM/Heston 等模型假设简化了现实。Jump risk（不连续价格跳跃）和 vol-of-vol 在模型中难以完全捕捉，导致对冲误差。</p>
+    </div>
+    <div class="callout warn" style="margin:0;">
+      <div class="callout-title">Liquidity Risk</div>
+      <p style="font-size:13px;">期权 bid-ask spread 宽，深 OTM 期权流动性差。压力市场下对冲成本大增。IV 的 bid-ask 代表了交易成本的核心。</p>
+    </div>
+  </div>
+
+  <h3>Vol Risk Metrics</h3>
+  <table class="data-table">
+    <thead><tr>
+      <th>指标</th><th>定义</th><th>用途</th>
+    </tr></thead>
+    <tbody>
+      <tr>
+        <td class="hi">Dollar Vega</td>
+        <td><code>ν × position × multiplier</code></td>
+        <td>1% vol 变化对应的 P&L 美元值，标准化头寸</td>
+      </tr>
+      <tr>
+        <td class="hi">Dollar Gamma</td>
+        <td><code>Γ × S² × multiplier</code></td>
+        <td>1% spot 移动对应的 Delta 变化（美元）</td>
+      </tr>
+      <tr>
+        <td class="hi">Theta (Daily)</td>
+        <td><code>Θ / 365 × multiplier</code></td>
+        <td>每日时间价值衰减，Short vol 的收入</td>
+      </tr>
+      <tr>
+        <td class="hi">VaR (Vol-specific)</td>
+        <td><code>ν × ΔIV_95% scenario</code></td>
+        <td>Vol jump 对应的 95% 分位数损失</td>
+      </tr>
+      <tr>
+        <td class="hi">Stress Test</td>
+        <td><code>ΔP&L | ΔS=±10%, Δσ=±5%</code></td>
+        <td>极端情景下的组合损失估计</td>
+      </tr>
+      <tr>
+        <td class="hi">Sharpe Ratio</td>
+        <td><code>E[R] / std(R) × √252</code></td>
+        <td>风险调整后收益，信号质量评估核心指标</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Short Vol 策略的 Tail Risk</h3>
+  <div class="formula-block orange">
+    <div class="formula-title">Short Vol P&L Distribution</div>
+    <div class="formula-main">
+      <span class="sym-o">E[PnL] > 0</span> <span class="cmt">  // 大多数时候盈利（VRP premium）</span><br>
+      <span class="sym-o">Skewness < 0</span> <span class="cmt">  // 负偏：偶发极端亏损（vol spike）</span><br>
+      <span class="sym-o">Kurtosis >> 3</span> <span class="cmt">  // 肥尾：尾部损失大于正态分布预期</span><br><br>
+      <span class="cmt">// "Picking up nickels in front of a steamroller"</span><br>
+      <span class="cmt">// 风险缓解: 买入 OTM 保护（转化为 Condor/Butterfly）</span><br>
+      <span class="cmt">// 动态止损: 若 IV 突破阈值则减仓 short vol</span><br>
+      <span class="cmt">// 多样化: 跨资产 vol trading（股票/FX/商品/利率）</span>
+    </div>
+  </div>
+
+  <h3>关键市场指标监控</h3>
+  <div class="two-col">
+    <div class="mini-panel">
+      <h5>Volatility Regime Indicators</h5>
+      <ul class="mono-list">
+        <li>VIX level (&lt;15: low, 15-25: mid, >25: high)</li>
+        <li>VVIX (vol of VIX)</li>
+        <li>VIX3M/VIX (term structure)</li>
+        <li>SKEW Index (tail risk)</li>
+        <li>VIX futures curve shape</li>
+        <li>Realized vs Implied spread</li>
+      </ul>
+    </div>
+    <div class="mini-panel">
+      <h5>Risk Limits Framework</h5>
+      <ul class="mono-list">
+        <li>Max Dollar Vega per name</li>
+        <li>Max Dollar Gamma per expiry</li>
+        <li>Max Theta bleed per day</li>
+        <li>Net Vega (long vs short)</li>
+        <li>Concentration limit per sector</li>
+        <li>VaR at 99% 1-day horizon</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- <div class="divider"></div>
+
+  <div style="text-align:center; padding: 40px 0 20px;">
+    <p style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--text-dim); letter-spacing:2px;">
+      SYSTEMATIC VOLATILITY TRADING — COMPLETE REFERENCE<br>
+      Black-Scholes · Greeks · Vol Surface · PCP · Strategies · Hedging · Risk<br><br>
+      <span style="color:var(--accent);">Yuchen Yu · Princeton MFin</span>
+    </p>
+  </div> -->
+
+</section>
+
+<!-- ========== SECTION 12: DERIVATIVES ZOO ========== -->
+<section class="section" id="s12">
+  <div class="section-header">
+    <span class="section-num">12</span>
+    <h2>Derivatives Zoo — 期权衍生品全景</h2>
+  </div>
+
+  <p>除了标准股票/指数期权，金融市场有丰富的<span class="hl">期权衍生品生态</span>，分布在利率、信用、外汇、商品等各个市场。每类衍生品都有其特定的定价模型、Greeks 结构和交易逻辑。</p>
+
+  <!-- ===== INTEREST RATE OPTIONS ===== -->
+  <h3>利率衍生品 · Interest Rate Derivatives</h3>
+
+  <div class="deriv-card d-ir">
+    <span class="deriv-tag ir">Interest Rate</span>
+    <div class="deriv-title">Swaption — 互换期权</div>
+    <p class="deriv-body">Swaption 赋予持有者在特定日期以特定固定利率（strike rate = swap rate K）进入利率互换（IRS）的权利。是利率市场中最重要的波动率工具，也是 Vol Surface 的核心。</p>
+    <div class="deriv-grid">
+      <div class="deriv-sub">
+        <strong>Payer Swaption（付固定）</strong><br>
+        持有者获得：付固定 K，收浮动 SOFR/LIBOR<br>
+        Payoff = max(S_swap − K, 0) × Annuity<br>
+        类比 Call：当利率上升（swap rate > K）时盈利<br>
+        <br>
+        <strong>Receiver Swaption（收固定）</strong><br>
+        持有者获得：收固定 K，付浮动<br>
+        Payoff = max(K − S_swap, 0) × Annuity<br>
+        类比 Put：当利率下降时盈利
+      </div>
+      <div class="deriv-sub">
+        <strong>定价：Black-76 模型</strong><br>
+        Payer = A(t) · [F·N(d₁) − K·N(d₂)]<br>
+        Receiver = A(t) · [K·N(−d₂) − F·N(−d₁)]<br>
+        <br>
+        d₁ = [ln(F/K) + ½σ²T] / (σ√T)<br>
+        d₂ = d₁ − σ√T<br>
+        <br>
+        A(t): Annuity factor（互换现金流现值之和）<br>
+        F: Forward swap rate（远期互换利率）<br>
+        σ: Swaption implied vol（Normal or Log-normal）
+      </div>
+    </div>
+    <div class="formula-block gold" style="margin-top:16px;">
+      <div class="formula-title">Swaption Vol Surface — Normal vs Log-Normal</div>
+      <div class="formula-main">
+        <span class="sym-gold">Log-normal (Black):</span> <span class="cmt">  dF = σ_LN · F · dW  — 负利率环境下失效</span><br>
+        <span class="sym-gold">Normal (Bachelier):</span>  <span class="cmt">  dF = σ_N · dW       — σ_N 为 basis point vol (bpvol)</span><br>
+        <span class="sym-gold">SABR:</span>               <span class="cmt">  最常用，同时捕捉 smile 和 skew</span><br><br>
+        <span class="cmt">// Conversion: σ_N ≈ σ_LN × F（ATM 近似）</span><br>
+        <span class="cmt">// Swaption Vol Matrix: Expiry (1M→30Y) × Tenor (1Y→30Y) 的二维矩阵</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="deriv-card d-ir">
+    <span class="deriv-tag ir">Interest Rate</span>
+    <div class="deriv-title">Caps & Floors — 利率上限/下限</div>
+    <p class="deriv-body">Cap 是一系列 Caplet 的组合，每个 Caplet 是对单期浮动利率的 Call Option。Caps 用于对冲浮动利率贷款的利率上行风险。Floor 则是 Floorlet（Put）的组合。</p>
+    <div class="deriv-grid">
+      <div class="deriv-sub">
+        <strong>Caplet 定价（Black-76）</strong><br>
+        Caplet_i = τ_i · P(0,t_i) · [F_i·N(d₁) − K·N(d₂)]<br>
+        <br>
+        τ_i: 第 i 期天数分数（day count fraction）<br>
+        P(0,t_i): 折现因子<br>
+        F_i: 远期利率（forward rate）<br>
+        <br>
+        Cap = Σ Caplet_i（所有期汇总）<br>
+        Floor = Σ Floorlet_i
+      </div>
+      <div class="deriv-sub">
+        <strong>Cap-Floor Parity（类比 PCP）</strong><br>
+        Cap − Floor = IRS<br>
+        （Cap − Floor = Payer Swap）<br>
+        <br>
+        <strong>ATM Cap/Floor Vol:</strong><br>
+        ATM strike = par swap rate<br>
+        Vol Term Structure：短端 vol 通常高于长端<br>
+        <br>
+        <strong>Cap Vol vs Swaption Vol:</strong><br>
+        Cap 用 strip vol（各期限不同σ）<br>
+        Swaption 用 flat vol
+      </div>
+    </div>
+  </div>
+
+  <div class="deriv-card d-ir">
+    <span class="deriv-tag ir">Interest Rate</span>
+    <div class="deriv-title">Bond Options & Treasury Options</div>
+    <p class="deriv-body">对债券价格的期权。国债期货期权（TY options）是美国市场重要的利率 vol 工具。定价用 Black-76（以债券价格为标的）。</p>
+    <div class="deriv-grid">
+      <div class="deriv-sub">
+        <strong>Call on Bond:</strong><br>
+        Payoff = max(B_T − K, 0)<br>
+        B_T: 到期时债券价格<br>
+        <br>
+        定价用 Black-76 以 Forward Bond Price 为 F<br>
+        或 Hull-White / Vasicek 短利率模型
+      </div>
+      <div class="deriv-sub">
+        <strong>Duration × Convexity:</strong><br>
+        利率期权的 Delta ≈ −Duration × ΔBond<br>
+        Gamma ≈ Convexity 效应<br>
+        <br>
+        <strong>Interest Rate Gamma:</strong><br>
+        DV01: 利率变动1bp的价格变化（类比 Delta）<br>
+        Gamma: DV01 的变化率
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== CREDIT DERIVATIVES ===== -->
+  <h3>信用衍生品 · Credit Derivatives</h3>
+
+  <div class="deriv-card d-cr">
+    <span class="deriv-tag cr">Credit</span>
+    <div class="deriv-title">CDS Options（信用违约互换期权）</div>
+    <p class="deriv-body">对 CDS spread 的期权。Payer CDS Option：支付溢价购买在特定日期以 strike spread K 进入 CDS 保护（买保护 = 做空信用）的权利。常用于对冲信用 tail risk 或交易信用 vol。</p>
+    <div class="deriv-grid">
+      <div class="deriv-sub">
+        <strong>Payer CDS Option Payoff:</strong><br>
+        max(s_T − K, 0) × Risky Annuity<br>
+        s_T: 到期时 CDS spread<br>
+        <br>
+        类似 Swaption，用 Black-76 定价<br>
+        Credit Vol = CDS Spread Vol（通常 log-normal）<br>
+        <br>
+        <strong>Knock-out feature:</strong><br>
+        标准 CDS Option 在违约发生时行权
+      </div>
+      <div class="deriv-sub">
+        <strong>信用 Greeks:</strong><br>
+        CS01: spread 变动1bp的价格敏感度（类比 DV01）<br>
+        Gamma: CS01 的变化率<br>
+        Jump-to-default risk: 违约跳跃风险（无法对冲）<br>
+        <br>
+        <strong>CDIS:</strong> CDS Index Swaption<br>
+        CDX/iTraxx 指数期权，更流动，类比 SPX 指数期权
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== FX OPTIONS ===== -->
+  <h3>外汇期权 · FX Options</h3>
+
+  <div class="deriv-card d-fx">
+    <span class="deriv-tag fx">Foreign Exchange</span>
+    <div class="deriv-title">FX Vanilla Options & Vol Quoting Convention</div>
+    <p class="deriv-body">FX 期权市场有独特的报价惯例。Vol 以 Delta 而非 Strike 表示，Vol Surface 用 ATM vol + Risk Reversal + Butterfly 三组数据重建。</p>
+    <div class="deriv-grid">
+      <div class="deriv-sub">
+        <strong>Garman-Kohlhagen 模型（含双利率）:</strong><br>
+        C = S·e^(−r_f T)·N(d₁) − K·e^(−r_d T)·N(d₂)<br>
+        d₁ = [ln(S/K) + (r_d − r_f + σ²/2)T] / (σ√T)<br>
+        <br>
+        r_d: domestic risk-free rate<br>
+        r_f: foreign risk-free rate (q = r_f)<br>
+        <br>
+        <strong>Forward Rate:</strong><br>
+        F = S · e^((r_d − r_f)T)
+      </div>
+      <div class="deriv-sub">
+        <strong>FX Vol Surface 报价：</strong><br>
+        ATM vol（DNS: delta neutral straddle）<br>
+        25Δ Risk Reversal = σ(25C) − σ(25P)<br>
+        25Δ Butterfly = ½(σ(25C)+σ(25P)) − σATM<br>
+        <br>
+        <strong>FX Smile 特点:</strong><br>
+        通常对称（双尾风险）<br>
+        EM currencies: 非对称 skew（贬值风险）<br>
+        Vanna-Volga 方法常用于 FX exotics 定价
+      </div>
+    </div>
+    <div class="formula-block green" style="margin-top:16px;">
+      <div class="formula-title">Vanna-Volga Method — FX Exotic Pricing</div>
+      <div class="formula-main">
+        <span class="sym-g">V_exotic</span> <span class="op"> ≈ </span>
+        <span class="sym-g">V_BS + x₁·(MktPrice(25P) − BSPrice(25P)) + x₂·(MktPrice(ATM) − BSPrice(ATM)) + x₃·(MktPrice(25C) − BSPrice(25C))</span><br><br>
+        <span class="cmt">// x₁,x₂,x₃: 由 Vanna, Volga 匹配条件确定的权重</span><br>
+        <span class="cmt">// 把 vanilla smile 的信息"传递"给 exotic 定价</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== EQUITY EXOTICS ===== -->
+  <h3>异型期权 · Exotic Options</h3>
+
+  <div class="deriv-card d-ex">
+    <span class="deriv-tag ex">Exotic</span>
+    <div class="deriv-title">Barrier Options — 障碍期权</div>
+    <p class="deriv-body">当标的价格触及某个 Barrier 水平时期权生效（Knock-In）或失效（Knock-Out）。比 vanilla 更便宜，但有 Gamma 突变风险（pin risk at barrier）。</p>
+    <div class="deriv-grid">
+      <div class="deriv-sub">
+        <strong>四种基本类型:</strong><br>
+        Down-and-Out Call: S 跌破 H 则失效<br>
+        Down-and-In Call:  S 跌破 H 才生效<br>
+        Up-and-Out Call:   S 涨破 H 则失效<br>
+        Up-and-In Call:    S 涨破 H 才生效<br>
+        <br>
+        <strong>Knock-In + Knock-Out = Vanilla</strong><br>
+        <br>
+        BSM 解析公式存在（连续监测时）<br>
+        离散监测需 Monte Carlo / PDE
+      </div>
+      <div class="deriv-sub">
+        <strong>Greeks 特殊性:</strong><br>
+        Barrier 附近 Delta 和 Gamma 极不稳定<br>
+        Gamma 在 barrier 处趋于 ±∞（near-barrier）<br>
+        Delta 可能超过1或变负（超线性）<br>
+        <br>
+        <strong>Vanna 关键:</strong><br>
+        Barrier option 的 vol skew 敏感度极强<br>
+        Delta 随 vol 剧烈变化（Vanna 大）<br>
+        必须用 Local Vol 或 SV 模型定价
+      </div>
+    </div>
+  </div>
+
+  <div class="deriv-card d-ex">
+    <span class="deriv-tag ex">Exotic</span>
+    <div class="deriv-title">Digital / Binary Options — 数字期权</div>
+    <p class="deriv-body">到期 payoff 为固定金额（Cash-or-Nothing）或标的资产（Asset-or-Nothing）的全有或全无期权。是 Barrier Option 的极限情况，也是 Vol Surface 的重要 hedge 工具。</p>
+    <div class="deriv-grid">
+      <div class="deriv-sub">
+        <strong>Cash-or-Nothing Call:</strong><br>
+        Payoff = Q · 1{S_T > K}<br>
+        价格 = Q · e^(−rT) · N(d₂)<br>
+        <br>
+        <strong>关键关系:</strong><br>
+        Digital Call = −∂C/∂K · e^(rT)<br>
+        = Breeden-Litzenberger 密度的积分<br>
+        <br>
+        数字期权价格 ∝ 风险中性概率
+      </div>
+      <div class="deriv-sub">
+        <strong>Smile 调整:</strong><br>
+        BSM Digital: Q · e^(−rT) · N(d₂)<br>
+        Smile-adjusted: 需要加入 Vanna 修正<br>
+        <br>
+        ΔDigital = −∂C/∂K = e^(−rT)·N(d₂)/σ√T + skew项<br>
+        <br>
+        <strong>实践中：</strong><br>
+        用 tight Call Spread 复制数字期权<br>
+        Digital ≈ [C(K−ε) − C(K+ε)] / (2ε)
+      </div>
+    </div>
+  </div>
+
+  <div class="deriv-card d-ex">
+    <span class="deriv-tag ex">Exotic</span>
+    <div class="deriv-title">Asian Options — 亚式期权</div>
+    <p class="deriv-body">Payoff 基于标的资产价格的<span class="hl">路径平均值</span>，而非到期现货价格。因为平均化降低了波动率，Asian option 比 Vanilla 便宜约 1/√3（对于算术平均）。</p>
+    <div class="deriv-grid">
+      <div class="deriv-sub">
+        <strong>Average Rate Option:</strong><br>
+        Payoff = max(Ā − K, 0)，Ā = (1/n)Σ S_ti<br>
+        <br>
+        <strong>Geometric Average（解析解）:</strong><br>
+        Ā_geo = exp((1/n)Σ ln S_ti)<br>
+        σ_Asian = σ · √((2n+1)/(6(n+1)))<br>
+        ≈ σ/√3 （连续时）<br>
+        用 BSM 代入 σ_Asian 即可
+      </div>
+      <div class="deriv-sub">
+        <strong>Arithmetic Average（近似解）:</strong><br>
+        Turnbull-Wakeman 矩匹配近似<br>
+        匹配 Ā_arith 的一阶和二阶矩<br>
+        σ_TW ≈ σ/√3 + skewness correction<br>
+        <br>
+        <strong>应用：</strong><br>
+        商品（石油、天然气）市场常用<br>
+        减少 expiry manipulation risk<br>
+        期末集中结算 → 平均化更公平
+      </div>
+    </div>
+  </div>
+
+  <div class="deriv-card d-ex">
+    <span class="deriv-tag ex">Exotic</span>
+    <div class="deriv-title">Lookback Options — 回望期权</div>
+    <p class="deriv-body">Payoff 基于标的资产在整个存续期内的<span class="hl">最高或最低价格</span>，是"买到最低、卖到最高"的期权。比 Asian 更贵，Vega 最大。</p>
+    <div class="deriv-grid">
+      <div class="deriv-sub">
+        <strong>Floating Strike Lookback Call:</strong><br>
+        Payoff = S_T − min(S_t), t∈[0,T]<br>
+        <br>
+        <strong>Fixed Strike Lookback Call:</strong><br>
+        Payoff = max(max(S_t) − K, 0)<br>
+        <br>
+        Goldman-Sosin-Gatto (1979) 解析公式<br>
+        Vega 最高（对 vol 最敏感）
+      </div>
+      <div class="deriv-sub">
+        <strong>定价直觉：</strong><br>
+        Lookback 包含了所有可能的 vanilla 期权<br>
+        = 一篮子 vanilla 的上包络<br>
+        价格 ≈ 2 × ATM Straddle (rough approximation)<br>
+        <br>
+        <strong>应用：</strong><br>
+        结构化产品（保本型）<br>
+        对冲基金业绩费（High-water mark = Lookback）
+      </div>
+    </div>
+  </div>
+
+  <div class="deriv-card d-ex">
+    <span class="deriv-tag ex">Exotic</span>
+    <div class="deriv-title">Variance & Volatility Swaps</div>
+    <p class="deriv-body">最纯粹的波动率交易工具，payoff 直接与已实现方差/波动率挂钩，无需 Delta 对冲。Variance Swap 是 vol surface 的完美复制产品。</p>
+    <div class="deriv-grid">
+      <div class="deriv-sub">
+        <strong>Variance Swap:</strong><br>
+        Payoff = N · (σ²_realized − K_var)<br>
+        K_var = Fair Strike（=VIX²近似）<br>
+        σ²_realized = (252/N) · Σ(ln S_{i+1}/S_i)²<br>
+        <br>
+        优点：Vega 为常数（dollar vega恒定）<br>
+        复制：OTM options weighted by 1/K²
+      </div>
+      <div class="deriv-sub">
+        <strong>Vol Swap:</strong><br>
+        Payoff = N · (σ_realized − K_vol)<br>
+        <br>
+        K_vol ≠ √K_var（Jensen 不等式）<br>
+        K_vol < √K_var（convexity adjustment）<br>
+        <br>
+        <strong>Gamma Swap:</strong><br>
+        Payoff = Σ(S_i/S_0)·(ln S_{i+1}/S_i)²<br>
+        加权方差互换，Gamma 为常数
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== COMMODITY OPTIONS ===== -->
+  <h3>商品期权 · Commodity Options</h3>
+
+  <div class="deriv-card d-comm">
+    <span class="deriv-tag" style="background:rgba(255,107,53,0.1);color:var(--accent2);border:1px solid rgba(255,107,53,0.3);">Commodity</span>
+    <div class="deriv-title">Energy & Commodity Options</div>
+    <p class="deriv-body">商品期权的标的通常是<span class="hl">期货价格</span>（而非现货），用 Black-76 模型定价。商品 vol 结构独特：现货 vol 极高，远期 vol 较低（均值回复）。</p>
+    <div class="deriv-grid">
+      <div class="deriv-sub">
+        <strong>Black-76（期货期权）:</strong><br>
+        C = e^(−rT) · [F·N(d₁) − K·N(d₂)]<br>
+        d₁ = [ln(F/K) + ½σ²T] / (σ√T)<br>
+        <br>
+        F: 期货价格（可观测）<br>
+        无需 carry/convenience yield<br>
+        <br>
+        <strong>Spread Options（价差期权）:</strong><br>
+        Payoff = max(F₁ − F₂ − K, 0)<br>
+        Margrabe 公式（K=0时解析）
+      </div>
+      <div class="deriv-sub">
+        <strong>商品 Vol 特点:</strong><br>
+        Backwardation in vol curve（现货vol高）<br>
+        Samuelson effect: 近月期货vol > 远月<br>
+        季节性 vol（天然气冬季 vol 高）<br>
+        <br>
+        <strong>关键品种:</strong><br>
+        WTI/Brent 原油期权（NYMEX）<br>
+        天然气期权（HH）<br>
+        贵金属（黄金/白银）<br>
+        农产品（玉米/大豆/小麦）
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== COMPARISON TABLE ===== -->
+  <h3>衍生品横向对比</h3>
+  <table class="data-table">
+    <thead><tr>
+      <th>衍生品</th><th>标的</th><th>定价模型</th><th>关键 Vol</th><th>主要 Greeks</th><th>市场用途</th>
+    </tr></thead>
+    <tbody>
+      <tr><td class="hi">Equity Option</td><td>股价/指数</td><td>BSM, Local Vol, Heston</td><td>Equity IV Surface</td><td>Δ,Γ,ν,Θ</td><td>对冲,投机,VRP</td></tr>
+      <tr><td class="hi">Swaption</td><td>Swap Rate</td><td>Black-76, SABR</td><td>Swaption Matrix</td><td>DV01,Gamma,Vega</td><td>利率风险管理</td></tr>
+      <tr><td class="hi">Cap/Floor</td><td>LIBOR/SOFR</td><td>Black-76 (each caplet)</td><td>Cap Vol Curve</td><td>DV01,Gamma</td><td>贷款利率对冲</td></tr>
+      <tr><td class="hi">CDS Option</td><td>CDS Spread</td><td>Black-76 (credit)</td><td>Credit Vol</td><td>CS01,Gamma,JTD</td><td>信用 vol 交易</td></tr>
+      <tr><td class="hi">FX Option</td><td>汇率</td><td>Garman-Kohlhagen</td><td>25Δ RR+BF Matrix</td><td>Δ,ν,Vanna</td><td>汇率风险管理</td></tr>
+      <tr><td class="hi">Barrier Option</td><td>股价/汇率</td><td>BSM+Local Vol</td><td>Skew critical</td><td>Γ极端,Vanna</td><td>结构化产品</td></tr>
+      <tr><td class="hi">Asian Option</td><td>路径均值</td><td>TW近似/MC</td><td>σ/√3 approx</td><td>低Γ,低ν</td><td>商品结算</td></tr>
+      <tr><td class="hi">Variance Swap</td><td>已实现方差</td><td>Model-free replication</td><td>Vol Surface整体</td><td>恒定Vega,Γ∝1/S²</td><td>纯vol交易</td></tr>
+      <tr><td class="hi">Commodity Option</td><td>期货价格</td><td>Black-76</td><td>Futures Vol Curve</td><td>Δ,Γ,ν (Samuelson)</td><td>能源风险管理</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout info" style="margin-top:24px;">
+    <div class="callout-title">Vol Surface 的统一视角</div>
+    <p style="font-size:13px;">所有这些衍生品，本质上都是在不同形式的 vol surface 上做交易。股票期权有 <strong style="color:var(--text-bright)">IV(K,T)</strong>，利率市场有 <strong style="color:var(--text-bright)">Swaption Matrix σ(Expiry, Tenor)</strong>，FX 有 <strong style="color:var(--text-bright)">25Δ Vol Matrix</strong>。系统化波动率交易的核心在于：识别这些 vol surface 上的<span class="hl">相对价值错误定价</span>，并用希腊字母中性的方式构建头寸，捕获 vol 回归或 vol 溢价收益。</p>
+  </div>
+
+  <div class="divider"></div>
+  <div style="text-align:center; padding: 20px 0 20px;">
+    <p style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--text-dim); letter-spacing:2px;">
+      SYSTEMATIC VOLATILITY TRADING — COMPLETE REFERENCE<br>
+      Black-Scholes · Greeks · Vol Surface · PCP · Strategies · Hedging · Risk · Derivatives<br><br>
+      <span style="color:var(--accent);">Princeton MFin · Quantitative Finance</span>
+    </p>
+  </div>
+
+</section>
+</div>
+
+<!-- VOL SURFACE CANVAS -->
+<script>
+// Scroll animation
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.05 });
+document.querySelectorAll('.section').forEach(s => observer.observe(s));
+
+// Nav dot active state
+const sections = document.querySelectorAll('section[id]');
+const dots = document.querySelectorAll('.nav-dot');
+window.addEventListener('scroll', () => {
+  let current = '';
+  sections.forEach(s => {
+    if(window.scrollY >= s.offsetTop - 200) current = s.id;
+  });
+  dots.forEach(d => {
+    d.classList.toggle('active', d.dataset.target === current);
+  });
+});
+dots.forEach(d => {
+  d.addEventListener('click', () => {
+    document.getElementById(d.dataset.target)?.scrollIntoView({behavior:'smooth'});
+  });
+});
+
+// Vol Surface Canvas
+const canvas = document.getElementById('volCanvas');
+const ctx = canvas.getContext('2d');
+
+const W = canvas.width, H = canvas.height;
+
+function volSurface(k, t) {
+  // k: log-moneyness relative, t: tenor in months
+  const atm = 20 + 5 * Math.exp(-t/12) + 2 * Math.sin(t/6);
+  const skew = -8 * k * Math.exp(-t/8);
+  const smile = 12 * k * k * Math.exp(-t/10);
+  return atm + skew + smile;
+}
+
+const strikes = 30, tenors = 20;
+const kMin = -0.4, kMax = 0.3;
+const tMin = 0.5, tMax = 24;
+
+// Draw grid
+ctx.fillStyle = '#0d1117';
+ctx.fillRect(0, 0, W, H);
+
+// Draw vol surface as heatmap + contours
+const cellW = W / strikes, cellH = H / tenors;
+
+let minV = Infinity, maxV = -Infinity;
+const vals = [];
+for(let ti = 0; ti < tenors; ti++) {
+  vals[ti] = [];
+  for(let ki = 0; ki < strikes; ki++) {
+    const k = kMin + (kMax-kMin)*ki/(strikes-1);
+    const t = tMin + (tMax-tMin)*ti/(tenors-1);
+    const v = volSurface(k, t);
+    vals[ti][ki] = v;
+    if(v < minV) minV = v;
+    if(v > maxV) maxV = v;
+  }
+}
+
+// Color function: dark blue -> cyan -> green -> yellow -> orange
+function volColor(v, mn, mx) {
+  const t = (v - mn) / (mx - mn);
+  if(t < 0.25) {
+    const s = t / 0.25;
+    return `rgb(${Math.round(0*s)}, ${Math.round(100 + 155*s)}, ${Math.round(100 + 155*s)})`;
+  } else if(t < 0.5) {
+    const s = (t-0.25)/0.25;
+    return `rgb(${Math.round(50*s)}, ${Math.round(255)}, ${Math.round(255*(1-s))})`;
+  } else if(t < 0.75) {
+    const s = (t-0.5)/0.25;
+    return `rgb(${Math.round(50+205*s)}, ${Math.round(255)}, ${Math.round(0)})`;
+  } else {
+    const s = (t-0.75)/0.25;
+    return `rgb(${Math.round(255)}, ${Math.round(255*(1-s))}, ${Math.round(0)})`;
+  }
+}
+
+for(let ti = 0; ti < tenors; ti++) {
+  for(let ki = 0; ki < strikes; ki++) {
+    const x = ki * cellW;
+    const y = (tenors - 1 - ti) * cellH;
+    ctx.fillStyle = volColor(vals[ti][ki], minV, maxV);
+    ctx.fillRect(Math.floor(x), Math.floor(y), Math.ceil(cellW)+1, Math.ceil(cellH)+1);
+  }
+}
+
+// Contour lines
+ctx.strokeStyle = 'rgba(0,0,0,0.4)';
+ctx.lineWidth = 1;
+const contourLevels = [18, 22, 26, 30, 34, 38];
+// simplified: just horizontal bands
+contourLevels.forEach(lv => {
+  ctx.beginPath();
+  let started = false;
+  for(let ki = 0; ki < strikes; ki++) {
+    for(let ti = 0; ti < tenors-1; ti++) {
+      const v1 = vals[ti][ki], v2 = vals[ti+1][ki];
+      if((v1 <= lv && v2 >= lv) || (v1 >= lv && v2 <= lv)) {
+        const frac = (lv - v1) / (v2 - v1);
+        const x = (ki + 0.5) * cellW;
+        const y = (tenors - 1 - (ti + frac)) * cellH;
+        if(!started) { ctx.moveTo(x, y); started=true; }
+        else ctx.lineTo(x, y);
+      }
+    }
+  }
+  ctx.stroke();
+});
+
+// Labels
+ctx.fillStyle = 'rgba(255,255,255,0.7)';
+ctx.font = '11px IBM Plex Mono, monospace';
+ctx.textAlign = 'center';
+
+// X axis: Strike
+const strikeLabels = ['-40%','-30%','-20%','-10%','ATM','+10%','+20%'];
+strikeLabels.forEach((l, i) => {
+  const x = (i / (strikeLabels.length-1)) * W;
+  ctx.fillStyle = 'rgba(0,212,255,0.8)';
+  ctx.fillText(l, x, H-6);
+});
+ctx.fillStyle = 'rgba(255,255,255,0.4)';
+ctx.fillText('← Strike / Moneyness →', W/2, H-6);
+
+// Y axis: Tenor
+ctx.save();
+ctx.translate(12, H/2);
+ctx.rotate(-Math.PI/2);
+ctx.fillStyle = 'rgba(0,212,255,0.8)';
+ctx.fillText('Tenor (1M → 24M)', 0, 0);
+ctx.restore();
+
+// Vol scale labels
+const vLabels = [Math.round(minV), Math.round((minV+maxV)/2), Math.round(maxV)];
+vLabels.forEach((v, i) => {
+  const x = W - 8;
+  const y = H - i * H/2 - 14;
+  ctx.fillStyle = volColor(v, minV, maxV);
+  ctx.textAlign = 'right';
+  ctx.fillText(`σ=${v}%`, x, y);
+});
+
+// Title
+ctx.fillStyle = 'rgba(255,255,255,0.9)';
+ctx.font = 'bold 13px IBM Plex Mono, monospace';
+ctx.textAlign = 'center';
+ctx.fillText('EQUITY IMPLIED VOLATILITY SURFACE', W/2, 20);
+
+// ============================================================
+// EMBEDDED GREEK CHARTS (section 3)
+// ============================================================
+(function(){
+  function normCDF(x){
+    const a1=0.254829592,a2=-0.284496736,a3=1.421413741,a4=-1.453152027,a5=1.061405429,p=0.3275911;
+    const sign=x<0?-1:1; x=Math.abs(x)/Math.SQRT2;
+    const t=1/(1+p*x);
+    const y=1-(((((a5*t+a4)*t)+a3)*t+a2)*t+a1)*t*Math.exp(-x*x);
+    return 0.5*(1+sign*y);
+  }
+  function normPDF(x){return Math.exp(-0.5*x*x)/Math.sqrt(2*Math.PI);}
+
+  function bsmGreeks(S,K,T,r,sig){
+    if(T<0.001) return {dC:S>K?1:0,dP:S<K?-1:0,gamma:0,vega:0,thetaC:0,thetaP:0,rhoC:0,rhoP:0};
+    const sq=Math.sqrt(T);
+    const d1=(Math.log(S/K)+(r+0.5*sig*sig)*T)/(sig*sq);
+    const d2=d1-sig*sq;
+    const disc=Math.exp(-r*T);
+    const npd1=normPDF(d1);
+    return {
+      dC: normCDF(d1),
+      dP: normCDF(d1)-1,
+      gamma: npd1/(S*sig*sq),
+      vega:  S*npd1*sq/100,           // per 1% vol
+      thetaC:(-(S*npd1*sig)/(2*sq) - r*K*disc*normCDF(d2))/365,
+      thetaP:(-(S*npd1*sig)/(2*sq) + r*K*disc*normCDF(-d2))/365,
+      rhoC:  K*T*disc*normCDF(d2)/100,  // per 1% rate
+      rhoP: -K*T*disc*normCDF(-d2)/100
+    };
+  }
+
+  let gcK=100, gcT=0.5, gcSig=0.20, gcR=0.05;
+  const S0=60, S1=160, NPTS=200;
+  const dpr=window.devicePixelRatio||1;
+
+  function gcSetup(cvs){
+    const w=cvs.parentElement.clientWidth-28;
+    const h=parseInt(cvs.getAttribute('height'))||160;
+    cvs.style.width=w+'px'; cvs.style.height=h+'px';
+    cvs.width=w*dpr; cvs.height=h*dpr;
+    const ctx=cvs.getContext('2d'); ctx.scale(dpr,dpr);
+    return {ctx,w,h};
+  }
+
+  function drawGC(id, callArr, putArr, accentCol, putSame){
+    const cvs=document.getElementById('gc-cv-'+id);
+    if(!cvs) return;
+    const {ctx,w,h}=gcSetup(cvs);
+    const PAD={top:10,right:8,bottom:22,left:46};
+    const cw=w-PAD.left-PAD.right, ch=h-PAD.top-PAD.bottom;
+
+    ctx.fillStyle='#0d1117'; ctx.fillRect(0,0,w,h);
+
+    const allY=[...callArr,...putArr];
+    let yMin=Math.min(...allY), yMax=Math.max(...allY);
+    const yr=yMax-yMin||1; yMin-=yr*0.1; yMax+=yr*0.1;
+
+    function xp(i){return PAD.left+(i/NPTS)*cw;}
+    function yp(y){return PAD.top+(1-(y-yMin)/(yMax-yMin))*ch;}
+    function xpS(S){return PAD.left+((S-S0)/(S1-S0))*cw;}
+
+    // Grid
+    ctx.strokeStyle='rgba(255,255,255,0.04)'; ctx.lineWidth=1;
+    for(let i=0;i<=4;i++){
+      const yv=yMin+i*(yMax-yMin)/4; const ypv=yp(yv);
+      ctx.beginPath(); ctx.moveTo(PAD.left,ypv); ctx.lineTo(PAD.left+cw,ypv); ctx.stroke();
+      ctx.fillStyle='rgba(110,127,143,0.7)';
+      ctx.font=`${9*dpr/dpr}px IBM Plex Mono,monospace`;
+      ctx.textAlign='right';
+      ctx.fillText(yv.toFixed(3),PAD.left-3,ypv+3);
+    }
+    for(let i=0;i<=4;i++){
+      const xv=PAD.left+i*cw/4;
+      ctx.beginPath(); ctx.moveTo(xv,PAD.top); ctx.lineTo(xv,PAD.top+ch); ctx.stroke();
+      ctx.fillStyle='rgba(110,127,143,0.5)'; ctx.textAlign='center';
+      ctx.fillText((S0+i*(S1-S0)/4).toFixed(0),xv,h-5);
+    }
+
+    // Zero line
+    if(yMin<0&&yMax>0){
+      ctx.save(); ctx.strokeStyle='rgba(255,255,255,0.18)'; ctx.lineWidth=1;
+      ctx.setLineDash([3,4]);
+      ctx.beginPath(); ctx.moveTo(PAD.left,yp(0)); ctx.lineTo(PAD.left+cw,yp(0)); ctx.stroke();
+      ctx.restore();
+    }
+
+    // ATM line
+    const ax=xpS(gcK);
+    ctx.save(); ctx.strokeStyle='rgba(255,255,255,0.22)'; ctx.lineWidth=1; ctx.setLineDash([2,5]);
+    ctx.beginPath(); ctx.moveTo(ax,PAD.top); ctx.lineTo(ax,PAD.top+ch); ctx.stroke();
+    ctx.fillStyle='rgba(255,255,255,0.3)'; ctx.font='8px IBM Plex Mono,monospace'; ctx.textAlign='center';
+    ctx.fillText('K',ax,PAD.top+7);
+    ctx.restore();
+
+    // Fill
+    const grad=ctx.createLinearGradient(0,PAD.top,0,PAD.top+ch);
+    const hex=accentCol.replace('#','');
+    const ri=parseInt(hex.substring(0,2),16), gi=parseInt(hex.substring(2,4),16), bi=parseInt(hex.substring(4,6),16);
+    grad.addColorStop(0,`rgba(${ri},${gi},${bi},0.12)`); grad.addColorStop(1,'transparent');
+    ctx.save(); ctx.fillStyle=grad; ctx.beginPath();
+    callArr.forEach((y,i)=>{const px=xp(i); if(i===0) ctx.moveTo(px,yp(y)); else ctx.lineTo(px,yp(y));});
+    ctx.lineTo(xp(NPTS),yp(Math.max(yMin,0))); ctx.lineTo(xp(0),yp(Math.max(yMin,0))); ctx.closePath(); ctx.fill(); ctx.restore();
+
+    // Put (dashed)
+    if(!putSame){
+      ctx.save(); ctx.strokeStyle='#ff6b35'; ctx.lineWidth=1.6; ctx.setLineDash([5,4]);
+      ctx.beginPath(); putArr.forEach((y,i)=>{const px=xp(i); if(i===0) ctx.moveTo(px,yp(y)); else ctx.lineTo(px,yp(y));}); ctx.stroke(); ctx.restore();
+    }
+    // Call (solid)
+    ctx.save(); ctx.strokeStyle=accentCol; ctx.lineWidth=2; ctx.shadowColor=accentCol; ctx.shadowBlur=6;
+    ctx.beginPath(); callArr.forEach((y,i)=>{const px=xp(i); if(i===0) ctx.moveTo(px,yp(y)); else ctx.lineTo(px,yp(y));}); ctx.stroke(); ctx.restore();
+
+    cvs._meta={PAD,cw,ch,w,h,yMin,yMax,xpS,yp};
+  }
+
+  function gcCompute(){
+    const pts=Array.from({length:NPTS+1},(_,i)=>S0+(S1-S0)*i/NPTS);
+    const out={dC:[],dP:[],gamma:[],vega:[],thetaC:[],thetaP:[],rhoC:[],rhoP:[]};
+    pts.forEach(S=>{
+      const g=bsmGreeks(S,gcK,gcT,gcR,gcSig);
+      out.dC.push(g.dC); out.dP.push(g.dP); out.gamma.push(g.gamma);
+      out.vega.push(g.vega); out.thetaC.push(g.thetaC); out.thetaP.push(g.thetaP);
+      out.rhoC.push(g.rhoC); out.rhoP.push(g.rhoP);
+    });
+    return out;
+  }
+
+  function gcRender(){
+    const d=gcCompute();
+    drawGC('delta', d.dC, d.dP, '#00d4ff', false);
+    drawGC('gamma', d.gamma, d.gamma, '#ff6b35', true);
+    drawGC('vega',  d.vega, d.vega, '#7fff7f', true);
+    drawGC('theta', d.thetaC, d.thetaP, '#ff4d6a', false);
+    drawGC('rho',   d.rhoC, d.rhoP, '#ffd700', false);
+    window._gcData=d;
+  }
+
+  // Hover
+  function gcHover(id, cKey, pKey, lbl, same){
+    const cvs=document.getElementById('gc-cv-'+id);
+    const tt=document.getElementById('gc-tt-'+id);
+    if(!cvs||!tt) return;
+    cvs.addEventListener('mousemove',e=>{
+      const meta=cvs._meta; if(!meta) return;
+      const rect=cvs.getBoundingClientRect();
+      const mx=e.clientX-rect.left;
+      const relX=mx-meta.PAD.left;
+      if(relX<0||relX>meta.cw){tt.classList.remove('show');return;}
+      const si=Math.round((relX/meta.cw)*NPTS);
+      const S=S0+(S1-S0)*si/NPTS;
+      const d=window._gcData;
+      if(!d) return;
+      const cv=(d[cKey]||[])[si], pv=(d[pKey]||[])[si];
+      tt.innerHTML=`<div class="tt-hd">S = ${S.toFixed(1)}</div>
+        <div>Call <span class="tt-c">${cv!=null?cv.toFixed(5):''}</span></div>
+        ${!same?`<div>Put <span class="tt-p">${pv!=null?pv.toFixed(5):''}</span></div>`:''}`;
+      tt.style.left=(mx+10)+'px'; tt.style.top='30px';
+      tt.classList.add('show');
+    });
+    cvs.addEventListener('mouseleave',()=>tt.classList.remove('show'));
+  }
+
+  gcHover('delta','dC','dP','Δ',false);
+  gcHover('gamma','gamma','gamma','Γ',true);
+  gcHover('vega','vega','vega','ν',true);
+  gcHover('theta','thetaC','thetaP','Θ',false);
+  gcHover('rho','rhoC','rhoP','ρ',false);
+
+  // Sliders
+  function gcBind(sliderId, valId, fmt, setter){
+    const sl=document.getElementById(sliderId);
+    const vl=document.getElementById(valId);
+    if(!sl||!vl) return;
+    sl.addEventListener('input',()=>{
+      const v=parseFloat(sl.value);
+      const {display,value}=fmt(v);
+      vl.textContent=display; setter(value); gcRender();
+    });
+  }
+  gcBind('gc-k','gc-kv',v=>({display:v.toFixed(0),value:v}),v=>gcK=v);
+  gcBind('gc-t','gc-tv',v=>({display:v.toFixed(2)+' yr',value:v}),v=>gcT=v);
+  gcBind('gc-sig','gc-sv',v=>({display:v.toFixed(0)+'%',value:v/100}),v=>gcSig=v);
+  gcBind('gc-r','gc-rv',v=>({display:v.toFixed(1)+'%',value:v/100}),v=>gcR=v);
+
+  // Init + resize
+  window.addEventListener('load',gcRender);
+  window.addEventListener('resize',gcRender);
+})();
+</script>
+
+<!-- ========== SECTION 13: ATM OPTION APPROXIMATIONS ========== -->
+<section class="section" id="s13">
+  <div class="section-header">
+    <span class="section-num">13</span>
+    <h2>ATM Option Approximations — 核心近似公式推导</h2>
+  </div>
+
+  <p>对于平值（ATM）期权，BSM 公式可以做极其实用的近似展开。这些近似在面试中是<span class="hl">必考内容</span>，也是期权交易员快速心算的基础。</p>
+
+  <!-- MAIN DERIVATION: ATM Call ≈ 0.4σ√T·S -->
+  <h3>① 核心推导：ATM Call/Put ≈ 0.4 σ√T · S</h3>
+
+  <div class="callout info">
+    <div class="callout-title">直觉理解</div>
+    <p style="font-size:13px;">ATM 期权的价格 ≈ <strong style="color:var(--accent);">sigma × sqrt(T)</strong> 的某个线性函数乘以股价。本质上是在测量 <em>一个标准差的股价运动值多少钱</em>——这是 vega 概念的根。</p>
+  </div>
+
+  <div class="formula-block">
+    <div class="formula-title">Step 1 — BSM Call Formula（精确式）</div>
+    <div class="formula-main">
+      <span class="cmt">// r=0, q=0 简化。S=K（ATM）</span><br>
+      <span class="sym">C</span> <span class="op">= S·N(d₁) − K·e<sup>−rT</sup>·N(d₂)</span><br><br>
+      <span class="cmt">// d₁, d₂ 定义</span><br>
+      <span class="sym">d₁</span> <span class="op">= [ln(S/K) + (r + σ²/2)T] / (σ√T)</span><br>
+      <span class="sym">d₂</span> <span class="op">= d₁ − σ√T</span>
+    </div>
+  </div>
+
+  <div class="formula-block">
+    <div class="formula-title">Step 2 — ATM 条件下：S = K, r = 0, q = 0</div>
+    <div class="formula-main">
+      <span class="cmt">// ln(S/K) = ln(1) = 0</span><br>
+      <span class="sym">d₁</span> <span class="op">= σ√T / 2</span><br>
+      <span class="sym">d₂</span> <span class="op">= −σ√T / 2</span><br><br>
+      <span class="cmt">// 注意 d₂ = −d₁，N(−x) = 1 − N(x)</span><br>
+      <span class="sym">C<sub>ATM</sub></span> <span class="op">= S · [N(d₁) − N(d₂)]</span><br>
+      <span class="op">= S · [N(σ√T/2) − N(−σ√T/2)]</span><br>
+      <span class="op">= S · [2·N(σ√T/2) − 1]</span>
+    </div>
+  </div>
+
+  <div class="formula-block">
+    <div class="formula-title">Step 3 — Taylor Expansion of N(x) around x=0</div>
+    <div class="formula-main">
+      <span class="cmt">// 标准正态 CDF 在 x=0 附近展开</span><br>
+      <span class="sym">N(x)</span> <span class="op">= 1/2 + x · φ(0) + O(x³)</span><br>
+      <span class="op">= 1/2 + x / √(2π) + O(x³)</span><br><br>
+      <span class="cmt">// φ(0) = 1/√(2π) ≈ 0.3989</span><br>
+      <span class="sym">N(σ√T/2)</span> <span class="op">≈ 1/2 + (σ√T/2) · (1/√(2π))</span>
+    </div>
+  </div>
+
+  <div class="formula-block">
+    <div class="formula-title">Step 4 — 代入化简</div>
+    <div class="formula-main">
+      <span class="sym">C<sub>ATM</sub></span>
+      <span class="op">= S · [2·N(σ√T/2) − 1]</span><br>
+      <span class="op">≈ S · [2·(1/2 + (σ√T/2)·(1/√(2π))) − 1]</span><br>
+      <span class="op">= S · [1 + σ√T/√(2π) − 1]</span><br>
+      <span class="op">= S · σ√T / √(2π)</span><br><br>
+      <span class="cmt">// 1/√(2π) ≈ 0.3989 ≈ 0.4</span><br>
+      <span class="sym" style="color:var(--gold);">C<sub>ATM</sub> ≈ 0.4 · σ · √T · S</span>
+    </div>
+  </div>
+
+  <div class="big-formula">
+    <span class="label">ATM STRADDLE ≈ VEGA APPROXIMATION</span>
+    <span style="color:var(--accent);">C<sub>ATM</sub> = P<sub>ATM</sub></span>
+    <span style="color:var(--text-dim);"> ≈ </span>
+    <span style="color:var(--gold);">S · σ · √T / √(2π)</span>
+    <span style="color:var(--text-dim);"> ≈ </span>
+    <span style="color:var(--accent3);">0.4 · σ · √T · S</span>
+  </div>
+
+  <div class="callout success">
+    <div class="callout-title">关键精度说明</div>
+    <p style="font-size:13px;">
+      精确系数为 <strong style="color:var(--text-bright);">1/√(2π) ≈ 0.3989</strong>，近似为 0.4。<br>
+      • 当 σ√T 很小（如 σ=20%, T=3M → σ√T≈10%），误差 &lt; 0.5%<br>
+      • 当 σ√T 较大时（如 σ=80% 的 1Y期权），高阶项不可忽略，需用精确 BSM<br>
+      • <strong>Straddle ≈ 2 × C<sub>ATM</sub> ≈ 0.8 · σ · √T · S</strong>（因为 ATM 时 C = P by PCP）
+    </p>
+  </div>
+
+  <!-- WHY C = P at ATM -->
+  <h3>② 为什么 ATM 时 Call = Put？</h3>
+  <div class="formula-block">
+    <div class="formula-title">From Put-Call Parity (r=0, q=0)</div>
+    <div class="formula-main">
+      <span class="sym">C − P</span> <span class="op">= S − K·e<sup>−rT</sup></span><br>
+      <span class="cmt">// ATM: S = K, r = 0</span><br>
+      <span class="sym">C − P</span> <span class="op">= K − K = 0</span><br>
+      <span class="sym" style="color:var(--gold);">∴ C = P</span> <span class="cmt">// at ATM (r=0)</span><br><br>
+      <span class="cmt">// 有利率时: C − P = S − K·e<sup>−rT</sup> ≈ K·rT (small r)</span><br>
+      <span class="cmt">// 所以有利率时 ATM call 略贵于 ATM put</span>
+    </div>
+  </div>
+
+  <!-- TABLE: All important ATM approximations -->
+  <h3>③ 实战必记：ATM 期权全套近似公式</h3>
+  <table class="data-table">
+    <thead><tr>
+      <th>Quantity</th><th>Exact (BSM)</th><th>ATM Approximation</th><th>数值例 (σ=20%, T=0.25, S=100)</th>
+    </tr></thead>
+    <tbody>
+      <tr>
+        <td class="hi">Call / Put Price</td>
+        <td><code>S·N(d₁) − K·e<sup>−rT</sup>·N(d₂)</code></td>
+        <td><code style="color:var(--gold);">≈ 0.4·σ·√T·S</code></td>
+        <td>≈ 0.4 × 0.20 × 0.5 × 100 = <strong>4.0</strong></td>
+      </tr>
+      <tr>
+        <td class="hi">Straddle</td>
+        <td><code>C + P = 2C (ATM)</code></td>
+        <td><code style="color:var(--accent3);">≈ 0.8·σ·√T·S</code></td>
+        <td>≈ 8.0</td>
+      </tr>
+      <tr>
+        <td class="hi">Delta (Call)</td>
+        <td><code>N(d₁)</code></td>
+        <td><code style="color:var(--accent);">≈ 0.5 + σ√T/(2√(2π))</code><br><code>≈ 0.5 + 0.2·σ√T</code></td>
+        <td>≈ 0.52</td>
+      </tr>
+      <tr>
+        <td class="hi">Delta (Put)</td>
+        <td><code>N(d₁) − 1</code></td>
+        <td><code style="color:var(--accent2);">≈ −0.5 + 0.2·σ√T</code></td>
+        <td>≈ −0.48</td>
+      </tr>
+      <tr>
+        <td class="hi">Gamma</td>
+        <td><code>φ(d₁)/(S·σ√T)</code></td>
+        <td><code style="color:var(--accent3);">≈ 1/(S·σ√T·√(2π))</code><br><code>≈ 0.4/(S·σ√T)</code></td>
+        <td>≈ 0.4/(100×0.20×0.5) = <strong>0.04</strong></td>
+      </tr>
+      <tr>
+        <td class="hi">Vega</td>
+        <td><code>S·φ(d₁)·√T</code></td>
+        <td><code style="color:var(--gold);">≈ S·√T/√(2π) ≈ 0.4·S·√T</code></td>
+        <td>≈ 0.4×100×0.5 = <strong>20</strong> (per unit σ)</td>
+      </tr>
+      <tr>
+        <td class="hi">Theta (per day)</td>
+        <td><code>−S·φ(d₁)·σ/(2√T) − rK·e<sup>−rT</sup>N(d₂)</code></td>
+        <td><code style="color:var(--red);">≈ −0.5·S·σ²·Γ</code><br><code>≈ −C/(2T) (rough)</code></td>
+        <td>≈ −4/(2×0.25) / 252 ≈ <strong>−0.032</strong>/day</td>
+      </tr>
+      <tr>
+        <td class="hi">Vega/Gamma Ratio</td>
+        <td>—</td>
+        <td><code style="color:var(--accent4);">Vega = Gamma · S² · T</code></td>
+        <td>20 = 0.04 × 100² × 0.25? → 100 ✗ (per σ unit matter)</td>
+      </tr>
+      <tr>
+        <td class="hi">Break-even Move (1 day)</td>
+        <td>—</td>
+        <td><code style="color:var(--accent3);">≈ σ·S/√252</code></td>
+        <td>≈ 0.20×100/√252 ≈ <strong>1.26</strong>/day</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- IMPORTANT RELATIONSHIPS -->
+  <h3>④ Gamma-Theta-Vega 三角关系（BSM 核心）</h3>
+
+  <div class="formula-block">
+    <div class="formula-title">BSM PDE → Gamma-Theta Relationship</div>
+    <div class="formula-main">
+      <span class="cmt">// BSM PDE（r=0 简化）</span><br>
+      <span class="sym">Θ + ½·σ²·S²·Γ</span> <span class="op">= 0</span><br><br>
+      <span class="sym" style="color:var(--gold);">Θ = −½ · σ² · S² · Γ</span><br><br>
+      <span class="cmt">// 直觉：theta 是 gamma 的"价格"——持有 gamma 需要付出时间价值</span><br>
+      <span class="cmt">// Theta/Gamma = −½·σ²·S²：卖期权收 theta，付 gamma exposure</span>
+    </div>
+  </div>
+
+  <div class="formula-block">
+    <div class="formula-title">P&amp;L Decomposition（Delta-hedged 头寸）</div>
+    <div class="formula-main">
+      <span class="cmt">// Delta-hedge 后，每日 P&amp;L 近似为：</span><br>
+      <span class="sym">daily P&amp;L</span> <span class="op">≈ ½·Γ·(ΔS)² + Θ·Δt</span><br>
+      <span class="op">= ½·Γ·S²·(r<sub>realized</sub>²) − ½·σ²<sub>implied</sub>·S²·Γ·Δt</span><br><br>
+      <span class="sym" style="color:var(--accent3);">P&amp;L ≈ ½·Γ·S²·(σ²<sub>realized</sub> − σ²<sub>implied</sub>)·Δt</span><br><br>
+      <span class="cmt">// 这就是 vol trading 的根本：赚 RV − IV 的差，gamma 是杠杆</span>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="callout success">
+      <div class="callout-title">Long Gamma (Long Vol)</div>
+      <p style="font-size:13px;">
+        Pay IV, receive RV<br>
+        <strong>P&amp;L ≈ ½·Γ·S²·(σ²_RV − σ²_IV)·dt</strong><br>
+        • RV > IV → 盈利<br>
+        • 付 theta，收 gamma scalp<br>
+        • Short vol premium，long convexity
+      </p>
+    </div>
+    <div class="callout danger">
+      <div class="callout-title">Short Gamma (Short Vol)</div>
+      <p style="font-size:13px;">
+        Receive IV, pay RV<br>
+        <strong>P&amp;L ≈ ½·Γ·S²·(σ²_IV − σ²_RV)·dt</strong><br>
+        • RV &lt; IV → 盈利<br>
+        • 收 theta，付 gap risk<br>
+        • 历史上 vol premium 为正：短 vol 平均盈利
+      </p>
+    </div>
+  </div>
+
+  <!-- ATM formula for quick put-call question -->
+  <h3>⑤ 面试快速解题：Put Price Given Call (K ≠ S)</h3>
+  <div class="callout warn">
+    <div class="callout-title">面试题：S=K=100, C=4, r=0. K=99 的 put 价格？</div>
+    <p style="font-size:13px;">
+      <strong>解题步骤：</strong><br><br>
+      <strong>Step 1 — 由 C=4 反推 σ√T：</strong><br>
+      ATM 近似：C ≈ 0.4·σ·√T·S → 4 ≈ 0.4·σ√T·100 → σ√T ≈ 0.1<br><br>
+      <strong>Step 2 — K=99 时，PCP（r=0）：</strong><br>
+      C(K=99) − P(K=99) = S − K = 100 − 99 = 1<br><br>
+      <strong>Step 3 — 由 delta 估计 C(K=99)：</strong><br>
+      Δ_call ≈ 0.5（ATM），K 从 100 降到 99，call 更 ITM<br>
+      C(K=99) ≈ C(K=100) + Δ_call × (100−99) ≈ 4 + 0.5×1 = 4.5<br><br>
+      <strong>Step 4 — 求 P(K=99)：</strong><br>
+      P(K=99) = C(K=99) − (S−K) = 4.5 − 1 = <strong style="color:var(--gold);">3.5</strong><br><br>
+      <span style="color:var(--text-dim);">精确：P ≈ C − ΔK，其中 Δ ≈ 0.5（put Δ ≈ −0.5）</span>
+    </p>
+  </div>
+
+</section>
+
+<!-- ========== SECTION 14: IV-RV CARRY & SYSTEMATIC VOL ========== -->
+<section class="section" id="s14">
+  <div class="section-header">
+    <span class="section-num">14</span>
+    <h2>IV–RV Carry, Vega PnL vs Carry PnL, &amp; Systematic Vol Signal Design</h2>
+  </div>
+
+  <p>这一节系统回答你简历中提及的 Millennium vol trading 研究核心问题：carry PnL vs vega PnL 的区别，为什么不直接用 IV−RV 作为 target，以及 earnings vol 的市场行为。</p>
+
+  <!-- CARRY vs VEGA PNL -->
+  <h3>① Carry PnL vs Vega PnL — 本质区别</h3>
+
+  <div class="two-col">
+    <div class="formula-block">
+      <div class="formula-title">Carry PnL (Theta P&amp;L)</div>
+      <div class="formula-main">
+        <span class="cmt">// 持仓不调整，时间流逝带来的收益</span><br>
+        <span class="sym">Carry PnL</span> <span class="op">= Θ · Δt</span><br>
+        <span class="op">≈ −½·σ²_IV·S²·Γ·Δt</span><br><br>
+        <span class="cmt">// 等价地：IV²·Gamma scalp 的隐含成本</span><br>
+        <span class="cmt">// 只与 IV 水平有关，与 RV 无关</span><br>
+        <span class="cmt">// 每天确定性收入（short vol: 收 theta）</span>
+      </div>
+    </div>
+    <div class="formula-block">
+      <div class="formula-title">Vega PnL (Mark-to-Market)</div>
+      <div class="formula-main">
+        <span class="cmt">// IV 水平变动带来的 MTM 收益</span><br>
+        <span class="sym">Vega PnL</span> <span class="op">= ν · ΔIV</span><br>
+        <span class="op">≈ S·√T·φ(d₁) · ΔIV</span><br><br>
+        <span class="cmt">// ΔIV：implied vol 当日变化量</span><br>
+        <span class="cmt">// 与市场对未来波动预期变化有关</span><br>
+        <span class="cmt">// 可正可负，是 IV mean-reversion 的来源</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="formula-block">
+    <div class="formula-title">Total Delta-Hedged P&amp;L（完整拆解）</div>
+    <div class="formula-main">
+      <span class="sym">Total PnL</span> <span class="op">= Gamma PnL + Theta PnL + Vega PnL</span><br>
+      <span class="op">= ½·Γ·(ΔS)² + Θ·Δt + ν·ΔIV</span><br><br>
+      <span class="cmt">// 合并 Gamma + Theta（利用 BSM PDE）</span><br>
+      <span class="sym" style="color:var(--gold);">= ½·Γ·S²·(σ²_RV − σ²_IV)·Δt + ν·ΔIV</span><br><br>
+      <span class="cmt">// Gamma P&amp;L = 赚到的 RV 超出 IV 的部分（hold-to-expiry 累积）</span><br>
+      <span class="cmt">// Vega P&amp;L = 每日 IV 变动的 MTM（未 hold to expiry 就有）</span>
+    </div>
+  </div>
+
+  <div class="callout warn">
+    <div class="callout-title">核心区别：累积视角</div>
+    <p style="font-size:13px;">
+      <strong>Carry PnL（≡ Theta PnL）</strong>：持有期权期间的"租金"。Short straddle 每天收到 theta，对应做市商承担实现波动率风险的补偿。<br><br>
+      <strong>Vega PnL</strong>：IV 变化引起的头寸 MTM。今天 VIX 上升 2 vol points，long vol 头寸立刻 mark up。<br><br>
+      <strong>Gamma PnL</strong>：RV 实现后的真实收益，每日 delta hedge 累积。<br><br>
+      Hold to expiry 时：Total PnL = ½·Γ·S²·(RV² − IV²)·T（纯 vol premium）。日内或短期 hold：Vega PnL 主导（IV 变动比 RV 实现快）。
+    </p>
+  </div>
+
+  <!-- WHY NOT JUST USE IV-RV -->
+  <h3>② 为什么不直接用 IV − RV 作为 Signal Target？</h3>
+
+  <div class="callout info">
+    <div class="callout-title">问题 Background</div>
+    <p style="font-size:13px;">直觉上：IV > RV → short vol 有正期望收益。为什么不直接回归 IV−RV，用它预测作为 signal？</p>
+  </div>
+
+  <table class="data-table">
+    <thead><tr>
+      <th>问题</th><th>解释</th>
+    </tr></thead>
+    <tbody>
+      <tr>
+        <td class="hi">1. Unconditional mean ≠ 0</td>
+        <td>IV 长期平均 > RV（vol premium 约 2-4 vol points），直接用 IV−RV 会有 persistent short bias，不能分辨 signal vs unconditional alpha</td>
+      </tr>
+      <tr>
+        <td class="hi">2. 前瞻性问题</td>
+        <td>RV 是事后计算（用历史 realized moves），而 IV 反映市场对未来的预期。用未来 RV 作为 target 是 lookahead bias；用过去 RV 又是 stale</td>
+      </tr>
+      <tr>
+        <td class="hi">3. 非线性 P&amp;L 问题</td>
+        <td>P&amp;L ∝ σ²_RV − σ²_IV，而非 σ_RV − σ_IV。高 vol 环境下差异更大：vol 的 vol 变高，线性近似失效</td>
+      </tr>
+      <tr>
+        <td class="hi">4. Gamma 加权问题</td>
+        <td>不同 tenor/strike 的 gamma 不同，同样的 IV−RV 差，3M ATM 的 P&amp;L ≠ 1Y OTM 的 P&amp;L</td>
+      </tr>
+      <tr>
+        <td class="hi">5. Path dependency</td>
+        <td>IV−RV 是截面比较；实际 vol trading P&amp;L 取决于 gamma scalping 路径（vol of vol、gap risk 都影响实现收益）</td>
+      </tr>
+      <tr>
+        <td class="hi">6. 更好的 target</td>
+        <td>用 delta-hedged option P&amp;L（直接优化 Sharpe ratio），或 normalized IV move（ΔIV/IV）作为 cross-sectional signal</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- TURNOVER IN OPTIONS -->
+  <h3>③ 期权的 Turnover 计算 — 为什么不同于股票</h3>
+
+  <div class="callout info">
+    <div class="callout-title">面试问题：rolling 3M ATM straddle 的 turnover 怎么算？</div>
+  </div>
+
+  <table class="data-table">
+    <thead><tr>
+      <th>来源</th><th>股票 Turnover</th><th>期权 Turnover</th>
+    </tr></thead>
+    <tbody>
+      <tr>
+        <td class="hi">持仓变化</td>
+        <td>买入/卖出引起</td>
+        <td>同样有，但期权还有：</td>
+      </tr>
+      <tr>
+        <td class="hi">Delta Hedge</td>
+        <td>无</td>
+        <td>每日 delta 变化需要 rebalance：turnover += |ΔDelta|×S</td>
+      </tr>
+      <tr>
+        <td class="hi">Roll Turnover</td>
+        <td>无</td>
+        <td>ATM 定义随 S 变化，每日需要"roll" strike，产生额外 turnover</td>
+      </tr>
+      <tr>
+        <td class="hi">Time Decay</td>
+        <td>无</td>
+        <td>期权价值随时间下降，名义持仓减小（对 notional-based turnover 有影响）</td>
+      </tr>
+      <tr>
+        <td class="hi">Gamma Scalp</td>
+        <td>无</td>
+        <td>每日 ΔS 后需 rebalance delta → 额外交易量 ≈ Γ·ΔS·S（非线性）</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="formula-block">
+    <div class="formula-title">Option Turnover Decomposition</div>
+    <div class="formula-main">
+      <span class="sym">Total Turnover</span> <span class="op">= Option Turnover + Delta Hedge Turnover</span><br><br>
+      <span class="sym">Option Turnover</span> <span class="op">= 2 × |ΔNotional| / (avg Notional)</span><br>
+      <span class="cmt">// 每次买入新 ATM straddle + 平仓旧的</span><br><br>
+      <span class="sym">Hedge Turnover</span> <span class="op">≈ Γ · σ · S² · √(252) (annual)</span><br>
+      <span class="cmt">// Gamma scalp 产生的年化交易量</span><br><br>
+      <span class="cmt">// 与股票不同：即使没有任何 signal change，持有 straddle 每天都有 hedge turnover</span>
+    </div>
+  </div>
+
+  <!-- EARNINGS VOL -->
+  <h3>④ Implied Earnings Volatility — 市场行为</h3>
+
+  <div class="callout info">
+    <div class="callout-title">Earnings Vol 的典型市场规律</div>
+  </div>
+
+  <table class="data-table">
+    <thead><tr>
+      <th>现象</th><th>机制</th><th>交易含义</th>
+    </tr></thead>
+    <tbody>
+      <tr>
+        <td class="hi">Vol Crush Pre/Post Earnings</td>
+        <td>earnings 前 IV 持续上升（需求驱动），earnings 后立刻回落</td>
+        <td>Earnings 前卖 IV 理论上有正期望（Vol Premium）</td>
+      </tr>
+      <tr>
+        <td class="hi">Implied Move vs Actual Move</td>
+        <td>市场隐含的 earnings move（straddle price / S）平均 > realized move ~20-30%</td>
+        <td>Short straddle over earnings 长期盈利，但尾部风险大</td>
+      </tr>
+      <tr>
+        <td class="hi">Earnings Vol Extraction</td>
+        <td>将 earnings vol 从 vol surface 剥离：<br>σ²_total = σ²_earnings + σ²_continuous</td>
+        <td>便于构造 "cleaned" vol surface，去除 earnings jump</td>
+      </tr>
+      <tr>
+        <td class="hi">术语：Event Vol</td>
+        <td>σ_event = Straddle_price / S（隐含的 earnings jump 预期）</td>
+        <td>可用于跨股票 cross-sectional 比较 earnings 定价</td>
+      </tr>
+      <tr>
+        <td class="hi">Post-earnings IV behavior</td>
+        <td>vol crush 幅度约为 earnings event vol 的 80-120%</td>
+        <td>具体取决于 actual move 是否 "in line" with expectations</td>
+      </tr>
+      <tr>
+        <td class="hi">Skew around earnings</td>
+        <td>earnings 前 skew 往往 flatten（双向 jump 预期）；earnings 后 skew 恢复正常</td>
+        <td>可以交易 skew crush：sell OTM put, buy OTM call (risk reversal)</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="formula-block">
+    <div class="formula-title">Earnings Vol Stripping（你在 Millennium 用的方法）</div>
+    <div class="formula-main">
+      <span class="cmt">// 将 total variance 分解为 continuous + event components</span><br>
+      <span class="sym">σ²_total · T</span> <span class="op">= σ²_continuous · T + σ²_event</span><br><br>
+      <span class="cmt">// 用相邻 tenor 差分提取 event vol</span><br>
+      <span class="sym">σ²_event</span> <span class="op">= σ²_T₂·T₂ − σ²_T₁·T₁</span> <span class="cmt">// T₁ just before, T₂ just after earnings</span><br><br>
+      <span class="cmt">// 将 event vol 置零后重建 cleaned surface</span><br>
+      <span class="sym">σ²_clean(T) · T</span> <span class="op">= σ²_total · T − Σ(σ²_event_i for earnings_i in [0,T])</span>
+    </div>
+  </div>
+
+  <!-- OPTIONS vs STOCKS -->
+  <h3>⑤ Trading Options vs Stocks — 核心差异</h3>
+
+  <table class="data-table">
+    <thead><tr>
+      <th>维度</th><th>股票</th><th>期权</th>
+    </tr></thead>
+    <tbody>
+      <tr>
+        <td class="hi">收益结构</td>
+        <td>线性：P&amp;L = ΔS</td>
+        <td>非线性：P&amp;L = f(ΔS, Δt, ΔIV) — 受 gamma, theta, vega 共同驱动</td>
+      </tr>
+      <tr>
+        <td class="hi">风险维度</td>
+        <td>1D：方向性风险</td>
+        <td>多D：Delta（方向）+ Gamma（凸性）+ Vega（vol）+ Theta（时间）+ Skew（vol结构）</td>
+      </tr>
+      <tr>
+        <td class="hi">时间价值</td>
+        <td>不存在</td>
+        <td>每日 decay（theta），持仓成本不是资金成本而是 optionality premium</td>
+      </tr>
+      <tr>
+        <td class="hi">Delta Hedge</td>
+        <td>无需</td>
+        <td>必须 continuously hedge 来剥离方向性风险，才能 isolate vol exposure</td>
+      </tr>
+      <tr>
+        <td class="hi">Vol as Asset</td>
+        <td>vol 是风险，不是资产</td>
+        <td>可以"买卖 vol"：long gamma = long RV, short gamma = short RV</td>
+      </tr>
+      <tr>
+        <td class="hi">Liquidity</td>
+        <td>连续交易</td>
+        <td>Strike/Tenor 维度，流动性分散；ATM 最流动，深 OTM 可能无市</td>
+      </tr>
+      <tr>
+        <td class="hi">Leverage</td>
+        <td>1:1（或 margin）</td>
+        <td>天然杠杆（notional = 100 × underlying），但受 gamma 路径影响</td>
+      </tr>
+      <tr>
+        <td class="hi">Signal target</td>
+        <td>方向：预测 E[ΔS]</td>
+        <td>可以预测 E[σ_RV]，E[ΔIV]，E[Δskew] 等，策略更丰富</td>
+      </tr>
+    </tbody>
+  </table>
+
+</section>
+
+<!-- ========== SECTION 15: VOL SURFACE INTERVIEW QA ========== -->
+<section class="section" id="s15">
+  <div class="section-header">
+    <span class="section-num">15</span>
+    <h2>Interview Q&amp;A — Vol Surface, Skew &amp; Key Concepts</h2>
+  </div>
+
+  <p>本节系统整理图片中的所有面试问题，并给出完整解答。</p>
+
+  <!-- Q1: WHY VOL SURFACE SKEW EXISTS -->
+  <h3>Q1: Vol Surface 为什么存在 Skew？Log Return 的真实分布？</h3>
+
+  <div class="formula-block">
+    <div class="formula-title">BSM 假设 vs 现实</div>
+    <div class="formula-main">
+      <span class="cmt">// BSM 假设：log return ~ N(μ, σ²)，对应 flat vol surface</span><br>
+      <span class="cmt">// 现实：log return 有 fat tails + negative skewness</span><br><br>
+      <span class="sym">ln(S_T/S_0)</span> <span class="op">~ distribution with:</span><br>
+      <span class="cmt">  • Excess kurtosis > 0（fat tails：极端事件比正态多）</span><br>
+      <span class="cmt">  • Negative skewness（左尾更厚：大跌比大涨常见）</span><br>
+      <span class="cmt">  • Volatility clustering（vol 不是常数）</span>
+    </div>
+  </div>
+
+  <table class="data-table">
+    <thead><tr>
+      <th>Skew 的来源</th><th>机制</th><th>对 vol surface 的影响</th>
+    </tr></thead>
+    <tbody>
+      <tr>
+        <td class="hi">Leverage Effect</td>
+        <td>股价下跌 → 公司负债/股权比↑ → 股票波动率↑（Black 1976）</td>
+        <td>OTM put IV > ATM IV：左侧 skew（equity）</td>
+      </tr>
+      <tr>
+        <td class="hi">Crash Risk Premium</td>
+        <td>投资者对大跌有非对称厌恶，愿意为保护付超额溢价</td>
+        <td>OTM put 有 crash risk premium，IV 被推高</td>
+      </tr>
+      <tr>
+        <td class="hi">Supply/Demand</td>
+        <td>机构大量买 OTM put 对冲（保护性 put），推高 OTM put IV</td>
+        <td>Left skew 在 equity 市场尤为明显</td>
+      </tr>
+      <tr>
+        <td class="hi">Jump Diffusion</td>
+        <td>Merton jump 模型：股价有跳跃过程，OTM option 对 jump 更敏感</td>
+        <td>两侧 IV 抬升（smile），加上负 jump drift → 左偏 skew</td>
+      </tr>
+      <tr>
+        <td class="hi">Volatility of Volatility</td>
+        <td>Heston 随机波动率：vol 本身有随机性，增加 fat tail</td>
+        <td>产生 vol smile；加上 vol-stock correlation → skew</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout info">
+    <div class="callout-title">实证：equity log return 的真实分布特征</div>
+    <p style="font-size:13px;">
+      • <strong>Excess kurtosis ≈ 4–10</strong>（正态 = 0），大跌/大涨远比正态多<br>
+      • <strong>Skewness ≈ −0.3 to −1.5</strong>（负偏），月度数据尤为明显<br>
+      • <strong>Volatility clustering</strong>：ARCH 效应，高 vol 期后接高 vol 期<br>
+      • <strong>VIX spike 与 S&amp;P 500 负相关约 −0.7 to −0.85</strong>（leverage effect 的表现）
+    </p>
+  </div>
+
+  <!-- Q2: CONSTRUCTING VOL SURFACE -->
+  <h3>Q2: 构造 Vol Surface 时，应该用所有 Strikes 吗？</h3>
+
+  <div class="callout warn">
+    <div class="callout-title">面试核心考点：如何处理 liquid vs illiquid strikes</div>
+  </div>
+
+  <table class="data-table">
+    <thead><tr>
+      <th>考虑因素</th><th>处理方式</th>
+    </tr></thead>
+    <tbody>
+      <tr>
+        <td class="hi">流动性权重</td>
+        <td>深 OTM/ITM 期权买卖价差宽，IV 不可靠。应加权：流动性好的 strike 权重高（用 open interest 或 bid-ask spread 倒数作权重）</td>
+      </tr>
+      <tr>
+        <td class="hi">No-Arbitrage 约束</td>
+        <td>Calendar spread: σ²(T₂)·T₂ ≥ σ²(T₁)·T₁（total variance 单调递增）<br>Butterfly spread: 对 K 的 call 价格是凸函数（否则蝶式套利）<br>需在所有 strikes 上 enforce 这些约束</td>
+      </tr>
+      <tr>
+        <td class="hi">Stale Prices</td>
+        <td>深 OTM 期权可能长时间无成交，用 last trade 价格 → stale IV。应用 mid of bid-ask 而非 last trade</td>
+      </tr>
+      <tr>
+        <td class="hi">Interpolation</td>
+        <td>选择 liquid strikes（如 Delta=0.1, 0.25, 0.5, 0.75, 0.9 五个点），拟合参数化曲线（SVI, SABR 等），再外推</td>
+      </tr>
+      <tr>
+        <td class="hi">Wing Extrapolation</td>
+        <td>极端 OTM 期权无交易，需要有 sensible 外推（如 SVI 的 Roger-Lee moment formula 保证 wing 收敛）</td>
+      </tr>
+      <tr>
+        <td class="hi">Put-Call Parity Check</td>
+        <td>同 strike 的 call/put IV 必须相等（欧式）；若不等则有套利或数据错误</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="formula-block">
+    <div class="formula-title">SVI Parameterization（最常用的 vol surface 模型）</div>
+    <div class="formula-main">
+      <span class="cmt">// Gatheral's SVI：对每个 tenor 拟合 total variance w = σ²·T 对 log-moneyness k = ln(K/F)</span><br>
+      <span class="sym">w(k)</span> <span class="op">= a + b·[ρ·(k−m) + √((k−m)² + s²)]</span><br><br>
+      <span class="cmt">// 参数含义：</span><br>
+      <span class="cmt">  a: 整体 vol level</span><br>
+      <span class="cmt">  b: wings 宽度（ATM vs wings 的差）</span><br>
+      <span class="cmt">  ρ: skew（负值 → 左偏）</span><br>
+      <span class="cmt">  m: ATM 位置偏移</span><br>
+      <span class="cmt">  s: smoothness of the vertex (ATM curvature)</span>
+    </div>
+  </div>
+
+  <!-- QUICK SUMMARY BOX: ALL INTERVIEW FORMULAS -->
+  <h3>面试 Cheat Sheet — 最重要的快速计算</h3>
+
+  <table class="data-table">
+    <thead><tr>
+      <th>场景</th><th>公式 / 规则</th>
+    </tr></thead>
+    <tbody>
+      <tr>
+        <td class="hi">ATM Call/Put</td>
+        <td><code style="color:var(--gold);">C = P ≈ 0.4·σ·√T·S</code></td>
+      </tr>
+      <tr>
+        <td class="hi">ATM Straddle</td>
+        <td><code style="color:var(--accent3);">Straddle ≈ 0.8·σ·√T·S ≈ σ·S·√(T/2π)·2</code></td>
+      </tr>
+      <tr>
+        <td class="hi">ATM Delta (Call)</td>
+        <td><code>Δ_call ≈ 0.5 + σ√T/(2√(2π)) ≈ 0.5 + 0.2·σ√T</code></td>
+      </tr>
+      <tr>
+        <td class="hi">ATM Gamma</td>
+        <td><code>Γ ≈ 0.4 / (S·σ·√T)</code></td>
+      </tr>
+      <tr>
+        <td class="hi">ATM Vega</td>
+        <td><code>ν ≈ 0.4·S·√T (per unit of σ)</code></td>
+      </tr>
+      <tr>
+        <td class="hi">Theta = −½·σ²·S²·Gamma</td>
+        <td><code>Θ ≈ −½·σ²·S²·Γ ≈ −0.2·σ²·S/(σ√T) = −0.2·σ·S/√T</code></td>
+      </tr>
+      <tr>
+        <td class="hi">Vol → Price (rule of 16)</td>
+        <td><code>Daily Move ≈ σ·S/16</code>（因为 √252 ≈ 16）</td>
+      </tr>
+      <tr>
+        <td class="hi">Delta hedge PnL</td>
+        <td><code>P&amp;L/day ≈ ½·Γ·(ΔS)² − ½·σ²_IV·S²·Γ·dt</code></td>
+      </tr>
+      <tr>
+        <td class="hi">Put from call (PCP)</td>
+        <td><code>P(K) = C(K) − S + K·e<sup>−rT</sup></code>；K下移1: <code>P ≈ C − Δ_call·1 − (S−K)</code></td>
+      </tr>
+      <tr>
+        <td class="hi">Vega/Gamma</td>
+        <td><code>ν/Γ = S²·T</code>（ATM 精确成立）</td>
+      </tr>
+    </tbody>
+  </table>
+
+</section>
+</body>
+</html>

@@ -1,0 +1,1622 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Macro Trading — 面试准备全景指南</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&family=Noto+Sans+SC:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script>
+<style>
+  :root {
+    --bg: #0a0c0f;
+    --bg2: #0f1117;
+    --bg3: #151820;
+    --bg4: #1c2030;
+    --border: #252a38;
+    --border2: #2e3547;
+    --accent: #e8c547;
+    --accent2: #f0d978;
+    --accent3: #c9a82a;
+    --blue: #4a9eff;
+    --blue2: #2d7dd2;
+    --green: #3dd68c;
+    --red: #ff6b6b;
+    --purple: #a78bfa;
+    --orange: #fb923c;
+    --text: #d4d8e8;
+    --text2: #8892a4;
+    --text3: #5a6478;
+    --sidebar-w: 280px;
+    --font-head: 'Syne', sans-serif;
+    --font-mono: 'DM Mono', monospace;
+    --font-body: 'Noto Sans SC', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 14px;
+    line-height: 1.7;
+    display: flex;
+  }
+
+  /* ── SIDEBAR ── */
+  #sidebar {
+    width: var(--sidebar-w);
+    min-height: 100vh;
+    background: var(--bg2);
+    border-right: 1px solid var(--border);
+    position: fixed;
+    top: 0; left: 0;
+    overflow-y: auto;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+  }
+
+  #sidebar::-webkit-scrollbar { width: 4px; }
+  #sidebar::-webkit-scrollbar-track { background: transparent; }
+  #sidebar::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+  .sidebar-header {
+    padding: 24px 20px 16px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .sidebar-logo {
+    font-family: var(--font-head);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+
+  .sidebar-title {
+    font-family: var(--font-head);
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.3;
+  }
+
+  .sidebar-nav { padding: 12px 0; flex: 1; }
+
+  .nav-group { margin-bottom: 4px; }
+
+  .nav-group-label {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text3);
+    padding: 10px 20px 4px;
+  }
+
+  .nav-item {
+    display: block;
+    padding: 6px 20px 6px 28px;
+    font-size: 12.5px;
+    color: var(--text2);
+    text-decoration: none;
+    border-left: 2px solid transparent;
+    transition: all 0.15s;
+    cursor: pointer;
+  }
+
+  .nav-item:hover { color: var(--text); background: var(--bg3); border-left-color: var(--border2); }
+  .nav-item.active { color: var(--accent); border-left-color: var(--accent); background: rgba(232,197,71,0.05); }
+
+  .nav-item-main {
+    padding-left: 20px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  /* ── MAIN ── */
+  #main {
+    margin-left: var(--sidebar-w);
+    flex: 1;
+    padding: 48px 52px 80px;
+    max-width: calc(100vw - var(--sidebar-w));
+  }
+
+  /* ── HERO ── */
+  .hero {
+    padding: 48px 0 56px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 56px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -80px;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(232,197,71,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .hero-tag {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .hero-tag::before {
+    content: '';
+    display: block;
+    width: 24px; height: 1px;
+    background: var(--accent);
+  }
+
+  .hero h1 {
+    font-family: var(--font-head);
+    font-size: 42px;
+    font-weight: 800;
+    line-height: 1.1;
+    color: #fff;
+    margin-bottom: 20px;
+  }
+
+  .hero h1 span { color: var(--accent); }
+
+  .hero-desc {
+    color: var(--text2);
+    font-size: 15px;
+    max-width: 600px;
+    line-height: 1.8;
+  }
+
+  .hero-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 24px;
+  }
+
+  .chip {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    padding: 4px 10px;
+    border-radius: 3px;
+    border: 1px solid var(--border2);
+    color: var(--text2);
+    background: var(--bg3);
+    letter-spacing: 0.05em;
+  }
+
+  .chip.gold { border-color: rgba(232,197,71,0.4); color: var(--accent2); background: rgba(232,197,71,0.06); }
+  .chip.blue { border-color: rgba(74,158,255,0.4); color: var(--blue); background: rgba(74,158,255,0.06); }
+  .chip.green { border-color: rgba(61,214,140,0.4); color: var(--green); background: rgba(61,214,140,0.06); }
+
+  /* ── SECTIONS ── */
+  .section {
+    margin-bottom: 64px;
+    scroll-margin-top: 24px;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 28px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-num {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--accent);
+    background: rgba(232,197,71,0.1);
+    border: 1px solid rgba(232,197,71,0.25);
+    padding: 3px 8px;
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+
+  .section-title {
+    font-family: var(--font-head);
+    font-size: 22px;
+    font-weight: 700;
+    color: #fff;
+  }
+
+  .subsection {
+    margin-bottom: 36px;
+    scroll-margin-top: 24px;
+  }
+
+  .subsection-title {
+    font-family: var(--font-head);
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--accent2);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .subsection-title::before {
+    content: '';
+    display: block;
+    width: 3px; height: 14px;
+    background: var(--accent);
+    border-radius: 2px;
+  }
+
+  p { color: var(--text2); margin-bottom: 10px; line-height: 1.8; }
+  p strong { color: var(--text); font-weight: 500; }
+
+  /* ── TABLES ── */
+  .table-wrap { overflow-x: auto; margin-bottom: 20px; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12.5px;
+  }
+
+  thead th {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text3);
+    padding: 8px 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--border2);
+    background: var(--bg3);
+  }
+
+  tbody td {
+    padding: 9px 12px;
+    color: var(--text2);
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+
+  tbody tr:hover td { background: var(--bg3); }
+
+  tbody td:first-child { color: var(--text); font-weight: 500; }
+
+  .star { color: var(--accent); }
+
+  /* ── CODE / FORMULA BLOCKS ── */
+  .code-block {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 6px;
+    padding: 18px 20px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text);
+    margin-bottom: 18px;
+    overflow-x: auto;
+    line-height: 1.8;
+    white-space: pre;
+  }
+
+  .formula-block {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--blue);
+    border-radius: 6px;
+    padding: 20px 24px;
+    margin-bottom: 18px;
+    overflow-x: auto;
+  }
+
+  .formula-label {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--blue);
+    margin-bottom: 10px;
+  }
+
+  /* ── CARDS ── */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .card {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    transition: border-color 0.2s;
+  }
+
+  .card:hover { border-color: var(--border2); }
+
+  .card-title {
+    font-family: var(--font-head);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .card-icon {
+    font-size: 16px;
+    line-height: 1;
+  }
+
+  .card p { font-size: 12.5px; margin-bottom: 6px; }
+
+  /* ── CALLOUT BOXES ── */
+  .callout {
+    border-radius: 6px;
+    padding: 16px 20px;
+    margin-bottom: 18px;
+    border: 1px solid;
+    font-size: 13px;
+  }
+
+  .callout-title {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .callout.gold { border-color: rgba(232,197,71,0.3); background: rgba(232,197,71,0.04); }
+  .callout.gold .callout-title { color: var(--accent); }
+  .callout.gold p { color: rgba(232,197,71,0.85); }
+
+  .callout.blue { border-color: rgba(74,158,255,0.3); background: rgba(74,158,255,0.04); }
+  .callout.blue .callout-title { color: var(--blue); }
+  .callout.blue p { color: rgba(160,200,255,0.85); }
+
+  .callout.green { border-color: rgba(61,214,140,0.3); background: rgba(61,214,140,0.04); }
+  .callout.green .callout-title { color: var(--green); }
+  .callout.green p { color: rgba(150,220,185,0.85); }
+
+  .callout.red { border-color: rgba(255,107,107,0.3); background: rgba(255,107,107,0.04); }
+  .callout.red .callout-title { color: var(--red); }
+  .callout.red p { color: rgba(255,160,160,0.85); }
+
+  /* ── FLOW DIAGRAM ── */
+  .flow {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    margin-bottom: 18px;
+  }
+
+  .flow-item {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px 18px;
+    font-size: 13px;
+    color: var(--text);
+    min-width: 280px;
+  }
+
+  .flow-item .label {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 3px;
+  }
+
+  .flow-arrow {
+    color: var(--accent);
+    font-size: 16px;
+    margin-left: 24px;
+    line-height: 1;
+    padding: 2px 0;
+  }
+
+  /* ── COLLAPSIBLE ── */
+  details {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+
+  details[open] { border-color: var(--border2); }
+
+  summary {
+    padding: 14px 18px;
+    cursor: pointer;
+    font-family: var(--font-head);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    background: var(--bg3);
+    list-style: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background 0.15s;
+  }
+
+  summary:hover { background: var(--bg4); }
+  summary::after { content: '+'; color: var(--accent); font-size: 18px; font-weight: 300; }
+  details[open] summary::after { content: '−'; }
+  details[open] summary { border-bottom: 1px solid var(--border); }
+
+  .details-content { padding: 20px; }
+
+  /* ── BADGE ── */
+  .badge {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    padding: 2px 7px;
+    border-radius: 3px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .badge-gold { background: rgba(232,197,71,0.15); color: var(--accent2); border: 1px solid rgba(232,197,71,0.3); }
+  .badge-blue { background: rgba(74,158,255,0.12); color: var(--blue); border: 1px solid rgba(74,158,255,0.3); }
+  .badge-green { background: rgba(61,214,140,0.12); color: var(--green); border: 1px solid rgba(61,214,140,0.3); }
+  .badge-red { background: rgba(255,107,107,0.12); color: var(--red); border: 1px solid rgba(255,107,107,0.3); }
+  .badge-purple { background: rgba(167,139,250,0.12); color: var(--purple); border: 1px solid rgba(167,139,250,0.3); }
+  .badge-orange { background: rgba(251,146,60,0.12); color: var(--orange); border: 1px solid rgba(251,146,60,0.3); }
+
+  /* ── TWO-COL ── */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+  .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+
+  @media (max-width: 1200px) { .two-col { grid-template-columns: 1fr; } .three-col { grid-template-columns: 1fr 1fr; } }
+
+  /* ── COMMODITY ROW ── */
+  .commodity-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .commodity-icon {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+
+  .commodity-name {
+    font-family: var(--font-head);
+    font-size: 16px;
+    font-weight: 700;
+    color: #fff;
+  }
+
+  .commodity-sub {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text3);
+    letter-spacing: 0.1em;
+  }
+
+  /* ── INTERVIEW TEMPLATE ── */
+  .interview-box {
+    background: linear-gradient(135deg, rgba(232,197,71,0.05) 0%, rgba(74,158,255,0.03) 100%);
+    border: 1px solid rgba(232,197,71,0.2);
+    border-radius: 10px;
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+
+  .interview-box .q {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 10px;
+  }
+
+  .interview-box .a {
+    font-size: 13.5px;
+    color: var(--text);
+    line-height: 1.8;
+    font-style: italic;
+    border-left: 2px solid var(--accent);
+    padding-left: 16px;
+  }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg2); }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+  /* ── HIGHLIGHT ── */
+  .hl { color: var(--accent); font-weight: 600; }
+  .hl-blue { color: var(--blue); font-weight: 500; }
+  .hl-green { color: var(--green); font-weight: 500; }
+  .hl-red { color: var(--red); }
+  .hl-purple { color: var(--purple); }
+
+  /* ── REGIME GRID ── */
+  .regime-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3px;
+    margin-bottom: 20px;
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .regime-cell {
+    padding: 18px;
+    background: var(--bg3);
+  }
+
+  .regime-cell.tl { border-bottom: 1px solid var(--border2); border-right: 1px solid var(--border2); }
+  .regime-cell.tr { border-bottom: 1px solid var(--border2); }
+  .regime-cell.bl { border-right: 1px solid var(--border2); }
+
+  .regime-label {
+    font-family: var(--font-head);
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+
+  .regime-assets {
+    font-size: 11.5px;
+    color: var(--text2);
+    line-height: 1.7;
+  }
+
+  ul.list { padding-left: 20px; margin-bottom: 14px; }
+  ul.list li { color: var(--text2); font-size: 13px; margin-bottom: 5px; padding-left: 4px; }
+  ul.list li::marker { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════ SIDEBAR ════════════════════════════════ -->
+<nav id="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo">Interview Prep</div>
+    <div class="sidebar-title">Macro Trading<br>完整知识框架</div>
+  </div>
+  <div class="sidebar-nav">
+    <div class="nav-group">
+      <div class="nav-group-label">Overview</div>
+      <a class="nav-item nav-item-main" href="#s0">资产宇宙 Asset Universe</a>
+      <a class="nav-item nav-item-main" href="#s1">宏观传导链 Transmission</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">Commodities</div>
+      <a class="nav-item" href="#crude">原油 Crude Oil</a>
+      <a class="nav-item" href="#natgas">天然气 Natural Gas</a>
+      <a class="nav-item" href="#gold">黄金 Gold</a>
+      <a class="nav-item" href="#silver">白银 Silver</a>
+      <a class="nav-item" href="#copper">铜 Copper</a>
+      <a class="nav-item" href="#aluminum">铝 Aluminium</a>
+      <a class="nav-item" href="#nickel">镍 Nickel</a>
+      <a class="nav-item" href="#ags">农产品 Agriculture</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">Signal Framework</div>
+      <a class="nav-item nav-item-main" href="#s3">信号生成框架 Signal Generation</a>
+      <a class="nav-item" href="#term-structure">期限结构 Term Structure</a>
+      <a class="nav-item" href="#altdata">另类数据 Alt Data</a>
+      <a class="nav-item" href="#zipcode">气温数据 Temperature Data</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">Strategy</div>
+      <a class="nav-item nav-item-main" href="#s4">Macro vs Equity/Vol Quant</a>
+      <a class="nav-item" href="#s5">期权事件 Option Events</a>
+      <a class="nav-item" href="#s6">文本数据 Textual Data</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">Interview</div>
+      <a class="nav-item nav-item-main" href="#s7">回答模板 Templates</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ════════════════════════════════ MAIN ════════════════════════════════ -->
+<main id="main">
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-tag">Systematic Macro Trading</div>
+  <h1>Macro <span>Trading</span><br>面试准备全景</h1>
+  <p class="hero-desc">覆盖宏观资产体系、商品信号框架、传导链公式、量化策略差异、期权事件、另类数据与文本信号。所有重要名词均附英文标注。</p>
+  <div class="hero-chips">
+    <span class="chip gold">Commodities</span>
+    <span class="chip gold">Term Structure</span>
+    <span class="chip blue">Macro Transmission</span>
+    <span class="chip blue">FX / Rates</span>
+    <span class="chip green">Alt Data</span>
+    <span class="chip green">Options Events</span>
+    <span class="chip">Regime Detection</span>
+    <span class="chip">Signal Engineering</span>
+    <span class="chip">NLP / Text Data</span>
+  </div>
+</div>
+
+<!-- ══════════ S0: ASSET UNIVERSE ══════════ -->
+<section class="section" id="s0">
+  <div class="section-header">
+    <span class="section-num">01</span>
+    <h2 class="section-title">宏观资产宇宙 Macro Asset Universe</h2>
+  </div>
+
+  <p>宏观交易的本质是对<strong>全球经济周期（Global Business Cycle）、政策预期（Policy Expectations）、资本流动（Capital Flows）</strong>的定价。四大资产类别构成宏观交易员的完整工具箱。</p>
+
+  <div class="card-grid" style="grid-template-columns: repeat(4,1fr); margin-top: 20px;">
+    <div class="card">
+      <div class="card-title"><span class="card-icon">📈</span>Rates（利率）</div>
+      <p>国债 Treasuries（US/EU/JP/UK）</p>
+      <p>利率互换 Interest Rate Swaps</p>
+      <p>SOFR期货</p>
+      <p>通胀保值债 TIPS</p>
+      <p>利率期权 Swaptions</p>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="card-icon">💱</span>FX（外汇）</div>
+      <p>G10货币：EUR/USD, USD/JPY, GBP/USD</p>
+      <p>商品货币 Commodity Currencies：AUD, CAD, NOK</p>
+      <p>新兴市场货币 EM FX：CNH, BRL, MXN</p>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="card-icon">📊</span>Equity Index（股指）</div>
+      <p>S&P500, Nasdaq, Euro Stoxx 50</p>
+      <p>Nikkei, Hang Seng Index (HSI)</p>
+      <p>VIX（波动率指数）</p>
+      <p>跨市场相对价值 Relative Value</p>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="card-icon">🛢️</span>Commodities（大宗商品）</div>
+      <p>Energy: WTI, Brent, Natural Gas</p>
+      <p>Metals: Copper, Gold, Silver, Al</p>
+      <p>Ags: Corn, Wheat, Soybean</p>
+    </div>
+  </div>
+
+  <div class="subsection" style="margin-top: 32px;">
+    <div class="subsection-title">商品需求方总览 Commodity Demand Overview</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>商品 Commodity</th><th>核心需求方 Key Demand</th><th>最大消费国</th><th>结构性变化 Structural Shift</th></tr></thead>
+        <tbody>
+          <tr><td>原油 Crude Oil</td><td>交通运输 ~50%，工业化工 ~20%，取暖 ~15%</td><td>美国（汽油）、中国（工业）</td><td>EV渗透率上升逐步压制汽油需求</td></tr>
+          <tr><td>天然气 Natural Gas</td><td>发电 ~40%，工业 ~30%，居民取暖 ~20%</td><td>区域性极强：北美/欧洲/亚洲</td><td>LNG贸易使区域市场全球化</td></tr>
+          <tr><td>铜 Copper</td><td>电力基础设施 ~30%，建筑 ~25%，电子 ~15%</td><td>中国（占全球~55%）</td><td>EV用铜量约为燃油车4倍，太阳能电网</td></tr>
+          <tr><td>铁矿石 Iron Ore</td><td>钢铁生产（100%中间品）</td><td>中国（钢铁产量占全球54%）</td><td>房地产下行长期压制需求</td></tr>
+          <tr><td>铝 Aluminium</td><td>交通/汽车 ~35%，建筑 ~25%，包装 ~20%</td><td>中国（产量占全球57%）</td><td>EV轻量化，绿色能源设备</td></tr>
+          <tr><td>黄金 Gold</td><td>珠宝 ~50%，央行储备 ~20%，投资/ETF ~15%</td><td>印度+中国（珠宝），西方机构（投资）</td><td>新兴市场央行去美元化购金</td></tr>
+          <tr><td>白银 Silver</td><td>工业 ~60%，投资 ~25%，珠宝 ~15%</td><td>工业需求分散全球</td><td>太阳能光伏银浆需求高速增长</td></tr>
+          <tr><td>大豆 Soybean</td><td>动物饲料（豆粕）~70%，食用油（豆油）~25%</td><td>中国（占全球进口量~60%）</td><td>中国猪周期与大豆价格高度相关</td></tr>
+          <tr><td>玉米 Corn</td><td>动物饲料 ~40%，乙醇 ~35%（美国），食品 ~15%</td><td>美国（乙醇政策RFS是关键变量）</td><td>可再生燃料标准RFS</td></tr>
+          <tr><td>小麦 Wheat</td><td>人类食品 ~75%，动物饲料 ~20%</td><td>出口：俄乌合计~28%</td><td>地缘政治高度敏感</td></tr>
+          <tr><td>镍 Nickel</td><td>不锈钢 ~65%，电池(NMC) ~20%</td><td>印尼（矿产储量~30%）</td><td>电池需求快速增长，结构性变化显著</td></tr>
+          <tr><td>锂 Lithium</td><td>电池 >95%</td><td>中国（加工）</td><td>纯EV驱动，与新能源渗透率绑定</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ S1: TRANSMISSION CHAIN ══════════ -->
+<section class="section" id="s1">
+  <div class="section-header">
+    <span class="section-num">02</span>
+    <h2 class="section-title">宏观传导链 Macro Transmission Chain</h2>
+  </div>
+
+  <p>这是一个<strong>闭合的动态均衡系统（Dynamic Equilibrium System）</strong>，每个节点既是下游的原因，也是上游的反馈。理解这个循环是macro trading的核心认知基础。</p>
+
+  <div style="display: flex; gap: 32px; flex-wrap: wrap; margin: 24px 0;">
+    <div class="flow">
+      <div class="flow-item">
+        <div class="label">Node 1 — 起点</div>
+        <strong>央行政策预期 Central Bank Policy Expectations</strong>
+        <div style="font-size:11.5px;color:var(--text3);margin-top:4px;">Fed Funds Futures → 加息/降息概率定价</div>
+      </div>
+      <div class="flow-arrow">↓</div>
+      <div class="flow-item">
+        <div class="label">Node 2</div>
+        <strong>利率市场 Rates Market</strong>
+        <div style="font-size:11.5px;color:var(--text3);margin-top:4px;">短端→长端，收益率曲线形态，TIPS实际利率</div>
+      </div>
+      <div class="flow-arrow">↓</div>
+      <div class="flow-item">
+        <div class="label">Node 3</div>
+        <strong>外汇市场 FX Market</strong>
+        <div style="font-size:11.5px;color:var(--text3);margin-top:4px;">利差→资本流动→汇率，美元指数DXY</div>
+      </div>
+      <div class="flow-arrow">↓</div>
+      <div class="flow-item">
+        <div class="label">Node 4</div>
+        <strong>大宗商品 Commodities</strong>
+        <div style="font-size:11.5px;color:var(--text3);margin-top:4px;">美元定价，commodity currencies反馈</div>
+      </div>
+      <div class="flow-arrow">↓</div>
+      <div class="flow-item">
+        <div class="label">Node 5</div>
+        <strong>股票 + 信用 Equity + Credit</strong>
+        <div style="font-size:11.5px;color:var(--text3);margin-top:4px;">折现率+盈利预期，Credit Spread，ERP</div>
+      </div>
+      <div class="flow-arrow">↓</div>
+      <div class="flow-item" style="border-color: var(--accent); border-left-color: var(--accent);">
+        <div class="label">Node 6 — 闭环</div>
+        <strong>通胀预期 Inflation Expectations → 回到央行政策</strong>
+        <div style="font-size:11.5px;color:var(--text3);margin-top:4px;">Breakeven，CPI商品传导，Taylor Rule触发</div>
+      </div>
+    </div>
+
+    <div style="flex: 1; min-width: 320px;">
+      <div class="subsection-title">核心公式 Key Formulas</div>
+
+      <div class="formula-block">
+        <div class="formula-label">Node 1 — Taylor Rule（泰勒规则）</div>
+        $$r_{target} = r_{neutral} + 1.5(\pi - \pi^*) + 0.5(y - y^*)$$
+        <div style="font-size:11.5px;color:var(--text2);margin-top:8px;">$\pi^* = 2\%$（通胀目标），$y^*$为潜在产出。通胀每超目标1%，Fed加息1.5%。</div>
+      </div>
+
+      <div class="formula-block">
+        <div class="formula-label">Node 2 — Fisher方程（实际利率）</div>
+        $$r_{real} = r_{nominal} - \pi^e$$
+        $$\text{Curve Slope} = r_{10Y} - r_{2Y}$$
+        <div style="font-size:11.5px;color:var(--text2);margin-top:8px;">曲线倒挂（Inversion）历史上领先衰退约12-18个月。期望假说：$r_{long} = \frac{1}{n}\sum E[r_{short,t+i}] + \text{Term Premium}$</div>
+      </div>
+
+      <div class="formula-block">
+        <div class="formula-label">Node 3 — 利率平价（Interest Rate Parity）</div>
+        $$F = S \times \frac{1+r_d}{1+r_f}$$
+        $$E[\Delta S] = r_d - r_f \quad \text{(UIP，实践中常失效)}$$
+        <div style="font-size:11.5px;color:var(--text2);margin-top:8px;">Carry Trade盈利来源：$\text{Carry Return} = (r_{high}-r_{low}) - \Delta S_{actual}$</div>
+      </div>
+
+      <div class="formula-block">
+        <div class="formula-label">Node 4 — 美元-商品关系</div>
+        $$\Delta P_{commodity} \approx -\beta \cdot \Delta DXY + \varepsilon \quad (\beta \approx 0.5 \sim 1.5)$$
+        $$P_{Gold} \approx f(-r_{real},\ -DXY,\ +\pi^e,\ +\text{Geopolitical Risk})$$
+      </div>
+
+      <div class="formula-block">
+        <div class="formula-label">Node 5 — 股票估值 DCF</div>
+        $$P = \frac{E[EPS] \times (1+g)}{r - g}, \quad \text{ERP} = \frac{E[EPS]}{P} - r_{10Y}$$
+        $$\text{Credit Spread} = \text{Default Premium} + \text{Liquidity Premium}$$
+      </div>
+
+      <div class="formula-block">
+        <div class="formula-label">Node 6 — 通胀Breakeven</div>
+        $$\pi^e_{breakeven} = r_{nominal,10Y} - r_{real,10Y}^{TIPS}$$
+        $$\pi_{CPI} = \omega_E \cdot \pi_{energy} + \omega_F \cdot \pi_{food} + \omega_C \cdot \pi_{core}$$
+        <div style="font-size:11.5px;color:var(--text2);margin-top:8px;">能源权重~7%，食品~14%，核心~79%（美国CPI）。油价对CPI领先约1-3个月。</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="subsection-title" style="margin-top: 8px;">三种典型Regime下的资产轮动 Regime-Based Asset Rotation</div>
+  <div class="regime-grid">
+    <div class="regime-cell tl">
+      <div class="regime-label" style="color: var(--green);">🟢 扩张期 Expansion（增长↑，通胀↑）</div>
+      <div class="regime-assets">
+        <strong>✓ 受益：</strong>Equity（成长股）、Commodities（工业品）、HY Credit<br>
+        <strong>✗ 承压：</strong>Long-duration Bonds、Defensive sectors<br>
+        <strong>信号：</strong>PMI扩张、ERP收窄、Curve陡峭化
+      </div>
+    </div>
+    <div class="regime-cell tr">
+      <div class="regime-label" style="color: var(--red);">🔴 滞涨期 Stagflation（增长↓，通胀↑）</div>
+      <div class="regime-assets">
+        <strong>✓ 受益：</strong>Commodities（能源）、TIPS、Gold、Real Assets<br>
+        <strong>✗ 承压：</strong>Equity（盈利压缩）、传统Bonds（60/40失效）<br>
+        <strong>信号：</strong>CPI>预期，ISM<50，2022年典型案例
+      </div>
+    </div>
+    <div class="regime-cell bl">
+      <div class="regime-label" style="color: var(--blue);">🔵 复苏期 Recovery（增长↑，通胀↓）</div>
+      <div class="regime-assets">
+        <strong>✓ 受益：</strong>Equity（Value stocks）、Cyclical Commodities<br>
+        <strong>✗ 承压：</strong>Gold、Defensive bonds<br>
+        <strong>信号：</strong>Credit Spread收窄，ISM回升，企业盈利修复
+      </div>
+    </div>
+    <div class="regime-cell">
+      <div class="regime-label" style="color: var(--text2);">⚫ 衰退期 Recession（增长↓，通胀↓）</div>
+      <div class="regime-assets">
+        <strong>✓ 受益：</strong>Long Bonds、Gold（实际利率下降）、Cash<br>
+        <strong>✗ 承压：</strong>Equity、Cyclical Commodities、HY Credit<br>
+        <strong>信号：</strong>2s10s倒挂后，失业率上升，盈利预期下修
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ COMMODITIES DETAIL ══════════ -->
+<section class="section" id="s2">
+  <div class="section-header">
+    <span class="section-num">03</span>
+    <h2 class="section-title">主要商品信号详解 Commodity Signal Breakdown</h2>
+  </div>
+
+  <!-- CRUDE OIL -->
+  <div class="subsection" id="crude">
+    <div class="commodity-header">
+      <div class="commodity-icon" style="background:rgba(251,146,60,0.1);border:1px solid rgba(251,146,60,0.3);">🛢️</div>
+      <div>
+        <div class="commodity-name">原油 Crude Oil <span style="font-size:13px;color:var(--text3);">WTI / Brent</span></div>
+        <div class="commodity-sub">核心驱动：SUPPLY SIDE DOMINATED (OPEC) + 全球需求</div>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div>
+        <p><strong>主要用途 End Uses：</strong></p>
+        <div class="code-block" style="font-size:11.5px;">原油（100%）
+├── 交通运输 Transportation ~50%
+│   ├── 汽油 Gasoline      ~25%
+│   ├── 柴油 Diesel        ~15%
+│   └── 航煤 Jet Fuel      ~10%
+├── 工业/化工 Petrochemicals ~20%
+│   ├── 石脑油 Naphtha
+│   ├── 润滑油 Lubricants
+│   └── 沥青 Asphalt
+├── 取暖 Heating Oil       ~15%
+├── 发电 Power Generation  ~10%
+└── 其他                   ~5%</div>
+
+        <div class="callout blue">
+          <div class="callout-title">核心利润指标 Crack Spread</div>
+          <p>3-2-1 Crack Spread = (2×汽油 + 1×柴油) / 3 − WTI<br>扩大 → 炼厂加工意愿强 → 原油需求增加</p>
+        </div>
+      </div>
+      <div>
+        <p><strong>气温对油价的影响 Temperature Impact：</strong></p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>指标</th><th>公式</th><th>对油价影响</th></tr></thead>
+            <tbody>
+              <tr><td>HDD（供暖度日数）<br>Heating Degree Days</td><td>max(65°F − T, 0)</td><td>↑ 取暖油需求↑，近月合约看多</td></tr>
+              <tr><td>CDD（制冷度日数）<br>Cooling Degree Days</td><td>max(T − 65°F, 0)</td><td>↑ 间接推升发电燃料需求</td></tr>
+              <tr><td>暖冬 Warm Winter</td><td>HDD低于5年均值</td><td>库存累积，取暖油/天然气承压</td></tr>
+              <tr><td>飓风 Hurricane</td><td>墨西哥湾停产</td><td>短期供给中断，油价Spike</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="callout gold" style="margin-top:12px;">
+          <div class="callout-title">关键认知</div>
+          <p>气温对天然气影响远大于原油。原油价格最大驱动仍是<strong>OPEC产量</strong>和<strong>中国/全球PMI</strong>，气温只是边际催化剂。</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>维度</th><th>核心指标 Key Indicator</th><th>来源 Source</th><th>频率</th><th>信号逻辑</th></tr></thead>
+        <tbody>
+          <tr><td>库存 Inventory</td><td>EIA原油库存 vs 预期（<span class="hl">EIA Surprise</span>）</td><td>EIA</td><td>每周三</td><td>超预期去库 → 看多</td></tr>
+          <tr><td>库存</td><td>Cushing库存（WTI交割地）</td><td>EIA</td><td>周</td><td>极低时逼仓风险上升</td></tr>
+          <tr><td>供给 Supply</td><td><span class="hl">Baker Hughes钻井平台数</span></td><td>Baker Hughes</td><td>每周五</td><td>钻井增加 → 未来供给压力</td></tr>
+          <tr><td>供给</td><td>OPEC合规率 Compliance Rate</td><td>OPEC/IEA</td><td>月</td><td>执行率高 → 供给收紧</td></tr>
+          <tr><td>曲线 Curve</td><td>WTI 1-12月价差</td><td>CME</td><td>日</td><td>Backwardation → 现货紧张</td></tr>
+          <tr><td>情绪 Sentiment</td><td>CFTC COT MM净持仓</td><td>CFTC</td><td>周五</td><td>极度拥挤多头 → contrarian看空</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- COPPER -->
+  <div class="subsection" id="copper">
+    <div class="commodity-header">
+      <div class="commodity-icon" style="background:rgba(74,158,255,0.1);border:1px solid rgba(74,158,255,0.3);">⚡</div>
+      <div>
+        <div class="commodity-name">铜 Copper <span style="font-size:13px;color:var(--text3);">"Dr. Copper"</span></div>
+        <div class="commodity-sub">核心驱动：DEMAND SIDE DOMINATED — 中国占全球消费~55%</div>
+      </div>
+    </div>
+
+    <div class="callout gold">
+      <div class="callout-title">三大核心信号（面试必说）</div>
+      <p><strong>① LME Cancelled Warrants Ratio</strong>：实物提货申请比例，最快的实时库存信号，领先库存本身1-5天<br>
+      <strong>② 中国信贷脉冲 China Credit Impulse</strong>：Δ(新增社融/GDP)，领先铜价约2个季度，最强中期信号<br>
+      <strong>③ TC/RC费率 Treatment/Refining Charge</strong>：费率低 → 铜精矿稀缺 → 供给端最被忽视的信号</p>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>维度</th><th>指标</th><th>来源</th><th>信号逻辑</th></tr></thead>
+        <tbody>
+          <tr><td>中国需求</td><td>中国制造业PMI（官方+财新Caixin）</td><td>NBS/Caixin</td><td>PMI>50且改善 → 铜需求扩张</td></tr>
+          <tr><td>中国需求</td><td>固定资产投资FAI（房地产+基建）</td><td>NBS</td><td>房地产新开工是用铜领先指标</td></tr>
+          <tr><td>中国需求</td><td><span class="hl">中国信贷脉冲 Credit Impulse</span></td><td>PBOC</td><td>领先约2个季度，最强中期信号</td></tr>
+          <tr><td>供给</td><td><span class="hl">TC/RC费率</span></td><td>Wood Mac/SMM</td><td>费率低 → 精矿紧张 → 看多</td></tr>
+          <tr><td>供给</td><td>智利/秘鲁矿山扰动</td><td>新闻/公司公告</td><td>罢工/洪水停产 → 供给冲击</td></tr>
+          <tr><td>库存</td><td><span class="hl">LME Cancelled Warrants</span></td><td>LME</td><td>高注销比 → 实物提货强 → 看多</td></tr>
+          <tr><td>库存</td><td>全球三所库存（LME+COMEX+SHFE）</td><td>Bloomberg</td><td>合并库存避免交易所间转移误判</td></tr>
+          <tr><td>跨市场</td><td><span class="hl">沪伦比 SHFE/LME Ratio</span></td><td>Bloomberg</td><td>比价高 → 中国进口减少 → LME看多</td></tr>
+          <tr><td>持仓</td><td>CFTC COT MM净持仓</td><td>CFTC</td><td>极端多头(>2σ) → contrarian看空</td></tr>
+          <tr><td>跨资产</td><td>AUD/USD</td><td>Bloomberg</td><td>铜需求预期的FX proxy</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- GOLD -->
+  <div class="subsection" id="gold">
+    <div class="commodity-header">
+      <div class="commodity-icon" style="background:rgba(232,197,71,0.1);border:1px solid rgba(232,197,71,0.3);">🥇</div>
+      <div>
+        <div class="commodity-name">黄金 Gold</div>
+        <div class="commodity-sub">核心驱动：实际利率REAL RATES（最重要）+ 美元USD + 避险SAFE HAVEN</div>
+      </div>
+    </div>
+
+    <div class="formula-block">
+      <div class="formula-label">黄金定价框架 Gold Pricing Framework</div>
+      $$P_{Gold} \approx f(\underbrace{-r_{real}}_{\text{最重要}},\ \underbrace{-DXY}_{\text{美元}},\ +\pi^e,\ +\text{Geopolitical Risk},\ +\text{Central Bank Buying})$$
+      <div style="font-size:11.5px;color:var(--text2);margin-top:8px;">10Y TIPS Yield解释黄金价格变动，单因素R²约0.7。</div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>维度</th><th>指标</th><th>来源</th><th>信号逻辑</th></tr></thead>
+        <tbody>
+          <tr><td>实际利率 Real Rate</td><td><span class="hl">10Y TIPS Yield</span></td><td>Bloomberg</td><td>最重要！实际利率↑ → 持有黄金机会成本↑ → 金价↓</td></tr>
+          <tr><td>通胀预期</td><td>5Y5Y Inflation Swap / Breakeven</td><td>Bloomberg</td><td>通胀预期↑ → 黄金保值需求↑</td></tr>
+          <tr><td>美元</td><td>DXY指数</td><td>Bloomberg</td><td>美元强 → 金价承压（负相关）</td></tr>
+          <tr><td>ETF流量</td><td><span class="hl">GLD/IAU持仓变化</span></td><td>Bloomberg</td><td>西方投资者情绪指标，领先价格</td></tr>
+          <tr><td>央行购金</td><td>IMF COFER / WGC央行报告</td><td>IMF/WGC</td><td>新兴市场去美元化，长期结构性需求</td></tr>
+          <tr><td>避险</td><td>VIX / 地缘政治风险指数GPR</td><td>CBOE</td><td>Risk-off → 避险买入黄金</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- NATURAL GAS -->
+  <div class="subsection" id="natgas">
+    <div class="commodity-header">
+      <div class="commodity-icon" style="background:rgba(61,214,140,0.1);border:1px solid rgba(61,214,140,0.3);">🔥</div>
+      <div>
+        <div class="commodity-name">天然气 Natural Gas <span style="font-size:13px;color:var(--text3);">Henry Hub / TTF / JKM</span></div>
+        <div class="commodity-sub">最难预测的商品，受WEATHER主导，区域性极强</div>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>维度</th><th>核心指标</th><th>来源</th></tr></thead>
+          <tbody>
+            <tr><td>库存</td><td>EIA天然气库存 vs 5年均值</td><td>EIA（周四）</td></tr>
+            <tr><td><span class="hl">天气（最重要）</span></td><td>HDD/CDD vs NOAA预报偏差</td><td>NOAA</td></tr>
+            <tr><td>供给</td><td>干气产量 Dry Gas Production</td><td>EIA</td></tr>
+            <tr><td>需求</td><td>LNG出口量</td><td>EIA</td></tr>
+            <tr><td>跨市场</td><td>Henry Hub vs TTF（欧美价差）</td><td>Bloomberg</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout green">
+        <div class="callout-title">天气信号最重要</div>
+        <p>NOAA 14天气温预报与实际值的偏差（Temperature Surprise）是天然气最高频的催化剂。La Niña/El Niño状态决定整个冬季的供暖需求预期，领先约12-18个月。Henry Hub vs TTF价差是LNG全球套利信号。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ALUMINUM, NICKEL, AGS in collapsibles -->
+  <details>
+    <summary>铝 Aluminium — 能源密集型商品，供给端由电价驱动</summary>
+    <div class="details-content" id="aluminum">
+      <div class="callout blue">
+        <div class="callout-title">核心insight</div>
+        <p>铝是"能源密集型商品（Energy-Intensive Commodity）"。中国占全球产量57%，且大量依赖水电（四川）和煤电，<strong>电价变化是供给端最核心信号</strong>。欧洲能源危机期间欧洲铝厂大规模关停是典型案例。</p>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>维度</th><th>指标</th><th>逻辑</th></tr></thead>
+          <tbody>
+            <tr><td>供给（最重要）</td><td>欧洲电价 European Power Price</td><td>高电价 → 欧洲铝厂减产 → 供给收紧</td></tr>
+            <tr><td>供给</td><td>中国铝厂开工率（SMM）</td><td>直接反映中国产量</td></tr>
+            <tr><td>需求</td><td>汽车产量（EV轻量化）</td><td>每辆EV用铝约200kg</td></tr>
+            <tr><td>成本</td><td>Al-Energy Spread</td><td>铝价−能源成本压缩时减产压力大</td></tr>
+            <tr><td>库存</td><td>LME铝库存 + Cancelled Warrants</td><td>与铜逻辑类似</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </details>
+
+  <details>
+    <summary>镍 Nickel — 结构性变化：电池需求重塑定价逻辑</summary>
+    <div class="details-content" id="nickel">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>指标</th><th>逻辑</th></tr></thead>
+          <tbody>
+            <tr><td>印尼镍矿出口政策 Indonesia Export Policy</td><td>印尼占全球矿产储量~30%，政策变化是最大供给冲击</td></tr>
+            <tr><td>新能源汽车电池需求 EV Battery Demand</td><td>NMC电池含镍量高，EV渗透率是长期结构性需求</td></tr>
+            <tr><td>不锈钢产量 Stainless Steel Production</td><td>传统需求，占镍消费约65%</td></tr>
+            <tr><td>LME vs SHFE镍价差</td><td>高冰镍 vs 电解镍的品种价差，2022年逼仓后市场结构性改变</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </details>
+
+  <details>
+    <summary>农产品 Agriculture — USDA / Weather / La Niña主导</summary>
+    <div class="details-content" id="ags">
+      <div class="callout gold">
+        <div class="callout-title">两大核心指标</div>
+        <p><strong>USDA WASDE报告（World Agricultural Supply and Demand Estimates）</strong>：月度发布，农产品市场的"非农数据"，最重要的价格催化剂<br>
+        <strong>La Niña/El Niño</strong>：影响南美和澳洲产量，是12-18个月ahead的结构性供给信号</p>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>维度</th><th>指标</th><th>来源</th><th>适用商品</th></tr></thead>
+          <tbody>
+            <tr><td>供给</td><td>USDA WASDE月度报告</td><td>USDA</td><td>玉米/大豆/小麦全部</td></tr>
+            <tr><td>供给</td><td>美国作物优良率 Crop Condition</td><td>USDA Crop Progress</td><td>玉米/大豆（种植季周度更新）</td></tr>
+            <tr><td>天气</td><td>La Niña/El Niño状态</td><td>NOAA</td><td>大豆（巴西/阿根廷）</td></tr>
+            <tr><td>天气</td><td>巴西/阿根廷降雨量</td><td>INMET</td><td>大豆（南美种植季）</td></tr>
+            <tr><td>需求</td><td>中国大豆进口量</td><td>中国海关</td><td>CBOT大豆</td></tr>
+            <tr><td>需求</td><td>美国乙醇消费 Ethanol Demand</td><td>EIA</td><td>玉米（受RFS政策约束）</td></tr>
+            <tr><td>套利</td><td>Crush Spread（大豆压榨利润）</td><td>CME</td><td>大豆：= 豆粕+豆油价值 − 大豆成本</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p><strong>软商品 Soft Commodities关键变量：</strong>Coffee：巴西/越南产量+BRL汇率（影响农民售货意愿）；Sugar：巴西糖/乙醇切换比例；Cotton：USDA产量+中国进口配额+印度季风。</p>
+    </div>
+  </details>
+</section>
+
+<!-- ══════════ S3: SIGNAL FRAMEWORK ══════════ -->
+<section class="section" id="s3">
+  <div class="section-header">
+    <span class="section-num">04</span>
+    <h2 class="section-title">系统性信号生成框架 Systematic Signal Generation Framework</h2>
+  </div>
+
+  <p>遇到任何asset，都可以套用以下<strong>5+1维度框架</strong>系统性构建信号。</p>
+
+  <div class="table-wrap" style="margin-top: 20px;">
+    <table>
+      <thead><tr><th>维度</th><th>核心问题</th><th>Oil例子</th><th>Copper例子</th></tr></thead>
+      <tbody>
+        <tr><td><strong>1. Fundamental S/D</strong></td><td>供需driver是什么？有官方数据吗？</td><td>EIA库存，OPEC产量</td><td>中国信贷脉冲，TC/RC费率</td></tr>
+        <tr><td><strong>2. Term Structure</strong></td><td>期货曲线形态说明什么？Roll Yield？</td><td>WTI 1-12月价差</td><td>LME Cash-3M Spread，沪伦比</td></tr>
+        <tr><td><strong>3. Macro & Cross-Asset</strong></td><td>对哪些宏观变量敏感？FX proxy？</td><td>DXY，全球PMI</td><td>中国PMI，AUD/USD，BDI</td></tr>
+        <tr><td><strong>4. Positioning & Sentiment</strong></td><td>谁在交易？COT有数据？期权信号？</td><td>CFTC COT，Put/Call Ratio</td><td>CFTC COT，SHFE龙虎榜</td></tr>
+        <tr><td><strong>5. Price-Based Statistical</strong></td><td>Momentum有效吗？有季节性吗？</td><td>12-1月时序Momentum</td><td>12-1月Momentum，铜/SPX比价</td></tr>
+        <tr><td><strong>+1. Alternative Data</strong></td><td>有非传统数据源吗？</td><td>卫星油罐，AIS船只</td><td>卫星矿山活动，中国电力数据</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="subsection" id="term-structure" style="margin-top: 32px;">
+    <div class="subsection-title">期限结构 Term Structure — 两种用法的区别</div>
+
+    <div class="callout blue">
+      <div class="callout-title">重要澄清：Term Structure既是信号也可以是交易标的，两者不互斥</div>
+      <p><strong>用法1：曲线形态作为价格方向的预测Feature</strong> — 曲线是INPUT，Spot价格是OUTPUT（prediction target）<br>
+      <strong>用法2：直接交易曲线形态变化</strong> — Calendar Spread交易，曲线spread变化本身就是P&L</p>
+    </div>
+
+    <div class="two-col">
+      <div>
+        <div class="subsection-title" style="font-size:13px;">用法1：曲线作为预测Feature</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Feature</th><th>公式</th><th>信号方向</th></tr></thead>
+            <tbody>
+              <tr><td>Spot-12M Spread</td><td>$F_1 - F_{12}$</td><td>正值（Backwardation）→ 现货紧张 → 看多</td></tr>
+              <tr><td>Roll Yield</td><td>$(F_1-F_2)/F_1 \times 12$（年化）</td><td>正Roll Yield → 持有有正Carry</td></tr>
+              <tr><td>曲线斜率变化</td><td>$\Delta(F_1 - F_{12})$（4周）</td><td>Contango→Backwardation是强趋势信号</td></tr>
+              <tr><td>曲线凸性 Curvature</td><td>$F_1 - 2F_6 + F_{12}$</td><td>捕捉曲线非线性形态</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div>
+        <div class="subsection-title" style="font-size:13px;">用法2：直接交易曲线 Calendar Spread</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>策略</th><th>做法</th><th>押注</th><th>适用情景</th></tr></thead>
+            <tbody>
+              <tr><td>Bull Spread</td><td>多近月，空远月</td><td>曲线趋向Backwardation</td><td>库存骤降，现货紧张</td></tr>
+              <tr><td>Bear Spread</td><td>空近月，多远月</td><td>曲线趋向Contango</td><td>库存累积，需求走弱</td></tr>
+              <tr><td>Butterfly</td><td>多M1+M12，空2×M6</td><td>曲线中段形态变化</td><td>精细化供需结构交易</td></tr>
+              <tr><td>Roll优化</td><td>选Roll收益最高合约</td><td>最大化Carry</td><td>趋势跟随策略执行层</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="formula-block">
+      <div class="formula-label">Implied Convenience Yield（隐含便利收益率）</div>
+      $$F_T = S \cdot e^{(r + s - c)T} \Rightarrow c = r + s - \frac{1}{T}\ln\frac{F_T}{S}$$
+      <div style="font-size:11.5px;color:var(--text2);margin-top:8px;">$c$ = convenience yield，$s$ = 存储成本 storage cost。高convenience yield → 持有实物的隐含稀缺性高 → 现货紧张信号</div>
+    </div>
+  </div>
+
+  <!-- ALT DATA -->
+  <div class="subsection" id="altdata" style="margin-top: 16px;">
+    <div class="subsection-title">另类数据分析框架 Alternative Data Framework</div>
+
+    <p><strong>拿到任何Alt Data的通用分析流程（Step 1-4）：</strong></p>
+
+    <div class="code-block" style="font-size:11.5px;">Step 1 — 数据诊断 Data Diagnostics
+  ✅ Coverage：覆盖哪些地区/行业/资产？时间跨度？
+  ✅ Frequency：日度/周度/月度/实时？
+  ✅ Latency：数据从产生到拿到的延迟？
+  ✅ Backfill Risk：历史数据是否被回填修正？(Survivorship Bias)
+  ✅ Sample Size：样本量够做统计推断吗？
+
+Step 2 — Feature工程标准流程
+  原始数据
+    → 季节性调整 Seasonal Adjustment (X-13/STL分解)
+    → vs历史同期 z-score（消除level效应）
+    → Surprise = 实际值 − 预测值（捕捉边际变化）
+    → 变化率/动量（一阶差分或n周变化）
+    → 截面排名（跨资产/跨公司标准化）
+
+Step 3 — 信号验证 Signal Validation
+  |IC| > 0.03，ICIR > 0.5
+  与已知因子相关 < 0.3（独立性）
+  Rolling IC符号一致（稳定性）
+  IC Decay曲线（了解有效Horizon）
+
+Step 4 — Decay速度决定策略类型
+  快速（1-5日）：新闻情绪、社交媒体 → 高频/日频
+  中速（1-4周）：信用卡、人流数据 → 中频系统性
+  慢速（1-3月）：卫星库存、船运 → 宏观/CTA</div>
+
+    <div class="table-wrap" style="margin-top: 16px;">
+      <table>
+        <thead><tr><th>Alt Data类型</th><th>代表数据源</th><th>核心Feature</th><th>可交易资产</th></tr></thead>
+        <tbody>
+          <tr><td>卫星/地理空间 Satellite</td><td>Planet Labs, Orbital Insight, RS Metrics</td><td>油罐液位、矿山活动、NDVI作物长势、夜间灯光</td><td>WTI/Brent（领先EIA 1周），铜/铁矿石，农产品</td></tr>
+          <tr><td>AIS船只追踪 Ship Tracking</td><td>Marine Traffic, Kpler, Vortexa</td><td>原油运输量，暗船追踪，LNG流向，铁矿石到港量</td><td>WTI/Brent（实时贸易流），BDI运费，LNG价差</td></tr>
+          <tr><td>信用卡/消费 CC Transaction</td><td>Second Measure, Earnest Research, Yodlee</td><td>公司收入预测、SSS Surprise、市场份额变化</td><td>零售/餐饮/旅游个股（领先财报2-8周）</td></tr>
+          <tr><td>人流/地理位置 Foot Traffic</td><td>SafeGraph, Placer.ai, Foursquare</td><td>门店客流Surprise、工厂活动、商业地产空置率</td><td>零售个股、REITs、消费品指数</td></tr>
+          <tr><td>NLP文本 Text/NLP</td><td>Bloomberg News, SEC Filings, Twitter/X</td><td>情绪分数、Risk Factor变化、管理层语气</td><td>个股（短期）、行业ETF</td></tr>
+          <tr><td>能源/电力 Energy Data</td><td>EIA, Gridwatch, EPEX, AEMO</td><td>实时电力消耗、可再生渗透率、欧洲气电价差</td><td>天然气、煤炭、电力期货、工业金属</td></tr>
+          <tr><td>网络爬虫 Web Scraping</td><td>Keepa（亚马逊）、OTA网站</td><td>电商价格变化、二手车价格（Manheim）、招聘数据</td><td>CPI预测→利率交易、个股、劳动力市场</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ZIPCODE TEMPERATURE -->
+  <div class="subsection" id="zipcode" style="margin-top: 16px;">
+    <div class="subsection-title">案例：美国Zipcode级别每日气温数据</div>
+
+    <div class="callout gold">
+      <div class="callout-title">Zipcode粒度的独特优势</div>
+      <p>市场上已有全国性气温数据（NOAA州/城市级）。Zipcode粒度的alpha来源：<br>
+      ① 可做<strong>人口/经济活动加权</strong>的精细聚合 ② 捕捉<strong>局部极端天气</strong>对特定企业的影响 ③ 与企业<strong>门店/设施地址精确匹配</strong>，构造公司级天气暴露指数</p>
+    </div>
+
+    <div class="two-col">
+      <div>
+        <p><strong>Feature构建四层结构：</strong></p>
+        <div class="code-block" style="font-size:11.5px; white-space: pre-wrap;">Layer 1 — 基础聚合
+  国家级HDD = Σ w_zip × max(65°F - T_zip, 0)
+  电网区域HDD（PJM/MISO/CAISO分区）
+
+Layer 2 — Surprise（最重要）
+  Temp Surprise = T_actual - T_forecast(NOAA)
+  累积7/14天滚动Surprise
+
+Layer 3 — 公司级精准匹配
+  Company_Exposure[i] = 
+    Σ (stores_in_zip/total) × TempAnomaly[zip]
+
+Layer 4 — 动态特征
+  寒潮蔓延速度（极端低温zipcode数量日变化）
+  温度变化加速度（二阶差分 ΔΔT）
+  季节累积度日数偏差</div>
+      </div>
+      <div>
+        <p><strong>可交易资产：</strong></p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>资产</th><th>信号链</th></tr></thead>
+            <tbody>
+              <tr><td>天然气（最直接）</td><td>HDD Surprise↑ → Henry Hub近月看多，库存偏低时信号放大</td></tr>
+              <tr><td>电力期货（最精准）</td><td>PJM（东北）/CAISO（加州）/ERCOT（德州）分区匹配</td></tr>
+              <tr><td>取暖油 Heating Oil</td><td>东北部zipcode HDD Surprise是最直接信号</td></tr>
+              <tr><td>零售个股</td><td>Home Depot门店加权HDD，McDonald's客流，冬季服装SSS</td></tr>
+              <tr><td>农产品</td><td>生长季霜冻zipcode → 领先USDA作物报告2-4周</td></tr>
+              <tr><td>电力公用事业</td><td>服务区域加权HDD/CDD → 用电收入预测</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ S4: MACRO vs EQUITY/VOL ══════════ -->
+<section class="section" id="s4">
+  <div class="section-header">
+    <span class="section-num">05</span>
+    <h2 class="section-title">Macro Quant vs Equity/Vol Quant — 核心差异</h2>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th></th><th>Equity Quant</th><th>Vol / Options Quant</th><th>Macro Quant</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Alpha来源</strong></td><td>截面定价错误 Cross-sectional Mispricing</td><td>波动率定价错误 Vol Mispricing</td><td>经济周期错误定价 Cycle Mispricing</td></tr>
+        <tr><td><strong>数据丰富度</strong></td><td>极高（5000股×20年日度 = 数百万观测）</td><td>高（每股数十个合约）</td><td>低（30资产×月度 = 几百观测）</td></tr>
+        <tr><td><strong>模型复杂度</strong></td><td>可以很高（LGBM+500特征）</td><td>中-高</td><td>必须简洁（过拟合风险极大）</td></tr>
+        <tr><td><strong>Alpha结构</strong></td><td>截面为主 Cross-sectional</td><td>截面+时序混合</td><td>时序为主 Time-series</td></tr>
+        <tr><td><strong>Regime稳定性</strong></td><td>因子相对稳定（偶有Factor Crash）</td><td>中等</td><td>差，宏观关系符号可完全翻转</td></tr>
+        <tr><td><strong>风险管理</strong></td><td>VaR + Factor Neutralization</td><td>Greeks管理</td><td>Scenario Analysis + 动态相关性</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="two-col" style="margin-top: 20px;">
+    <div>
+      <div class="subsection-title">从Equity/Vol转向Macro需要放弃的思维</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Equity习惯</th><th>为什么Macro里要改</th></tr></thead>
+          <tbody>
+            <tr><td>大量特征做ML</td><td>数据稀疏，必然过拟合</td></tr>
+            <tr><td>每天更新信号/持仓</td><td>宏观信号低频，过度交易只增成本</td></tr>
+            <tr><td>Residualize掉宏观暴露</td><td>宏观暴露本身就是macro alpha来源</td></tr>
+            <tr><td>纯统计显著性驱动</td><td>必须有经济直觉，统计只是验证</td></tr>
+            <tr><td>截面排名选股</td><td>资产太少，时序方向判断才是核心</td></tr>
+            <tr><td>假设参数稳定</td><td>必须时刻检测Regime变化</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div>
+      <div class="subsection-title">Macro Quant特有能力要求</div>
+      <ul class="list">
+        <li><strong>Regime Detection（机制检测）</strong>：HMM模型，或规则型Regime Filter（2s10s + ISM组合）</li>
+        <li><strong>Horizon Stack设计</strong>：即时(1-5日)/中期(1-4周)/长期(1-3月)分层，Horizon Matching</li>
+        <li><strong>跨资产传导链思维</strong>：中国信贷↑ → 铜看多 → AUD/USD看多 → 铁矿石需求↑</li>
+        <li><strong>Scenario Analysis</strong>：Fed意外加息100bp / 中国硬着陆 / Oil Supply Shock的压力测试</li>
+        <li><strong>低数据量统计工具</strong>：Bootstrap、贝叶斯推断、结构方程模型</li>
+        <li><strong>Policy Reading</strong>：央行措辞变化→利率曲线交易</li>
+      </ul>
+
+      <div class="callout gold" style="margin-top: 12px;">
+        <div class="callout-title">Macro仓位Sizing公式</div>
+        <p>$\text{Position} = \text{Signal Strength} \times \frac{1}{\sigma_{asset}} \times \text{Regime Confidence} \times \text{Liquidity Adj.}$<br><br>
+        数据发布前：Regime Confidence↓ → 仓位缩小<br>
+        危机期间：Liquidity Adj.↓ → 全面缩仓</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ S5: OPTIONS EVENTS ══════════ -->
+<section class="section" id="s5">
+  <div class="section-header">
+    <span class="section-num">06</span>
+    <h2 class="section-title">期权事件交易 Options Event Trading</h2>
+  </div>
+
+  <div class="subsection-title">主要事件类型（除Earnings外）</div>
+
+  <div class="three-col">
+    <div class="card">
+      <div class="card-title">💊 监管/审批类</div>
+      <p><span class="badge badge-red">最高IV Spike</span> 主要Biotech/Pharma</p>
+      <p><strong>FDA PDUFA Date</strong>（新药审批截止日）：事件前IV极高，事件后即时Crush</p>
+      <p><strong>FDA Advisory Committee</strong>（Adcom）</p>
+      <p><strong>CMS Medicare定价决定</strong></p>
+      <p><strong>反垄断审批 Antitrust</strong></p>
+    </div>
+    <div class="card">
+      <div class="card-title">🤝 并购相关 M&A</div>
+      <p><span class="badge badge-blue">分阶段</span></p>
+      <p><strong>传言/泄露</strong>：标的股IV Spike，OTM Call被扫货</p>
+      <p><strong>官方宣布</strong>：标的跳至收购价，IV Crush</p>
+      <p><strong>监管等待期</strong>：Merger Arb Spread，失败风险溢价</p>
+      <p><strong>完成/失败</strong>：失败 → 暴跌+Vol Spike</p>
+    </div>
+    <div class="card">
+      <div class="card-title">🏛️ 宏观/政策类</div>
+      <p><span class="badge badge-purple">系统性影响</span></p>
+      <p><strong>FOMC会议</strong>（每6-8周）：VIX事件前升，事件后Crush</p>
+      <p><strong>CPI/PCE发布</strong>（月度）：通胀Surprise时Vol Spike</p>
+      <p><strong>Non-Farm Payrolls</strong>（每月第一个周五）</p>
+      <p><strong>总统/国会选举</strong>：选举前数月IV持续上升</p>
+      <p><strong>Jackson Hole</strong>等Fed讲话</p>
+    </div>
+    <div class="card">
+      <div class="card-title">⚖️ 法律/诉讼类</div>
+      <p><strong>重大诉讼判决</strong>（专利侵权等）</p>
+      <p><strong>DOJ/SEC调查结果</strong>：持续高IV，时点难预测</p>
+      <p><strong>集体诉讼和解</strong>：和解金额不确定性</p>
+    </div>
+    <div class="card">
+      <div class="card-title">🏢 公司战略类</div>
+      <p><strong>Spin-off分拆/剥离</strong></p>
+      <p><strong>Activist Investor入股</strong>：隐含回购/分拆预期</p>
+      <p><strong>CEO/CFO突然离职</strong>：负面信号，IV Spike</p>
+      <p><strong>投资者日 Investor Day</strong>：取决于信息量</p>
+      <p><strong>大型资本支出宣布</strong></p>
+    </div>
+    <div class="card">
+      <div class="card-title">🏭 行业特定类</div>
+      <p><strong>银行</strong>：Fed压力测试 DFAST结果</p>
+      <p><strong>零售</strong>：Black Friday/假日季销售</p>
+      <p><strong>能源</strong>：OPEC会议，EIA超预期</p>
+      <p><strong>科技</strong>：苹果发布会，云计算季度数据</p>
+      <p><strong>航空</strong>：IATA流量，燃油成本</p>
+    </div>
+  </div>
+
+  <div class="subsection-title" style="margin-top: 28px;">Event交易策略详解</div>
+
+  <details open>
+    <summary>策略1：Long Vol — ATM Straddle（事件前买波动率）</summary>
+    <div class="details-content">
+      <div class="two-col">
+        <div>
+          <p>适用：事件不确定性大，但IV还未充分定价。</p>
+          <div class="formula-block">
+            <div class="formula-label">核心判断</div>
+            $$\text{Implied Move} \approx \frac{\text{ATM Straddle Price}}{\text{Stock Price}} \approx 0.8 \times \sigma_{IV} \times \sqrt{\frac{DTE}{252}}$$
+            <div style="font-size:11.5px;color:var(--text2);margin-top:8px;">Historical Move（同类历史事件）> Implied Move → 期权便宜 → 买Straddle<br>Historical Move < Implied Move → 期权贵 → 卖Straddle</div>
+          </div>
+        </div>
+        <div class="callout green">
+          <div class="callout-title">操作要点</div>
+          <p>• 早入场：IV在事件临近时加速上升，越晚越贵<br>
+          • 分批建仓，不要一天内全仓<br>
+          • 盈亏平衡 = ±(Straddle Cost / Stock Price)<br>
+          • 事件前Vega主导，事件后Delta主导</p>
+        </div>
+      </div>
+    </div>
+  </details>
+
+  <details>
+    <summary>策略2：Vol Crush交易 — 事件后Short Vol</summary>
+    <div class="details-content">
+      <p>Vol Crush是期权市场最可预测的现象之一：事件发生 → 不确定性消除 → IV骤降 → Short Vega获利。</p>
+      <p><strong>做法：</strong>事件后立即卖出近月ATM Straddle；或事件前卖出跨越事件的下一个到期日期权。</p>
+      <div class="callout red">
+        <div class="callout-title">风险</div>
+        <p>如果事件结果极端（FDA拒绝/意外利好），Gamma Loss > Theta Gain。需设置硬止损，单一事件仓位不超过组合的5%。</p>
+      </div>
+    </div>
+  </details>
+
+  <details>
+    <summary>策略3：Calendar Spread — 跨期权到期日</summary>
+    <div class="details-content">
+      <p><strong>做法：</strong>卖近月（事件月），买远月（事件后）。</p>
+      <p><strong>逻辑：</strong>事件月IV被事件溢价推高 → 事件后该月IV Crush → 远月IV相对稳定。P&L来自两个到期日的IV差压缩。</p>
+      <p><strong>适用：</strong>事件时间明确（如FDA PDUFA Date已知）但结果方向不确定时。</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>策略4：跨资产Event交易</summary>
+    <div class="details-content">
+      <div class="code-block" style="white-space: pre-wrap; font-size: 12px;">M&A宣布后跨资产组合：
+  多标的公司Put（防合并失败）
+  + 空收购公司（整合风险）
+  + 多并购套利ETF（MNA）
+
+FDA审批跨资产：
+  多Biotech标的（批准预期）
+  + 多XBI Put（行业Tail Risk对冲）
+
+FOMC跨资产：
+  利率期权（Swaption）+ 黄金期权
+  + 配合曲线交易（2s10s Steepener/Flattener）</div>
+    </div>
+  </details>
+</section>
+
+<!-- ══════════ S6: TEXTUAL DATA ══════════ -->
+<section class="section" id="s6">
+  <div class="section-header">
+    <span class="section-num">07</span>
+    <h2 class="section-title">公司文本数据 Corporate Textual Data</h2>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>类别</th><th>具体内容</th><th>更新频率</th><th>主要用途</th></tr></thead>
+      <tbody>
+        <tr><td><strong>监管披露 SEC Filings</strong></td><td>10-K（年报）、10-Q（季报）、8-K（重大事项）、DEF 14A（代理声明）、S-1（IPO招股书）、13F（机构持仓）</td><td>季度/年度/实时</td><td>风险披露、盈利预测、内部人行为</td></tr>
+        <tr><td><strong>管理层沟通 Management Comm.</strong></td><td>Earnings Call（财报电话会议）、Investor Day、行业会议演讲、Annual Letter</td><td>季度</td><td>前瞻性指引、管理层信心、战略方向</td></tr>
+        <tr><td><strong>新闻媒体 News Media</strong></td><td>Bloomberg/WSJ/FT、行业垂直媒体、Press Release</td><td>实时</td><td>短期情绪、事件催化</td></tr>
+        <tr><td><strong>分析师文本 Analyst Reports</strong></td><td>卖方研究报告 Sell-side Research、评级变动报告、盈利预测修正说明</td><td>不定期</td><td>共识预期追踪、评级变动信号</td></tr>
+        <tr><td><strong>法律文件 Legal Documents</strong></td><td>PACER法院记录、专利申请/诉讼、监管罚款文件</td><td>事件驱动</td><td>尾部风险识别</td></tr>
+        <tr><td><strong>社交/另类 Social/Alt</strong></td><td>Twitter/X、Reddit (WSB)、Glassdoor员工评价、LinkedIn人员变动</td><td>实时</td><td>散户情绪、员工满意度、人才流动</td></tr>
+        <tr><td><strong>其他另类 Other Alt Text</strong></td><td>招聘信息 Job Postings、专利文件、供应商合同摘要</td><td>实时/季度</td><td>商业策略先行信号</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="subsection-title" style="margin-top: 24px;">预测个股未来3个月风险大小（Realized Volatility） — 最优文本数据选择</div>
+
+  <div class="callout blue">
+    <div class="callout-title">核心认知：预测风险大小≠预测方向</div>
+    <p>目标是预测<strong>不确定性程度（Uncertainty Level）</strong>，而非涨跌方向。需要找的信号是"这家公司未来几个月会发生大幅价格波动的可能性有多大"。<br>
+    关键：高不确定性 → 高市场分歧（Disagreement）→ 高波动率</p>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>优先级</th><th>数据来源</th><th>核心Feature</th><th>为什么适合预测风险</th></tr></thead>
+      <tbody>
+        <tr><td><span class="star">⭐⭐⭐</span></td><td><strong>10-K/10-Q Risk Factors</strong>（最重要）</td><td>① Risk Factor总词数变化率(QoQ) ② 新增条目数 ③ 不确定性词频("may","might","uncertain") ④ 与上期Cosine Similarity（低→大幅变化）⑤ 法律/监管风险词频</td><td>法律要求完整披露所有Material Risk；变化捕捉真实新风险；具有前瞻性</td></tr>
+        <tr><td><span class="star">⭐⭐⭐</span></td><td><strong>Earnings Call Q&A部分</strong></td><td>① 管理层回答不确定性词频 ② 分析师问题负面情绪 ③ 回答长度异常度 ④ 新话题出现率（LDA Topic Entropy）⑤ 管理层回避特定问题频率</td><td>Q&A是实时响应，比Opening Statement更难掩饰真实状态</td></tr>
+        <tr><td><span class="star">⭐⭐</span></td><td><strong>8-K重大事件披露</strong></td><td>① 过去90天8-K发布频率 ② 高管变动(Item 5.02) ③ 诉讼相关8-K出现</td><td>实时风险信号；高管突然离职是最强短期风险信号之一</td></tr>
+        <tr><td><span class="star">⭐⭐</span></td><td><strong>MD&A不确定性指数</strong></td><td>不确定性词数/总词数；vs竞争对手对比（公司特有vs行业系统性）</td><td>管理层对未来前景的主观判断，反映特质性风险</td></tr>
+        <tr><td><span class="star">⭐</span></td><td><strong>新闻媒体</strong></td><td>过去30天负面情绪均值；话题多样性（多个风险维度同时出现）</td><td>外部风险曝光，但衰减快，适合短期信号</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="formula-block" style="margin-top: 20px;">
+    <div class="formula-label">完整风险预测Feature体系</div>
+    <div style="font-size:12px;color:var(--text);line-height:1.9;">
+    <strong>目标变量 Target</strong>：未来3个月 Realized Volatility（或 Implied Vol水平）<br><br>
+    <strong>F1-F5（10-K/10-Q）</strong>：Risk Factor词数变化率，新增条目数，不确定性词频，1−Cosine Similarity（文本距离），法律监管词频<br>
+    <strong>F6-F10（Earnings Call）</strong>：Q&A不确定性词频，分析师负面情绪，回答长度异常度，Topic Entropy，Guidance修正幅度<br>
+    <strong>F11-F13（8-K）</strong>：90天8-K频率，高管变动虚拟变量，诉讼虚拟变量<br>
+    <strong>F14-F16（新闻）</strong>：30天负面情绪均值，提及频率异常度，话题多样性<br>
+    <strong>F17-F19（分析师）</strong>：预测下调措辞强度，分析师风险词频变化，评级下调不确定性表述
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="callout green">
+      <div class="callout-title">模型选择</div>
+      <p>特征数量多 → <strong>Ridge Regression</strong>（L2正则化）为基础<br>
+      非线性捕捉 → <strong>LightGBM</strong>（特征交互）<br>
+      验证框架 → <strong>Walk-Forward Expanding Window</strong><br>
+      评估指标 → IC（预测风险排名 vs 实际Realized Vol排名）, ICIR</p>
+    </div>
+    <div class="callout red">
+      <div class="callout-title">为什么文本比情绪分数更适合预测Vol</div>
+      <p>情绪分数（正/负方向）预测的是价格方向。<br>
+      不确定性特征（文本变化程度）预测的是信息不确定性 → 市场分歧 → 波动率。<br>
+      <strong>即使信息是负面的，如果市场已充分定价 → 低Vol；信息方向不明但不确定性高 → 高Vol。</strong></p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ S7: INTERVIEW TEMPLATES ══════════ -->
+<section class="section" id="s7">
+  <div class="section-header">
+    <span class="section-num">08</span>
+    <h2 class="section-title">面试回答模板 Interview Answer Templates</h2>
+  </div>
+
+  <div class="interview-box">
+    <div class="q">Q: 如何为油价构建系统性信号？</div>
+    <div class="a">"I'd approach this across five systematic dimensions: fundamental supply/demand, the futures term structure, macro and cross-asset linkages, positioning and sentiment, and price-based statistical signals. For crude oil specifically, the fundamental layer is most important — starting with the EIA weekly inventory surprise, Baker Hughes rig count for supply trajectory, and OPEC compliance rates. On the curve side, the WTI 1-12 month backwardation/contango structure encodes collective supply-demand judgment. For signal combination, I'd start with equal-weight as baseline, then use Sharpe-ratio-based dynamic weighting, with strict horizon matching between the signal evaluation window and the execution holding period."</div>
+  </div>
+
+  <div class="interview-box">
+    <div class="q">Q: 换成铜，关键指标是什么？</div>
+    <div class="a">"Copper is demand-dominated, with China accounting for ~55% of global consumption — so unlike oil where supply (OPEC) is the primary driver, here the demand-side signals matter most. Three must-mention signals: First, China Credit Impulse — the change in new credit as a share of GDP — leads copper prices by roughly two quarters and is the strongest medium-term signal. Second, LME Cancelled Warrants Ratio — when this spikes, it means physical holders are pulling metal from warehouses, a real-time signal of spot tightness that leads the inventory figure by 1-5 days. Third, TC/RC charges — when treatment charges compress, it signals copper concentrate scarcity at the smelter level, a supply-side signal most people overlook. Additionally, the SHFE/LME ratio tracks Chinese import arbitrage, and CFTC Managed Money net positioning gives you crowded trade reversal signals."</div>
+  </div>
+
+  <div class="interview-box">
+    <div class="q">Q: 你的Equity Quant背景怎么迁移到Macro？</div>
+    <div class="a">"Three key migrations. First, the alpha structure shifts from cross-sectional to time-series — with only 30 macro assets, statistical power comes from time-series variation rather than cross-section, so the L/S ranking approach doesn't directly apply. Second, models must be much simpler: macro has two to three orders of magnitude fewer data points than equity, so I'd shift focus from feature engineering to regime detection and economic-prior constraints — preferring a 10-feature model that passes the stationarity test over a 200-feature LGBM that fits the training set. Third, risk management transitions from VaR and factor neutralization to scenario analysis and dynamic correlation management, because macro tail events are discontinuous and fat-tailed. The horizon-matching discipline from vol systematic work at Millennium actually transfers well to macro — mixing monthly fundamental signals with daily curve signals without alignment is exactly the kind of latent look-ahead bias that kills Sharpe."</div>
+  </div>
+
+  <div class="interview-box">
+    <div class="q">Q: 给我一个Alt Data，如何分析和构建Feature？（以信用卡数据为例）</div>
+    <div class="a">"First, data diagnostics — coverage, frequency, latency, and critically whether there's backfill bias or survivorship bias in the panel. For credit card data, the key caveat is that coverage skews toward certain consumer demographics. Then the economic intuition: CC data directly measures consumer spending, making it a coincident indicator of income and a leading indicator of retail revenue by 2-8 weeks before earnings. For features, I'd build: one, a company-level revenue forecast versus consensus using the transaction panel; two, market share momentum within categories — capturing relative competitive dynamics; three, discretionary/staples spending ratio as a real-time consumer confidence gauge. The decay analysis is critical: CC signals tend to peak around week 2-4 before the earnings date and decay rapidly after release, so the rebalancing frequency should match. Most directly applicable to retail, restaurant, and travel equities for pre-earnings alpha."</div>
+  </div>
+
+  <div class="subsection-title" style="margin-top: 28px;">通用Checklist — 遇到任何Commodity</div>
+  <div class="code-block" style="font-size:12px; white-space:pre-wrap;">✅ 1. 谁是最大消费国？（需求集中度 Demand Concentration）
+✅ 2. 谁是最大生产国？（供给集中度 + 政治风险 Political Risk）
+✅ 3. 有没有定期官方供需报告？（EIA/USDA/ICSG/IEA）
+✅ 4. 库存数据在哪里看？（LME/COMEX/EIA/海关 Customs Data）
+✅ 5. 期货曲线结构是什么？（Backwardation vs Contango，Roll Yield）
+✅ 6. 天气/季节性重要吗？（能源和农产品尤其重要，HDD/CDD/NDVI）
+✅ 7. 有没有加工/精炼利润指标？（Crack Spread/Crush Spread/TC/RC）
+✅ 8. 对应的FX Proxy是什么？（AUD→铜铁矿，CAD→原油，BRL→大豆咖啡）
+✅ 9. CFTC COT持仓是否有效？（流动性越差，拥挤交易反转越显著）
+✅ 10. 有没有独特的替代供给/需求？（废铜/废铝/乙醇/太阳能/EV）</div>
+
+  <div class="subsection-title" style="margin-top: 24px;">Macro面试能力层次</div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Level</th><th>能力</th><th>示例</th></tr></thead>
+      <tbody>
+        <tr><td><span class="badge badge-red">L1 基础</span></td><td>知道每个asset的核心驱动因子</td><td>"铜的主要驱动是中国工业需求和LME库存"</td></tr>
+        <tr><td><span class="badge badge-orange">L2 进阶</span></td><td>知道数据源、频率、如何构建成Feature</td><td>"LME Cancelled Warrants每日更新，TC/RC费率周度，构建z-score和Surprise"</td></tr>
+        <tr><td><span class="badge badge-gold">L3 高级</span></td><td>跨资产连接逻辑链</td><td>"中国信贷脉冲扩张 → 铜看多 → AUD/USD看多 → 铁矿石需求增加 → 澳大利亚出口改善"</td></tr>
+        <tr><td><span class="badge badge-green">L4 专家</span></td><td>识别Regime和信号失效条件</td><td>"Backwardation信号在Contango>3%时失效；COT信号在OPEC意外减产时被Override"</td></tr>
+        <tr><td><span class="badge badge-blue">L5 顶级</span></td><td>信号合成、风险管理、Horizon Matching</td><td>Sharpe-weighted动态权重 + Regime Filter + Scenario Analysis + 流动性调整仓位</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<div style="border-top: 1px solid var(--border); padding-top: 24px; margin-top: 16px;">
+  <div style="font-family: var(--font-mono); font-size: 10px; color: var(--text3); letter-spacing: 0.1em;">
+    MACRO TRADING INTERVIEW PREP · PRINCETON MFIN · SYSTEMATIC MACRO FRAMEWORK
+  </div>
+</div>
+
+</main>
+
+<script>
+  // Sidebar active highlighting on scroll
+  const sections = document.querySelectorAll('.section, .subsection');
+  const navItems = document.querySelectorAll('.nav-item');
+
+  const idToNav = {};
+  navItems.forEach(item => {
+    const href = item.getAttribute('href');
+    if (href && href.startsWith('#')) {
+      idToNav[href.slice(1)] = item;
+    }
+  });
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const id = entry.target.id;
+        navItems.forEach(n => n.classList.remove('active'));
+        if (idToNav[id]) idToNav[id].classList.add('active');
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+
+  document.querySelectorAll('[id]').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>

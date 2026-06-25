@@ -1,0 +1,2430 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Linear Algebra — Complete Interview Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=IBM+Plex+Mono:wght@400;500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body, {
+    delimiters: [
+      {left:'$$',right:'$$',display:true},
+      {left:'$',right:'$',display:false}
+    ],
+    throwOnError: false
+  });"></script>
+<style>
+:root {
+  --bg: #0d0f14;
+  --bg2: #13161e;
+  --bg3: #1a1e2a;
+  --border: #252836;
+  --amber: #f0a832;
+  --amber-dim: #c4852060;
+  --amber-glow: #f0a83222;
+  --text: #dde2ef;
+  --text-dim: #8890a8;
+  --text-faint: #4a5068;
+  --green: #4ade80;
+  --blue: #60a5fa;
+  --red: #f87171;
+  --purple: #c084fc;
+  --cyan: #22d3ee;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 300;
+  line-height: 1.7;
+  font-size: 15px;
+}
+
+/* ─── NOISE TEXTURE ─── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ─── SIDEBAR NAV ─── */
+#sidebar {
+  position: fixed;
+  left: 0; top: 0; bottom: 0;
+  width: 240px;
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+  z-index: 100;
+  padding: 0 0 40px 0;
+}
+
+#sidebar::-webkit-scrollbar { width: 4px; }
+#sidebar::-webkit-scrollbar-track { background: transparent; }
+#sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+.nav-logo {
+  padding: 28px 20px 20px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 12px;
+}
+
+.nav-logo .sig {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  color: var(--amber);
+  text-transform: uppercase;
+}
+
+.nav-logo .title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 16px;
+  color: var(--text);
+  line-height: 1.3;
+  margin-top: 4px;
+}
+
+.nav-section-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  color: var(--text-faint);
+  text-transform: uppercase;
+  padding: 16px 20px 6px;
+}
+
+.nav-item {
+  display: block;
+  padding: 7px 20px 7px 20px;
+  color: var(--text-dim);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 400;
+  transition: all 0.15s;
+  border-left: 2px solid transparent;
+  position: relative;
+}
+
+.nav-item:hover {
+  color: var(--amber);
+  background: var(--amber-glow);
+  border-left-color: var(--amber);
+}
+
+.nav-item .num {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  color: var(--text-faint);
+  margin-right: 8px;
+}
+
+/* ─── MAIN CONTENT ─── */
+#main {
+  margin-left: 240px;
+  padding: 0 60px 80px 60px;
+  max-width: 960px;
+  position: relative;
+  z-index: 1;
+}
+
+/* ─── HERO ─── */
+.hero {
+  padding: 60px 0 40px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 60px;
+}
+
+.hero-tag {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  color: var(--amber);
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+
+.hero h1 {
+  font-family: 'DM Serif Display', serif;
+  font-size: 48px;
+  font-weight: 400;
+  line-height: 1.15;
+  color: var(--text);
+  margin-bottom: 16px;
+}
+
+.hero h1 em {
+  color: var(--amber);
+  font-style: italic;
+}
+
+.hero p {
+  font-size: 16px;
+  color: var(--text-dim);
+  max-width: 580px;
+  line-height: 1.8;
+}
+
+.tag-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 24px;
+}
+
+.tag {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  padding: 4px 12px;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  color: var(--text-dim);
+  background: var(--bg3);
+}
+
+/* ─── SECTION ─── */
+.section {
+  margin-bottom: 72px;
+  scroll-margin-top: 40px;
+}
+
+.section-header {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  margin-bottom: 32px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.section-num {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  color: var(--amber);
+  font-weight: 600;
+}
+
+.section h2 {
+  font-family: 'DM Serif Display', serif;
+  font-size: 28px;
+  font-weight: 400;
+  color: var(--text);
+}
+
+.section h3 {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--cyan);
+  letter-spacing: 0.05em;
+  margin: 28px 0 12px;
+  text-transform: uppercase;
+}
+
+/* ─── CARDS ─── */
+.card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 24px 28px;
+  margin-bottom: 20px;
+}
+
+.card.amber {
+  border-color: var(--amber-dim);
+  background: linear-gradient(135deg, #1a1810, var(--bg2));
+}
+
+.card.blue {
+  border-color: #60a5fa40;
+  background: linear-gradient(135deg, #0f1520, var(--bg2));
+}
+
+.card.green {
+  border-color: #4ade8040;
+  background: linear-gradient(135deg, #0f1a10, var(--bg2));
+}
+
+.card.red {
+  border-color: #f8717140;
+  background: linear-gradient(135deg, #1a0f0f, var(--bg2));
+}
+
+.card-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.card.amber .card-label { color: var(--amber); }
+.card.blue .card-label { color: var(--blue); }
+.card.green .card-label { color: var(--green); }
+.card.red .card-label { color: var(--red); }
+.card.purple .card-label { color: var(--purple); }
+
+.card.purple {
+  border-color: #c084fc40;
+  background: linear-gradient(135deg, #140f1a, var(--bg2));
+}
+
+/* ─── THEOREM / DEF BOXES ─── */
+.theorem-box {
+  position: relative;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--amber);
+  border-radius: 0 4px 4px 0;
+  padding: 18px 20px 18px 24px;
+  margin: 16px 0;
+}
+
+.theorem-box.blue { border-left-color: var(--blue); }
+.theorem-box.green { border-left-color: var(--green); }
+.theorem-box.red { border-left-color: var(--red); }
+.theorem-box.purple { border-left-color: var(--purple); }
+.theorem-box.cyan { border-left-color: var(--cyan); }
+
+.theorem-box .box-title {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.theorem-box .box-title { color: var(--amber); }
+.theorem-box.blue .box-title { color: var(--blue); }
+.theorem-box.green .box-title { color: var(--green); }
+.theorem-box.red .box-title { color: var(--red); }
+.theorem-box.purple .box-title { color: var(--purple); }
+.theorem-box.cyan .box-title { color: var(--cyan); }
+
+/* ─── EXAMPLE PROBLEMS ─── */
+.problem {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  margin: 20px 0;
+  overflow: hidden;
+}
+
+.problem-header {
+  background: var(--bg3);
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  user-select: none;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.15s;
+}
+
+.problem-header:hover { background: #1e2232; }
+
+.problem-badge {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: var(--bg);
+  background: var(--amber);
+  padding: 2px 8px;
+  border-radius: 2px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.problem-badge.hard { background: var(--red); }
+.problem-badge.medium { background: var(--blue); }
+.problem-badge.easy { background: var(--green); }
+
+.problem-title {
+  font-size: 14px;
+  color: var(--text);
+  font-weight: 400;
+  flex: 1;
+}
+
+.toggle-icon {
+  color: var(--text-dim);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 16px;
+  transition: transform 0.2s;
+}
+
+.problem-body {
+  padding: 20px 24px;
+  display: none;
+}
+
+.problem-body.open { display: block; }
+
+.problem-q {
+  color: var(--text);
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px dashed var(--border);
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+.solution-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  color: var(--green);
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.problem-body p, .problem-body li {
+  font-size: 14px;
+  color: var(--text-dim);
+  line-height: 1.85;
+  margin-bottom: 8px;
+}
+
+.problem-body ul, .problem-body ol {
+  padding-left: 20px;
+}
+
+/* ─── FORMULA GRID ─── */
+.formula-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.formula-cell {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 14px 16px;
+}
+
+.formula-cell .fc-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  color: var(--text-faint);
+  margin-bottom: 8px;
+  letter-spacing: 0.1em;
+}
+
+/* ─── TABLE ─── */
+.styled-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin: 16px 0;
+}
+
+.styled-table th {
+  background: var(--bg3);
+  color: var(--amber);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 2px solid var(--amber-dim);
+}
+
+.styled-table td {
+  padding: 11px 16px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-dim);
+  line-height: 1.6;
+}
+
+.styled-table tr:hover td { background: var(--amber-glow); }
+
+/* ─── INLINE CODE ─── */
+code {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  padding: 1px 6px;
+  border-radius: 3px;
+  color: var(--cyan);
+}
+
+/* ─── PILL BADGES ─── */
+.pill {
+  display: inline-block;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  padding: 2px 10px;
+  border-radius: 20px;
+  font-weight: 500;
+}
+
+.pill.amber { background: var(--amber-glow); color: var(--amber); border: 1px solid var(--amber-dim); }
+.pill.red { background: #f8717120; color: var(--red); border: 1px solid #f8717140; }
+.pill.green { background: #4ade8020; color: var(--green); border: 1px solid #4ade8040; }
+.pill.blue { background: #60a5fa20; color: var(--blue); border: 1px solid #60a5fa40; }
+
+/* ─── INTERVIEW TIP ─── */
+.interview-tip {
+  background: linear-gradient(135deg, #1a1810 0%, #151820 100%);
+  border: 1px solid var(--amber-dim);
+  border-radius: 4px;
+  padding: 20px 24px;
+  margin: 20px 0;
+  position: relative;
+}
+
+.interview-tip::before {
+  content: '面试锦囊';
+  position: absolute;
+  top: -8px;
+  left: 16px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  color: var(--amber);
+  background: var(--bg);
+  padding: 0 8px;
+  text-transform: uppercase;
+}
+
+.interview-tip p { font-size: 14px; color: var(--text-dim); line-height: 1.8; }
+.interview-tip strong { color: var(--amber); font-weight: 500; }
+
+/* ─── SCROLLBAR ─── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+/* ─── RESPONSIVE ─── */
+@media (max-width: 900px) {
+  #sidebar { display: none; }
+  #main { margin-left: 0; padding: 20px 20px 60px; }
+}
+
+/* KaTeX display overrides */
+.katex-display { margin: 12px 0; overflow-x: auto; }
+.katex { font-size: 1em; }
+
+p { margin-bottom: 10px; }
+</style>
+</head>
+<body>
+
+<!-- ─────────────── SIDEBAR ─────────────── -->
+<nav id="sidebar">
+  <div class="nav-logo">
+    <div class="sig">Linear Algebra · 完全手册</div>
+    <div class="title">Interview<br>Playbook</div>
+  </div>
+
+  <div class="nav-section-label">基础</div>
+  <a href="#s1" class="nav-item"><span class="num">01</span>秩与零空间</a>
+  <a href="#s2" class="nav-item"><span class="num">02</span>特征值与对角化</a>
+  <a href="#s3" class="nav-item"><span class="num">03</span>矩阵分解</a>
+
+  <div class="nav-section-label">进阶</div>
+  <a href="#s4" class="nav-item"><span class="num">04</span>幂等矩阵</a>
+  <a href="#s5" class="nav-item"><span class="num">05</span>幂零矩阵</a>
+  <a href="#s6" class="nav-item"><span class="num">06</span>正定矩阵</a>
+  <a href="#s7" class="nav-item"><span class="num">07</span>Jordan 标准型</a>
+  <a href="#s8" class="nav-item"><span class="num">08</span>不等式与技巧</a>
+
+  <div class="nav-section-label">深度专题</div>
+  <a href="#s1b" class="nav-item"><span class="num">01+</span>秩不等式完整推导</a>
+  <a href="#s2b" class="nav-item"><span class="num">02+</span>对角化条件精讲</a>
+  <a href="#s7b" class="nav-item"><span class="num">07+</span>Jordan 深度解析</a>
+
+  <div class="nav-section-label">应用</div>
+  <a href="#s9" class="nav-item"><span class="num">09</span>OLS与投影</a>
+  <a href="#s10" class="nav-item"><span class="num">10</span>矩阵求导</a>
+  <a href="#s11" class="nav-item"><span class="num">11</span>Monte Carlo</a>
+  <a href="#s15" class="nav-item"><span class="num">12</span>Rayleigh 商与优化</a>
+
+  <div class="nav-section-label">例题库</div>
+  <a href="#problems" class="nav-item"><span class="num">★</span>高频面试题</a>
+  <a href="#problems2" class="nav-item"><span class="num">★+</span>新增题目</a>
+</nav>
+
+<!-- ─────────────── MAIN ─────────────── -->
+<main id="main">
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-tag">Quant Research · Finance · CS — General Interview Preparation</div>
+  <h1>Linear Algebra<br><em>Complete Guide</em></h1>
+  <p>面试线性代数完全手册，覆盖所有核心考点：秩、特征值、Jordan form、SVD、幂等/幂零矩阵、OLS、Rayleigh 商、Matrix Calculus。适用于所有量化/算法岗位面试。</p>
+  <div class="tag-row">
+    <span class="tag">Rank &amp; Nullity</span>
+    <span class="tag">Eigenvalues</span>
+    <span class="tag">Diagonalization</span>
+    <span class="tag">Jordan Form</span>
+    <span class="tag">SVD</span>
+    <span class="tag">Idempotent</span>
+    <span class="tag">Nilpotent</span>
+    <span class="tag">Positive Definite</span>
+    <span class="tag">OLS</span>
+    <span class="tag">Rayleigh Quotient</span>
+    <span class="tag">Matrix Calculus</span>
+    <span class="tag">Monte Carlo</span>
+  </div>
+</div>
+
+
+<!-- ══════════════ SECTION 1 ══════════════ -->
+<section class="section" id="s1">
+  <div class="section-header">
+    <span class="section-num">01</span>
+    <h2>秩与零空间 (Rank &amp; Nullity)</h2>
+  </div>
+
+  <h3>核心定理</h3>
+
+  <div class="theorem-box">
+    <div class="box-title">Rank–Nullity Theorem</div>
+    <p>对 $A \in \mathbb{R}^{m \times n}$：</p>
+    $$\operatorname{rank}(A) + \operatorname{nullity}(A) = n$$
+    <p style="color:var(--text-dim);font-size:13px;margin-top:8px;">$\operatorname{null}(A) = \{x : Ax = 0\}$，维度即为 nullity。</p>
+  </div>
+
+  <div class="theorem-box blue">
+    <div class="box-title">秩不等式全集</div>
+    <div class="formula-grid" style="margin-top:8px;">
+      <div class="formula-cell">
+        <div class="fc-label">上界</div>
+        $\operatorname{rank}(A) \le \min\{m, n\}$
+      </div>
+      <div class="formula-cell">
+        <div class="fc-label">乘积</div>
+        $\operatorname{rank}(AB) \le \min\{\operatorname{rank}(A), \operatorname{rank}(B)\}$
+      </div>
+      <div class="formula-cell">
+        <div class="fc-label">加法</div>
+        $|\operatorname{rank}(A) - \operatorname{rank}(B)| \le \operatorname{rank}(A+B)$
+        $\le \operatorname{rank}(A) + \operatorname{rank}(B)$
+      </div>
+      <div class="formula-cell">
+        <div class="fc-label">Sylvester 不等式</div>
+        $\operatorname{rank}(A) + \operatorname{rank}(B) \le \operatorname{rank}(AB) + n$
+        <br><small style="color:var(--text-faint);">$A \in \mathbb{R}^{m\times n},\ B \in \mathbb{R}^{n\times p}$</small>
+      </div>
+      <div class="formula-cell">
+        <div class="fc-label">转置不变</div>
+        $\operatorname{rank}(A) = \operatorname{rank}(A^T) = \operatorname{rank}(A^TA) = \operatorname{rank}(AA^T)$
+      </div>
+      <div class="formula-cell">
+        <div class="fc-label">Frobenius 不等式</div>
+        $\operatorname{rank}(AB) + \operatorname{rank}(BC) \le \operatorname{rank}(B) + \operatorname{rank}(ABC)$
+      </div>
+    </div>
+  </div>
+
+  <h3>四个基本子空间</h3>
+  <div class="card">
+    <table class="styled-table">
+      <tr>
+        <th>子空间</th><th>定义</th><th>维度</th><th>正交补</th>
+      </tr>
+      <tr>
+        <td>列空间 $\mathcal{C}(A)$</td>
+        <td>$\{Ax : x \in \mathbb{R}^n\}$</td>
+        <td>$\operatorname{rank}(A)$</td>
+        <td>$\mathcal{N}(A^T)$</td>
+      </tr>
+      <tr>
+        <td>行空间 $\mathcal{C}(A^T)$</td>
+        <td>$\{A^Ty : y \in \mathbb{R}^m\}$</td>
+        <td>$\operatorname{rank}(A)$</td>
+        <td>$\mathcal{N}(A)$</td>
+      </tr>
+      <tr>
+        <td>零空间 $\mathcal{N}(A)$</td>
+        <td>$\{x : Ax = 0\}$</td>
+        <td>$n - \operatorname{rank}(A)$</td>
+        <td>$\mathcal{C}(A^T)$</td>
+      </tr>
+      <tr>
+        <td>左零空间 $\mathcal{N}(A^T)$</td>
+        <td>$\{y : A^Ty = 0\}$</td>
+        <td>$m - \operatorname{rank}(A)$</td>
+        <td>$\mathcal{C}(A)$</td>
+      </tr>
+    </table>
+  </div>
+
+  <h3>矩阵可逆等价条件</h3>
+  <div class="card amber">
+    <div class="card-label">Invertibility Checklist — $A \in \mathbb{R}^{n\times n}$</div>
+    <p>以下条件互相等价：</p>
+    <ol style="padding-left:20px;color:var(--text-dim);font-size:14px;line-height:2;">
+      <li>$\operatorname{rank}(A) = n$（满秩）</li>
+      <li>$\det(A) \ne 0$</li>
+      <li>所有特征值 $\lambda_i \ne 0$</li>
+      <li>$\operatorname{nullity}(A) = 0$（零空间仅含零向量）</li>
+      <li>$Ax = 0$ 仅有零解</li>
+      <li>$A$ 的列（行）向量线性无关</li>
+    </ol>
+  </div>
+
+  <div class="problem">
+    <div class="problem-header" onclick="toggle(this)">
+      <span class="problem-badge hard">HARD · SIG频考</span>
+      <span class="problem-title">$A^2$ has rank 0，$A$ 的 rank 范围？构造最大秩的矩阵。</span>
+      <span class="toggle-icon">＋</span>
+    </div>
+    <div class="problem-body">
+      <div class="problem-q">$A$ 是 $n \times n$ 矩阵，$A^2 = 0$（即 $A$ 是幂零矩阵，$k=2$）。问 $\operatorname{rank}(A)$ 的最大值是多少？请构造一个达到最大秩的例子。</div>
+      <div class="solution-label">解答</div>
+      <p>利用 Sylvester 不等式：$\operatorname{rank}(A) + \operatorname{rank}(A) \le \operatorname{rank}(A^2) + n = 0 + n = n$</p>
+      <p>故 $\operatorname{rank}(A) \le \lfloor n/2 \rfloor$。</p>
+      <p><strong style="color:var(--amber);">验证可达到：</strong>取 $r = \lfloor n/2 \rfloor$，构造</p>
+      $$A = \begin{pmatrix} 0 & I_r & 0 \\ 0 & 0 & 0 \\ 0 & 0 & 0 \end{pmatrix}$$
+      <p>其中 $I_r$ 是 $r\times r$ 单位矩阵，易验证 $A^2 = 0$ 且 $\operatorname{rank}(A) = r = \lfloor n/2 \rfloor$。</p>
+    </div>
+  </div>
+
+  <div class="problem">
+    <div class="problem-header" onclick="toggle(this)">
+      <span class="problem-badge hard">HARD</span>
+      <span class="problem-title">$A^3 = 0$，$\operatorname{rank}(A)$ 最大值？</span>
+      <span class="toggle-icon">＋</span>
+    </div>
+    <div class="problem-body">
+      <div class="problem-q">$A$ 是 $n \times n$ 矩阵，$A^3 = 0$ 但 $A \ne 0$。求 $\operatorname{rank}(A)$ 的最大值。</div>
+      <div class="solution-label">解答</div>
+      <p>设 $\operatorname{rank}(A) = r$，对 $A \cdot A$ 用 Sylvester：$2r \le \operatorname{rank}(A^2) + n$，故 $\operatorname{rank}(A^2) \ge 2r - n$。</p>
+      <p>对 $A^2 \cdot A$ 用 Sylvester：$\operatorname{rank}(A^2) + r \le \operatorname{rank}(A^3) + n = n$，故 $\operatorname{rank}(A^2) \le n - r$。</p>
+      <p>联立：$2r - n \le n - r \Rightarrow 3r \le 2n \Rightarrow r \le \lfloor 2n/3 \rfloor$。</p>
+      <p>最大值为 $\lfloor 2n/3 \rfloor$，可用 Jordan 块构造验证。</p>
+    </div>
+  </div>
+
+  <div class="problem">
+    <div class="problem-header" onclick="toggle(this)">
+      <span class="problem-badge hard">HARD · Image原题</span>
+      <span class="problem-title">$n \times n$ 矩阵 $A$（元素 i.i.d. $N(0,1)$），$AB = BA$，$B$ 的空间维度？</span>
+      <span class="toggle-icon">＋</span>
+    </div>
+    <div class="problem-body">
+      <div class="problem-q">
+        $A$ 是 $n \times n$ 矩阵，每个元素独立同分布自 $N(0,1)$。已知 $AB = BA$（$B$ 与 $A$ 可交换）。问所有可能的 $B$ 张成的空间维度是多少？
+      </div>
+      <div class="solution-label">关键分析</div>
+      <p><strong style="color:var(--cyan);">核心结论：</strong>从 $N(0,1)$ 随机采样的矩阵几乎必然（almost surely）有 $n$ 个不同的实特征值，从而 $A$ 几乎必然可对角化，且特征值两两不同。</p>
+      <p><strong style="color:var(--amber);">定理：</strong>若 $A$ 有 $n$ 个不同特征值，则与 $A$ 可交换的矩阵恰好是 $A$ 的多项式，即</p>
+      $$\{B : AB = BA\} = \operatorname{span}\{I, A, A^2, \ldots, A^{n-1}\}$$
+      <p>这是因为：设 $A = PDP^{-1}$，$D$ 的对角元两两不同。$AB = BA \Rightarrow D(P^{-1}BP) = (P^{-1}BP)D$，对角矩阵只与对角矩阵可交换（对角元不同时），故 $P^{-1}BP$ 是对角矩阵，$B$ 被 $P$ 的列（特征向量）完全决定，只有 $n$ 个自由度。</p>
+      <p><strong style="color:var(--green);">维度 = $n$。</strong>基：$\{I, A, A^2, \ldots, A^{n-1}\}$（Cayley–Hamilton 保证 $A^n$ 线性相关）。</p>
+      <div class="interview-tip">
+        <p>面试口诀：<strong>几乎必然可对角化 → 换到对角化基下 → 只有对角矩阵与之可交换 → $n$ 维自由度</strong>。可以直接说标量倍、零矩阵、单位阵、$A$ 本身、$A^{-1}$ 都满足，但这些线性相关，完整的基恰好有 $n$ 个。</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="problem">
+    <div class="problem-header" onclick="toggle(this)">
+      <span class="problem-badge medium">MEDIUM</span>
+      <span class="problem-title">$\operatorname{rank}(A) < n/2$ 的矩阵有什么性质？</span>
+      <span class="toggle-icon">＋</span>
+    </div>
+    <div class="problem-body">
+      <div class="problem-q">$n \times n$ 矩阵 $A$，若 $\operatorname{rank}(A) < n/2$，有哪些重要性质？</div>
+      <div class="solution-label">解答</div>
+      <p>设 $r = \operatorname{rank}(A) < n/2$：</p>
+      <ul>
+        <li>$\operatorname{nullity}(A) = n - r > n/2$，零空间维度超过一半。</li>
+        <li>$A$ 不可逆（$\det(A) = 0$）。</li>
+        <li>$A^2$：由 Sylvester，$\operatorname{rank}(A^2) \ge 2r - n < 0$，故 $\operatorname{rank}(A^2)$ 可以为 0（即 $A^2$ 可以是零矩阵）。</li>
+        <li>至少有 $n - r > n/2$ 个特征值为 0。</li>
+        <li>行（列）空间与零空间"几乎不相交"，但在 $r < n/2$ 时列空间维度严格小于零空间维度。</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════ SECTION 1b ══════════════ -->
+<section class="section" id="s1b">
+  <div class="section-header">
+    <span class="section-num">01+</span>
+    <h2>秩不等式：推导与记忆</h2>
+  </div>
+
+  <div class="interview-tip">
+    <p><strong>核心思路：</strong>每条不等式都有一个几何直觉。记住直觉，推导自然出来。下面逐一拆解。</p>
+  </div>
+
+  <h3>① 上界：$\operatorname{rank}(A) \le \min\{m,n\}$</h3>
+  <div class="theorem-box">
+    <div class="box-title">推导</div>
+    <p>rank = 列空间维度，列空间 $\subseteq \mathbb{R}^m$，故 $\le m$；同时 rank = 行空间维度，行空间 $\subseteq \mathbb{R}^n$，故 $\le n$。两个约束同时成立取小的。</p>
+    <p style="color:var(--amber);margin-top:8px;font-size:13px;">记忆：桶有多小，水就装多少。</p>
+  </div>
+
+  <h3>② 乘积：$\operatorname{rank}(AB) \le \min\{\operatorname{rank}(A), \operatorname{rank}(B)\}$</h3>
+  <div class="theorem-box blue">
+    <div class="box-title">两个方向，完全对称</div>
+    <div class="formula-grid" style="margin-top:10px;">
+      <div class="formula-cell">
+        <div class="fc-label">≤ rank(A)：看列</div>
+        <p style="font-size:13px;color:var(--text-dim);margin-top:4px;">$AB$ 的第 $j$ 列 $= A \cdot b_j$，是 $A$ 的列的线性组合。</p>
+        <p style="font-size:13px;color:var(--text-dim);">$\therefore \mathcal{C}(AB) \subseteq \mathcal{C}(A)$，维度只能更小。</p>
+        <p style="font-size:13px;color:var(--text-dim);">这个方向与 $B$ 的结构无关，$B$ 只是在给 $A$ 的列"提供系数"。</p>
+      </div>
+      <div class="formula-cell">
+        <div class="fc-label">≤ rank(B)：看行</div>
+        <p style="font-size:13px;color:var(--text-dim);margin-top:4px;">$AB$ 的第 $i$ 行 $= a_i^T \cdot B$，是 $B$ 的行的线性组合。</p>
+        <p style="font-size:13px;color:var(--text-dim);">$\therefore \mathcal{R}(AB) \subseteq \mathcal{R}(B)$，维度只能更小。</p>
+        <p style="font-size:13px;color:var(--text-dim);">这个方向与 $A$ 的结构无关，$A$ 只是在给 $B$ 的行"提供系数"。</p>
+      </div>
+    </div>
+    <p style="color:var(--amber);font-size:13px;margin-top:10px;">记忆：列空间由左矩阵控制，行空间由右矩阵控制。信息经过最窄的门。</p>
+  </div>
+
+  <h3>③ 加法：$|\operatorname{rank}(A)-\operatorname{rank}(B)| \le \operatorname{rank}(A+B) \le \operatorname{rank}(A)+\operatorname{rank}(B)$</h3>
+  <div class="theorem-box green">
+    <div class="box-title">推导（两侧）</div>
+    <p><strong style="color:var(--text);">右侧上界：</strong>$(A+B)$ 的列空间 $\subseteq \mathcal{C}(A) + \mathcal{C}(B)$（子空间和），</p>
+    $$\dim(\mathcal{C}(A)+\mathcal{C}(B)) \le \dim\mathcal{C}(A)+\dim\mathcal{C}(B)$$
+    <p><strong style="color:var(--text);">左侧下界：</strong>用上界反向推：</p>
+    $$\operatorname{rank}(A) = \operatorname{rank}((A+B)-B) \le \operatorname{rank}(A+B)+\operatorname{rank}(B)$$
+    $$\Rightarrow \operatorname{rank}(A+B) \ge \operatorname{rank}(A)-\operatorname{rank}(B)$$
+    <p>对称地得到另一侧，合并取绝对值。</p>
+    <p style="color:var(--amber);font-size:13px;margin-top:8px;">记忆：类比实数三角不等式 $|a-b| \le |a+b| \le |a|+|b|$，rank 满足同样结构。</p>
+  </div>
+
+  <h3>④ Sylvester 不等式：$\operatorname{rank}(A)+\operatorname{rank}(B) \le \operatorname{rank}(AB)+n$</h3>
+  <div class="theorem-box red">
+    <div class="box-title">最核心的不等式——做幂次题的关键工具</div>
+    <p><strong style="color:var(--text);">证明（分块矩阵法）：</strong>构造</p>
+    $$M = \begin{pmatrix} AB & 0 \\ B & -I_n \end{pmatrix}$$
+    <p>对 $M$ 做列变换（第一列组加上 $A$ 倍的第二列组），rank 不变：</p>
+    $$M \to \begin{pmatrix} 0 & A \\ B & -I_n \end{pmatrix}$$
+    <p>右边矩阵：$-I_n$ 满秩贡献 $n$，再加上 $A$ 和 $B$ 带来的信息，rank $= n + \operatorname{rank}(A)$（因为 $-I_n$ 列和 $A$ 列线性无关）。</p>
+    <p>同时次加性给出：$\operatorname{rank}(M) \le \operatorname{rank}(AB) + \operatorname{rank}(-I_n) = \operatorname{rank}(AB)+n$。</p>
+    <p>又 $\operatorname{rank}(M) \ge \operatorname{rank}(B)$（分块下三角），联立得</p>
+    $$\operatorname{rank}(A)+\operatorname{rank}(B) \le \operatorname{rank}(AB)+n$$
+  </div>
+  <div class="card red">
+    <div class="card-label">几何直觉 + 记忆</div>
+    <p>$B$ 把 $\mathbb{R}^p$ 映到 $\mathbb{R}^n$，损失 $n-\operatorname{rank}(B)$ 维；$A$ 再映，损失 $n-\operatorname{rank}(A)$ 维。两次损失都发生在 $n$ 维中间空间，总损失 $\le n$：</p>
+    $$\operatorname{rank}(AB) \ge \operatorname{rank}(A)+\operatorname{rank}(B)-n$$
+    <p style="color:var(--red);font-weight:500;margin-top:8px;">做题常用形式：$\operatorname{rank}(AB) \ge \operatorname{rank}(A)+\operatorname{rank}(B)-n$，记为"扣掉中间维度 $n$ 的下界"。</p>
+    <p style="color:var(--text-dim);font-size:13px;margin-top:8px;">典型应用：$A^2=0 \Rightarrow 2\operatorname{rank}(A) \le n \Rightarrow \operatorname{rank}(A) \le \lfloor n/2\rfloor$</p>
+  </div>
+
+  <h3>⑤ 转置不变：$\operatorname{rank}(A)=\operatorname{rank}(A^T)=\operatorname{rank}(A^TA)=\operatorname{rank}(AA^T)$</h3>
+  <div class="theorem-box cyan">
+    <div class="box-title">推导核心：零空间相同</div>
+    <p>证明 $\mathcal{N}(A) = \mathcal{N}(A^TA)$：</p>
+    <ul style="padding-left:20px;color:var(--text-dim);font-size:14px;line-height:2.2;margin-top:6px;">
+      <li>$Ax=0 \Rightarrow A^TAx=0$（显然）</li>
+      <li>$A^TAx=0 \Rightarrow x^TA^TAx=0 \Rightarrow \|Ax\|^2=0 \Rightarrow Ax=0$</li>
+    </ul>
+    <p style="margin-top:8px;">零空间相同 $\Rightarrow$ 由 rank-nullity，rank 相同。</p>
+    <p style="color:var(--cyan);font-size:13px;margin-top:8px;">应用：OLS 中 $X^TX$ 和 $X$ 共享零空间，$X$ 有共线性 $\Leftrightarrow$ $X^TX$ 不可逆。</p>
+  </div>
+
+  <h3>⑥ Frobenius 不等式：$\operatorname{rank}(AB)+\operatorname{rank}(BC) \le \operatorname{rank}(B)+\operatorname{rank}(ABC)$</h3>
+  <div class="theorem-box purple">
+    <div class="box-title">Sylvester 的三矩阵升级版</div>
+    <p>Sylvester 是 $C=I$（或 $A=I$）时的特例：令 $C=I$，左侧 $= \operatorname{rank}(AB)+\operatorname{rank}(B)$，右侧 $= \operatorname{rank}(B)+\operatorname{rank}(AB)$——退化为平凡等式，故 Frobenius 是更强的结论。</p>
+    <p style="color:var(--purple);font-size:13px;margin-top:8px;">记忆：Sylvester（两矩阵，中间维度 $n$）→ Frobenius（三矩阵，中间矩阵 $B$ 的 rank）。</p>
+  </div>
+
+  <div class="card amber">
+    <div class="card-label">整体记忆框架</div>
+    <table class="styled-table">
+      <tr><th>不等式</th><th>直觉关键词</th><th>做题用途</th></tr>
+      <tr><td>上界 $\le \min\{m,n\}$</td><td>最小维度约束</td><td>基础估计</td></tr>
+      <tr><td>乘积 $\le \min\{r_A,r_B\}$</td><td>最窄的门</td><td>判断 rank 上界</td></tr>
+      <tr><td>加法三角</td><td>类比实数绝对值</td><td>秩之间的夹逼</td></tr>
+      <tr><td>Sylvester $\ge r_A+r_B-n$</td><td>两次损失共享 $n$ 维</td><td>幂次/幂零题核心</td></tr>
+      <tr><td>转置不变</td><td>零空间相同</td><td>OLS / 共线性分析</td></tr>
+      <tr><td>Frobenius</td><td>Sylvester 三矩阵版</td><td>连乘 rank 估计</td></tr>
+    </table>
+  </div>
+</section>
+
+
+<!-- ══════════════ SECTION 2 ══════════════ -->
+<section class="section" id="s2">
+  <div class="section-header">
+    <span class="section-num">02</span>
+    <h2>特征值与对角化</h2>
+  </div>
+
+  <h3>基本性质</h3>
+  <div class="card amber">
+    <div class="card-label">Eigenvalue Facts</div>
+    <div class="formula-grid">
+      <div class="formula-cell">
+        <div class="fc-label">特征方程</div>
+        $\det(A - \lambda I) = 0$
+      </div>
+      <div class="formula-cell">
+        <div class="fc-label">迹与行列式</div>
+        $\operatorname{tr}(A) = \sum_i \lambda_i$，$\det(A) = \prod_i \lambda_i$
+      </div>
+      <div class="formula-cell">
+        <div class="fc-label">幂次</div>
+        $A^k v = \lambda^k v$（$v$ 是特征向量）
+      </div>
+      <div class="formula-cell">
+        <div class="fc-label">多项式</div>
+        若 $f(A) = 0$，则 $f(\lambda) = 0$（Cayley–Hamilton）
+      </div>
+    </div>
+  </div>
+
+  <h3>对角化条件</h3>
+  <div class="theorem-box green">
+    <div class="box-title">对角化充要条件</div>
+    <p><strong style="color:var(--text);">代数重数 = 几何重数</strong>（对所有特征值成立）。</p>
+    <p>等价：存在 $n$ 个线性无关的特征向量，使得 $A = PDP^{-1}$，其中 $D = \operatorname{diag}(\lambda_1, \ldots, \lambda_n)$。</p>
+  </div>
+
+  <div class="theorem-box">
+    <div class="box-title">实对称矩阵（最重要！）</div>
+    <p>实对称矩阵 $A = A^T$ 一定可对角化，且：</p>
+    <ul style="padding-left:20px;margin-top:8px;color:var(--text-dim);font-size:14px;line-height:2;">
+      <li>所有特征值为<strong style="color:var(--text);">实数</strong></li>
+      <li>不同特征值对应的特征向量<strong style="color:var(--text);">两两正交</strong></li>
+      <li>$A = Q\Lambda Q^T$，$Q$ 为正交矩阵（谱定理）</li>
+    </ul>
+  </div>
+
+  <h3>协方差矩阵 $\rho$ 的范围（经典题）</h3>
+  <div class="card blue">
+    <div class="card-label">Covariance Matrix — Range of ρ</div>
+    <p>设 $n \times n$ 等相关矩阵</p>
+    $$A = (1-\rho)I + \rho M, \quad M_{ij} = 1 \ \forall i,j$$
+    <p>$M$ 的特征值：$\lambda = n$（重数 1，特征向量 $\mathbf{1}/\sqrt{n}$）和 $\lambda = 0$（重数 $n-1$）。</p>
+    <p>故 $A$ 的特征值为 $1 + (n-1)\rho$（重数 1）和 $1 - \rho$（重数 $n-1$）。</p>
+    <p>半正定要求特征值 $\ge 0$：</p>
+    $$\boxed{-\frac{1}{n-1} \le \rho \le 1}$$
+  </div>
+
+  <div class="problem">
+    <div class="problem-header" onclick="toggle(this)">
+      <span class="problem-badge hard">HARD</span>
+      <span class="problem-title">$A^2 = A$（幂等矩阵）是否可对角化？</span>
+      <span class="toggle-icon">＋</span>
+    </div>
+    <div class="problem-body">
+      <div class="problem-q">若 $A$ 满足 $A^2 = A$，证明 $A$ 一定可对角化，并确定其特征值。</div>
+      <div class="solution-label">解答</div>
+      <p>设 $Av = \lambda v$，则 $A^2 v = A(\lambda v) = \lambda^2 v$。又 $A^2 = A$，故 $\lambda^2 v = \lambda v$，即 $\lambda(\lambda-1) = 0$。</p>
+      <p>特征值只能是 $0$ 或 $1$。</p>
+      <p>对 $\lambda = 0$：几何重数 = $\dim \mathcal{N}(A) = n - \operatorname{rank}(A)$。</p>
+      <p>对 $\lambda = 1$：几何重数 = $\dim \mathcal{N}(A - I) = n - \operatorname{rank}(A - I)$。</p>
+      <p>利用 Sylvester：$\operatorname{rank}(A) + \operatorname{rank}(A - I) \le \operatorname{rank}(A^2 - A) + n = n$，故两者几何重数之和 $\ge n$，等于 $n$，从而 $A$ 可对角化。</p>
+      $$A \sim \begin{pmatrix} I_r & 0 \\ 0 & 0 \end{pmatrix}, \quad r = \operatorname{rank}(A)$$
+    </div>
+  </div>
+
+  <div class="problem">
+    <div class="problem-header" onclick="toggle(this)">
+      <span class="problem-badge medium">MEDIUM</span>
+      <span class="problem-title">$A^n = I$，在复数域上是否可对角化？</span>
+      <span class="toggle-icon">＋</span>
+    </div>
+    <div class="problem-body">
+      <div class="problem-q">$A$ 是 $n \times n$ 矩阵，$A^n = I$，在 $\mathbb{C}$ 上是否可对角化？</div>
+      <div class="solution-label">解答</div>
+      <p>$Av = \lambda v \Rightarrow \lambda^n v = I \cdot v = v \Rightarrow \lambda^n = 1$。</p>
+      <p>$\lambda^n - 1 = 0$ 在 $\mathbb{C}$ 上有 $n$ 个不同的根（$n$ 次单位根）：$e^{2\pi i k/n},\ k = 0, 1, \ldots, n-1$。</p>
+      <p>特征多项式整除 $x^n - 1$，而 $x^n - 1$ 在 $\mathbb{C}$ 上无重根，故 $A$ 的最小多项式无重根，$A$ 在 $\mathbb{C}$ 上一定可对角化。</p>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════ SECTION 2b ══════════════ -->
+<section class="section" id="s2b">
+  <div class="section-header">
+    <span class="section-num">02+</span>
+    <h2>可对角化条件——完整梳理</h2>
+  </div>
+
+  <div class="theorem-box">
+    <div class="box-title">核心定义</div>
+    <p>$A \in \mathbb{R}^{n\times n}$ 可对角化 $\Leftrightarrow$ 存在可逆矩阵 $P$ 使得 $A = PDP^{-1}$，$D = \operatorname{diag}(\lambda_1,\ldots,\lambda_n)$。</p>
+    <p style="margin-top:6px;">等价：$A$ 有 $n$ 个线性无关的特征向量。</p>
+  </div>
+
+  <h3>充要条件</h3>
+  <div class="theorem-box green">
+    <div class="box-title">对每个特征值：代数重数 = 几何重数</div>
+    <div class="formula-grid" style="margin-top:10px;">
+      <div class="formula-cell">
+        <div class="fc-label">代数重数</div>
+        <p style="font-size:13px;color:var(--text-dim);margin-top:4px;">$\lambda_i$ 作为特征多项式 $\det(A-\lambda I)$ 的根的重数。</p>
+      </div>
+      <div class="formula-cell">
+        <div class="fc-label">几何重数</div>
+        <p style="font-size:13px;color:var(--text-dim);margin-top:4px;">$\dim\mathcal{N}(A-\lambda_i I) = n - \operatorname{rank}(A-\lambda_i I)$，特征空间维数。</p>
+      </div>
+    </div>
+    <p style="margin-top:10px;font-size:13px;color:var(--text-dim);">始终有：几何重数 $\le$ 代数重数。可对角化要求等号对所有特征值成立。</p>
+  </div>
+
+  <h3>充分条件（满足任一即可）</h3>
+  <div class="card blue">
+    <div class="card-label">三个充分条件</div>
+    <ul style="padding-left:20px;color:var(--text-dim);font-size:14px;line-height:2.5;">
+      <li><strong style="color:var(--text);">$n$ 个不同特征值：</strong>不同特征值对应的特征向量线性无关，直接凑够 $n$ 个。最强但不必要。</li>
+      <li><strong style="color:var(--text);">实对称矩阵 $A=A^T$：</strong>谱定理保证 $A=Q\Lambda Q^T$，$Q$ 正交，特征值全实，特征向量两两正交。</li>
+      <li><strong style="color:var(--text);">最小多项式无重根：</strong>最小多项式 $m_A(\lambda)$ 无重根 $\Leftrightarrow$ 可对角化（与充要条件等价的另一种表述）。</li>
+    </ul>
+  </div>
+
+  <h3>各类矩阵速查表</h3>
+  <div class="card">
+    <table class="styled-table">
+      <tr><th>矩阵类型</th><th>结论</th><th>原因</th></tr>
+      <tr><td>实对称 $A=A^T$</td><td><span class="pill green">✅ 一定可</span></td><td>谱定理</td></tr>
+      <tr><td>$n$ 个不同特征值</td><td><span class="pill green">✅ 一定可</span></td><td>不同特征值对应向量线性无关</td></tr>
+      <tr><td>$A^2=A$（幂等）</td><td><span class="pill green">✅ 一定可</span></td><td>特征值只有 0/1，几何=代数重数</td></tr>
+      <tr><td>$A^n=I$</td><td><span class="pill green">✅ 复数域可</span></td><td>最小多项式整除 $x^n-1$，无重根</td></tr>
+      <tr><td>$A^k=0,\ A\ne 0$（幂零）</td><td><span class="pill red">❌ 一定不可</span></td><td>特征值全 0，几何重数 $< n$</td></tr>
+      <tr><td>$A^n=0$ 且 $A\ne 0$</td><td><span class="pill red">❌ 不可</span></td><td>同上</td></tr>
+      <tr><td>一般方阵</td><td><span class="pill amber">需验证</span></td><td>检验代数=几何重数</td></tr>
+    </table>
+  </div>
+
+  <h3>不可对角化的典型例子</h3>
+  <div class="theorem-box red">
+    <div class="box-title">Jordan 块 — 不可对角化的最简单例子</div>
+    $$A = \begin{pmatrix}0&1\\0&0\end{pmatrix}$$
+    <p style="color:var(--text-dim);font-size:13px;margin-top:8px;">特征值 $\lambda=0$，代数重数 2，但 $\mathcal{N}(A) = \operatorname{span}\{e_1\}$，几何重数只有 1。$2 > 1$，不可对角化。需要 Jordan 标准型。</p>
+  </div>
+
+  <div class="problem">
+    <div class="problem-header" onclick="toggle(this)">
+      <span class="problem-badge hard">HARD</span>
+      <span class="problem-title">给定特征多项式和 rank，判断 Jordan 结构</span>
+      <span class="toggle-icon">＋</span>
+    </div>
+    <div class="problem-body">
+      <div class="problem-q">$A$ 是 $4\times4$ 矩阵，特征多项式为 $(\lambda-2)^3(\lambda-5)$。情况1：$\operatorname{rank}(A-2I)=1$；情况2：$\operatorname{rank}(A-2I)=2$。各自是否可对角化？</div>
+      <div class="solution-label">解答</div>
+      <p>$\lambda=5$ 代数重数 1，几何重数自动为 1，无问题。关键看 $\lambda=2$（代数重数 3）。</p>
+      <p>几何重数 $= 4 - \operatorname{rank}(A-2I)$。</p>
+      <ul>
+        <li><strong style="color:var(--green);">情况 1：</strong>几何重数 $= 4-1=3$，等于代数重数 3，✅ 可对角化。</li>
+        <li><strong style="color:var(--red);">情况 2：</strong>几何重数 $= 4-2=2 < 3$，❌ 不可对角化，需要 Jordan 块。</li>
+      </ul>
+      <p>情况 2 的 Jordan 形（$\lambda=2$ 部分）：几何重数 2 说明有 2 个 Jordan 块，代数重数 3 说明大小之和为 3，故一个块大小为 2，一个为 1：</p>
+      $$J = \begin{pmatrix}2&1&0&0\\0&2&0&0\\0&0&2&0\\0&0&0&5\end{pmatrix}$$
+    </div>
+  </div>
+
+  <div class="problem">
+    <div class="problem-header" onclick="toggle(this)">
+      <span class="problem-badge medium">MEDIUM</span>
+      <span class="problem-title">有 0 特征值的矩阵能可逆吗？</span>
+      <span class="toggle-icon">＋</span>
+    </div>
+    <div class="problem-body">
+      <div class="problem-q">若矩阵 $A$ 有特征值 $\lambda=0$，它有可能可逆吗？</div>
+      <div class="solution-label">解答</div>
+      <p><strong style="color:var(--red);">绝对不能。</strong> $\lambda=0$ 是特征值意味着 $\exists v \ne 0$ 使得 $Av = 0v = 0$，即零空间非平凡：</p>
+      $$\mathcal{N}(A) \ne \{0\} \Rightarrow \operatorname{nullity}(A) \ge 1 \Rightarrow \operatorname{rank}(A) < n$$
+      <p>同时 $\det(A) = \prod_i \lambda_i$，含因子 0，故 $\det(A) = 0$，不可逆。</p>
+      <p>这是一个<strong style="color:var(--amber);">充要条件</strong>：$A$ 不可逆 $\Leftrightarrow$ $\lambda=0$ 是特征值 $\Leftrightarrow$ $\det(A)=0$。</p>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════ SECTION 3 ══════════════ -->
+<section class="section" id="s3">
+  <div class="section-header">
+    <span class="section-num">03</span>
+    <h2>矩阵分解</h2>
+  </div>
+
+  <div class="card">
+    <div class="card-label">分解一览表</div>
+    <table class="styled-table">
+      <tr>
+        <th>分解</th><th>形式</th><th>条件</th><th>主要应用</th>
+      </tr>
+      <tr>
+        <td><span class="pill amber">LU</span></td>
+        <td>$PA = LU$</td>
+        <td>任意方阵（行交换后）</td>
+        <td>解方程，行列式，矩阵求逆</td>
+      </tr>
+      <tr>
+        <td><span class="pill blue">QR</span></td>
+        <td>$A = QR$</td>
+        <td>任意矩阵</td>
+        <td>最小二乘，特征值 QR 算法，数值稳定</td>
+      </tr>
+      <tr>
+        <td><span class="pill green">Cholesky</span></td>
+        <td>$A = LL^T$</td>
+        <td>对称正定 (SPD)</td>
+        <td>协方差采样，Monte Carlo，快速求解</td>
+      </tr>
+      <tr>
+        <td><span class="pill amber">特征分解</span></td>
+        <td>$A = PDP^{-1}$</td>
+        <td>可对角化；对称则 $A = Q\Lambda Q^T$</td>
+        <td>谱分析，PCA，微分方程</td>
+      </tr>
+      <tr>
+        <td><span class="pill blue">SVD</span></td>
+        <td>$A = U\Sigma V^T$</td>
+        <td>任意矩阵 $m \times n$</td>
+        <td>PCA，低秩近似，伪逆，多重共线性</td>
+      </tr>
+    </table>
+  </div>
+
+  <h3>SVD 深度解析</h3>
+  <div class="theorem-box cyan">
+    <div class="box-title">Singular Value Decomposition</div>
+    $$A = U \Sigma V^T, \quad A \in \mathbb{R}^{m \times n}$$
+    <ul style="padding-left:20px;margin-top:10px;color:var(--text-dim);font-size:14px;line-height:2.2;">
+      <li>$U \in \mathbb{R}^{m\times m}$：正交矩阵，列为 $AA^T$ 的特征向量（左奇异向量），张成<strong style="color:var(--text);"> 列空间</strong></li>
+      <li>$V \in \mathbb{R}^{n\times n}$：正交矩阵，列为 $A^TA$ 的特征向量（右奇异向量），张成<strong style="color:var(--text);"> 行空间</strong></li>
+      <li>$\Sigma$：对角矩阵，$\sigma_i = \sqrt{\lambda_i(A^TA)} \ge 0$（奇异值）</li>
+      <li>$\operatorname{rank}(A)$ = 非零奇异值个数</li>
+      <li><strong style="color:var(--cyan);">最优低秩近似：</strong>$A_k = U_k \Sigma_k V_k^T$（Eckart–Young 定理）</li>
+    </ul>
+  </div>
+
+  <div class="theorem-box blue">
+    <div class="box-title">QR 分解 — Gram–Schmidt</div>
+    $$q_k = a_k - \sum_{j < k} \frac{\langle q_j, a_k \rangle}{\langle q_j, q_j \rangle} q_j, \quad u_k = \frac{q_k}{\|q_k\|}$$
+    <p style="color:var(--text-dim);font-size:13px;margin-top:8px;">$A = QR$，$Q = [u_1 \cdots u_n]$，$R = Q^T A$（上三角矩阵）。</p>
+    <p style="color:var(--text-dim);font-size:13px;margin-top:6px;">解方程：$Ax = b \Rightarrow QRx = b \Rightarrow Rx = Q^Tb$（回代求解）。</p>
+  </div>
+
+  <div class="interview-tip">
+    <p><strong>LU vs QR 面试答法：</strong>LU 偏纯代数操作（解方程系统、行列式），QR 偏数值稳定性（最小二乘、迭代特征值算法）。QR 避免了 $A^TA$ 条件数平方的问题，更鲁棒。</p>
+  </div>
+</section>
+
+
+<!-- ══════════════ SECTION 4 ══════════════ -->
+<section class="section" id="s4">
+  <div class="section-header">
+    <span class="section-num">04</span>
+    <h2>幂等矩阵 Idempotent ($A^2 = A$)</h2>
+  </div>
+
+  <div class="card green">
+    <div class="card-label">核心性质</div>
+    <ul style="padding-left:20px;color:var(--text-dim);font-size:14px;line-height:2.2;">
+      <li>特征值只能是 $0$ 或 $1$</li>
+      <li>一定可对角化（同上面例题证明）</li>
+      <li>$\operatorname{rank}(A) = \operatorname{tr}(A)$（迹 = 秩！）</li>
+      <li>$A$ 和 $I - A$ 都是幂等矩阵（互补投影）</li>
+      <li>$\operatorname{rank}(A) + \operatorname{rank}(I - A) = n$</li>
+      <li>若还对称 $A = A^T$：$A$ 是正交投影矩阵</li>
+    </ul>
+  </div>
+
+  <h3>投影矩阵（OLS核心）</h3>
+  <div class="theorem-box">
+    <div class="box-title">Projection Matrix</div>
+    $$P = A(A^TA)^{-1}A^T$$
+    <p style="color:var(--text-dim);font-size:13px;margin-top:8px;">$P^2 = P$（幂等），$P^T = P$（对称），投影到 $\mathcal{C}(A)$。</p>
+    $$\operatorname{rank}(P) = \operatorname{tr}(P) = \operatorname{rank}(A)$$
+  </div>
+
+  <div class="problem">
+    <div class="problem-header" onclick="toggle(this)">
+      <span class="problem-badge hard">HARD · Image原题</span>
+      <span class="problem-title">$MM^T = M$，$M$ 的秩有什么特性？</span>
+      <span class="toggle-icon">＋</span>
+    </div>
+    <div class="problem-body">
+      <div class="problem-q">矩阵 $M$ 满足 $MM^T = M$（注意：这不是标准幂等 $M^2 = M$）。问 $M$ 的秩有什么特性？能推断什么？</div>
+      <div class="solution-label">解答</div>
+      <p><strong style="color:var(--amber);">Step 1：</strong>取转置：$(MM^T)^T = M^T \Rightarrow M(M^T)^T = (MM^T)^T = M^T$，即 $MM = M^T$，即 $M^2 = M^T$。</p>
+      <p><strong style="color:var(--amber);">Step 2：</strong>再利用 $MM^T = M$，对 $M^2 = M^T$ 取转置：$(M^2)^T = M$，即 $(M^T)^2 = M$。</p>
+      <p><strong style="color:var(--amber);">Step 3：</strong>$\operatorname{rank}(M) = \operatorname{rank}(MM^T) \le \operatorname{rank}(M^T) = \operatorname{rank}(M)$，等号成立。</p>
+      <p><strong style="color:var(--amber);">Step 4：</strong>$M^3 = M \cdot M^2 = M \cdot M^T = MM^T = M$，所以 $M^3 = M$，即 $M(M^2 - I) = 0$。这意味着 $M$ 的特征值满足 $\lambda^3 = \lambda$，即 $\lambda \in \{0, 1, -1\}$。</p>
+      <p><strong style="color:var(--green);">结论：</strong>$\operatorname{rank}(M) = \operatorname{rank}(M^T)$（显然），特征值 $\in \{0, 1, -1\}$，$M$ 在 $\mathbb{R}$ 上可对角化。</p>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════ SECTION 5 ══════════════ -->
+<section class="section" id="s5">
+  <div class="section-header">
+    <span class="section-num">05</span>
+    <h2>幂零矩阵 Nilpotent ($\exists k: A^k = 0$)</h2>
+  </div>
+
+  <div class="card red">
+    <div class="card-label">核心性质</div>
+    <ul style="padding-left:20px;color:var(--text-dim);font-size:14px;line-height:2.2;">
+      <li>所有特征值均为 $0$（$\det(A) = 0$，$\operatorname{tr}(A) = 0$）</li>
+      <li>若 $A \ne 0$，则 $A$ 不可对角化（几何重数 $< n$）</li>
+      <li>可分解为若干 Jordan 块（对角元全为 0）</li>
+      <li>$\operatorname{rank}(A) = n - \text{\#Jordan blocks}$</li>
+      <li>$\operatorname{tr}(A^j) = 0$，$\forall j \ge 1$</li>
+      <li>$\operatorname{rank}(A^m) \le \operatorname{rank}(A^{m-1})$（单调不增）</li>
+      <li>若 $A \ne 0$，则 $A$ 不可逆</li>
+    </ul>
+  </div>
+
+  <div class="theorem-box red">
+    <div class="box-title">幂零矩阵与幂等矩阵的关系</div>
+    <p>若 $A$ 幂零，$B = I - A$ 是可逆的（因为 $B^{-1} = I + A + A^2 + \cdots + A^{k-1}$，有限项）。</p>
+    <p style="margin-top:8px;">若 $A$ 幂等，$A$ 和 $I - A$ 都幂等，秩互补。</p>
+  </div>
+</section>
+
+
+<!-- ══════════════ SECTION 6 ══════════════ -->
+<section class="section" id="s6">
+  <div class="section-header">
+    <span class="section-num">06</span>
+    <h2>正定 / 半正定矩阵</h2>
+  </div>
+
+  <div class="card amber">
+    <div class="card-label">Positive (Semi)Definite — 判定条件</div>
+    <table class="styled-table">
+      <tr>
+        <th>条件</th><th>正定 (PD)</th><th>半正定 (PSD)</th>
+      </tr>
+      <tr>
+        <td>二次型</td>
+        <td>$x^TAx > 0,\ \forall x \ne 0$</td>
+        <td>$x^TAx \ge 0,\ \forall x$</td>
+      </tr>
+      <tr>
+        <td>特征值</td>
+        <td>所有 $\lambda_i > 0$</td>
+        <td>所有 $\lambda_i \ge 0$</td>
+      </tr>
+      <tr>
+        <td>Sylvester 判别</td>
+        <td>所有顺序主子式 $> 0$</td>
+        <td>所有主子式 $\ge 0$</td>
+      </tr>
+      <tr>
+        <td>分解</td>
+        <td>$A = LL^T$（Cholesky）</td>
+        <td>$A = BB^T$（某个 $B$）</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="theorem-box green">
+    <div class="box-title">协方差矩阵必为半正定</div>
+    <p>对任意 $x$：$x^T \Sigma x = x^T \mathbb{E}[(Z-\mu)(Z-\mu)^T] x = \mathbb{E}[\|x^T(Z-\mu)\|^2] \ge 0$</p>
+    <p style="margin-top:8px;">若数据无完全共线性，则协方差矩阵是正定的（$X^TX$ 可逆）。</p>
+  </div>
+
+  <div class="problem">
+    <div class="problem-header" onclick="toggle(this)">
+      <span class="problem-badge medium">MEDIUM</span>
+      <span class="problem-title">$x, y, z$ 三变量相关系数 $\rho_{xy} = \rho_{yz} = 0.9$，$\rho_{xz}$ 的范围？</span>
+      <span class="toggle-icon">＋</span>
+    </div>
+    <div class="problem-body">
+      <div class="problem-q">三个随机变量的相关系数满足 $\rho_{xy} = \rho_{yz} = 0.9$，求 $\rho_{xz}$ 的范围。</div>
+      <div class="solution-label">解答</div>
+      <p>相关矩阵</p>
+      $$\text{Corr} = \begin{pmatrix} 1 & 0.9 & x \\ 0.9 & 1 & 0.9 \\ x & 0.9 & 1 \end{pmatrix}$$
+      <p>半正定要求所有主子式 $\ge 0$。行列式展开：</p>
+      $$\det = 1 - 0.81 - 0.9(0.9 - 0.9x) + x(0.81 - x) = -x^2 + 1.62x - 0.62 \ge 0$$
+      $$-(x-1)(x-0.62) \ge 0 \Rightarrow x \in [0.62, 1]$$
+      <p>故 $\rho_{xz} \in [0.62, 1]$。</p>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════ SECTION 7 ══════════════ -->
+<section class="section" id="s7">
+  <div class="section-header">
+    <span class="section-num">07</span>
+    <h2>Jordan 标准型</h2>
+  </div>
+
+  <div class="theorem-box purple">
+    <div class="box-title">Jordan Form</div>
+    <p>每个方阵 $A$ 在复数域上相似于 Jordan 标准形：</p>
+    $$A \sim J = \begin{pmatrix} J_1 & & \\ & J_2 & \\ & & \ddots \end{pmatrix}, \quad J_k = \begin{pmatrix} \lambda_k & 1 & & \\ & \lambda_k & 1 & \\ & & \ddots & 1 \\ & & & \lambda_k \end{pmatrix}$$
+  </div>
+
+  <div class="card">
+    <div class="card-label">关键计数关系</div>
+    <ul style="padding-left:20px;color:var(--text-dim);font-size:14px;line-height:2.4;">
+      <li>特征值 $\lambda_i$ 对应的 Jordan 块总数 = $\dim \mathcal{N}(A - \lambda_i I)$（几何重数）</li>
+      <li>最大 Jordan 块大小 = $\lambda_i$ 在最小多项式中的幂次</li>
+      <li>代数重数 = $\lambda_i$ 对应所有 Jordan 块大小之和</li>
+      <li>可对角化 $\Leftrightarrow$ 所有 Jordan 块大小为 1 $\Leftrightarrow$ 最小多项式无重根</li>
+      <li>幂零矩阵：$\lambda = 0$，Jordan 块形如 $J_k(0)$</li>
+    </ul>
+  </div>
+
+  <div class="interview-tip">
+    <p><strong>SIG 常问：</strong>给定 $\operatorname{rank}$ 和特征多项式，确定 Jordan 标准形的结构。关键：<strong>$\operatorname{rank}(A - \lambda I)$</strong> 决定几何重数（Jordan 块数量），<strong>$\operatorname{rank}(A - \lambda I)^k$</strong> 的变化决定块的大小分布。</p>
+  </div>
+</section>
+
+
+<!-- ══════════════ SECTION 7b ══════════════ -->
+<section class="section" id="s7b">
+  <div class="section-header">
+    <span class="section-num">07+</span>
+    <h2>Jordan 标准型——深度解析</h2>
+  </div>
+
+  <h3>为什么需要 Jordan 标准型？</h3>
+  <div class="card amber">
+    <div class="card-label">动机</div>
+    <p>对角化失败时（几何重数 &lt; 代数重数），矩阵无法写成 $PDP^{-1}$。但任何方阵在 $\mathbb{C}$ 上都相似于"几乎对角"的 Jordan 标准型。</p>
+    $$\text{对角阵} \subset \text{Jordan 标准型} \subset \text{任意方阵（相似意义下）}$$
+  </div>
+
+  <h3>Jordan 块</h3>
+  <div class="theorem-box">
+    <div class="box-title">$k\times k$ Jordan 块</div>
+    $$J_k(\lambda) = \begin{pmatrix}\lambda&1&&\\&\lambda&1&\\&&\ddots&1\\&&&\lambda\end{pmatrix}_{k\times k}$$
+    <ul style="padding-left:20px;color:var(--text-dim);font-size:13px;line-height:2;margin-top:8px;">
+      <li>$k=1$：退化为标量 $(\lambda)$，即普通对角元</li>
+      <li>$k=2$：$\begin{pmatrix}\lambda&1\\0&\lambda\end{pmatrix}$，最简单的不可对角化情形</li>
+      <li>$(J_k(\lambda) - \lambda I)^k = 0$，即每个 Jordan 块减去对角后是幂零矩阵</li>
+    </ul>
+  </div>
+
+  <h3>从 rank 序列精确确定 Jordan 结构</h3>
+  <div class="theorem-box blue">
+    <div class="box-title">系统方法：逐层分析</div>
+    <p>定义 $r_j = \operatorname{rank}(A-\lambda I)^j$，$r_0 = n$。</p>
+    <p style="margin-top:8px;"><strong style="color:var(--text);">大小恰好为 $k$ 的 Jordan 块个数：</strong></p>
+    $$n_k = (r_{k-1} - r_k) - (r_k - r_{k+1}) = r_{k-1} - 2r_k + r_{k+1}$$
+    <p style="color:var(--text-dim);font-size:13px;margin-top:8px;">直觉：$r_{k-1}-r_k$ 是"第 $k$ 层新增的维度"，二阶差分提取恰好大小为 $k$ 的块。</p>
+  </div>
+
+  <div class="card blue">
+    <div class="card-label">例题：$6\times6$ 矩阵，唯一特征值 $\lambda=3$</div>
+    <p>已知 $r_0=6,\ r_1=4,\ r_2=2,\ r_3=1,\ r_4=0$，求 Jordan 结构。</p>
+    <div style="margin:14px 0;">
+      <table class="styled-table">
+        <tr><th>大小 $k$</th><th>$n_k = r_{k-1}-2r_k+r_{k+1}$</th><th>结果</th></tr>
+        <tr><td>$k=1$</td><td>$6-2(4)+2=0$</td><td>0 个 $1\times1$ 块</td></tr>
+        <tr><td>$k=2$</td><td>$4-2(2)+1=1$</td><td>1 个 $2\times2$ 块</td></tr>
+        <tr><td>$k=3$</td><td>$2-2(1)+0=0$</td><td>0 个 $3\times3$ 块</td></tr>
+        <tr><td>$k=4$</td><td>$1-2(0)+0=1$</td><td>1 个 $4\times4$ 块</td></tr>
+      </table>
+    </div>
+    <p>验证：$0\cdot1+1\cdot2+0\cdot3+1\cdot4=6$ ✓</p>
+    $$J = \begin{pmatrix}3&1&&&&&\\&3&&&&& \\&&3&1&&&\\&&&3&1&&\\&&&&3&1&\\&&&&&3&1\\&&&&&&3\end{pmatrix}$$
+  </div>
+
+  <h3>广义特征向量与 Jordan 链</h3>
+  <div class="theorem-box green">
+    <div class="box-title">Jordan 链</div>
+    <p>对一个 $k\times k$ Jordan 块，对应一条广义特征向量链：</p>
+    $$v_1 \xleftarrow{(A-\lambda I)} v_2 \xleftarrow{(A-\lambda I)} \cdots \xleftarrow{(A-\lambda I)} v_k$$
+    <p style="color:var(--text-dim);font-size:13px;margin-top:8px;">即 $(A-\lambda I)v_j = v_{j-1}$。$v_1$ 是真正的特征向量（$(A-\lambda I)v_1=0$），$v_2,\ldots,v_k$ 是广义特征向量。$P = [v_1,\ldots,v_k]$ 使得 $P^{-1}AP = J_k(\lambda)$。</p>
+  </div>
+
+  <h3>Jordan 块的幂次公式</h3>
+  <div class="theorem-box purple">
+    <div class="box-title">$J_k(\lambda)^m$ 的显式公式</div>
+    $$J_k(\lambda)^m = \begin{pmatrix}\lambda^m & \binom{m}{1}\lambda^{m-1} & \binom{m}{2}\lambda^{m-2} & \cdots \\ & \lambda^m & \binom{m}{1}\lambda^{m-1} & \cdots \\ & & \ddots & \vdots \\ & & & \lambda^m\end{pmatrix}$$
+    <p style="color:var(--text-dim);font-size:13px;margin-top:8px;">本质：$J_k(\lambda) = \lambda I + N$（$N$ 是严格上三角幂零矩阵），二项式定理展开：</p>
+    $$(\lambda I + N)^m = \sum_{j=0}^{k-1}\binom{m}{j}\lambda^{m-j}N^j$$
+    <p style="color:var(--text-dim);font-size:13px;margin-top:8px;">推论：$|\lambda|&lt;1 \Rightarrow J_k(\lambda)^m \to 0$；$\lambda=0$（幂零块）$\Rightarrow J_k(0)^k=0$。</p>
+  </div>
+
+  <h3>与最小多项式的精确对应</h3>
+  <div class="theorem-box cyan">
+    <div class="box-title">最小多项式 = 最大 Jordan 块之积</div>
+    $$m_A(\lambda) = \prod_i (\lambda-\lambda_i)^{s_i}$$
+    <p style="color:var(--text-dim);font-size:13px;margin-top:8px;">$s_i$ = 特征值 $\lambda_i$ 对应的<strong style="color:var(--text);">最大 Jordan 块的大小</strong>（不是代数重数！）。</p>
+    <p style="margin-top:8px;">因此：可对角化 $\Leftrightarrow$ $m_A$ 无重根 $\Leftrightarrow$ 所有 $s_i=1$。</p>
+  </div>
+
+  <h3>面试快速判断总结</h3>
+  <div class="card">
+    <table class="styled-table">
+      <tr><th>量</th><th>计算</th><th>含义</th></tr>
+      <tr><td>Jordan 块总个数（$\lambda_i$）</td><td>$n-\operatorname{rank}(A-\lambda_i I)$</td><td>= 几何重数</td></tr>
+      <tr><td>最大块大小</td><td>最小的 $k$ 使 $(A-\lambda_i I)^k$ 降 rank 停止</td><td>= 最小多项式中的幂次</td></tr>
+      <tr><td>大小恰为 $k$ 的块数</td><td>$r_{k-1}-2r_k+r_{k+1}$</td><td>二阶差分</td></tr>
+      <tr><td>所有块大小之和</td><td>= 代数重数</td><td>必须凑到这个数</td></tr>
+    </table>
+  </div>
+
+  <div class="problem">
+    <div class="problem-header" onclick="toggle(this)">
+      <span class="problem-badge hard">HARD</span>
+      <span class="problem-title">$A, B$ 均可对角化，$\operatorname{rank}(A)+\operatorname{rank}(B)=5$（$4\times4$），$AB$ 是幂零矩阵吗？</span>
+      <span class="toggle-icon">＋</span>
+    </div>
+    <div class="problem-body">
+      <div class="problem-q">$A, B$ 均为 $4\times4$ 可对角化矩阵，$\operatorname{rank}(A)+\operatorname{rank}(B)=5$，问 $AB$ 是否一定是幂零矩阵？</div>
+      <div class="solution-label">解答</div>
+      <p><strong style="color:var(--amber);">Step 1：$AB \ne 0$。</strong> 由 Sylvester：</p>
+      $$\operatorname{rank}(AB) \ge \operatorname{rank}(A)+\operatorname{rank}(B)-n = 5-4 = 1$$
+      <p><strong style="color:var(--red);">反例（$AB$ 不是幂零）：</strong></p>
+      $$A = \operatorname{diag}(1,1,0,0),\quad B = \operatorname{diag}(1,1,1,0)$$
+      <p>两者均可对角化，rank 和 $= 2+3=5$，$AB = \operatorname{diag}(1,1,0,0)$，特征值含 1，不是幂零。</p>
+      <p><strong style="color:var(--green);">构造（$AB$ 是幂零）：</strong>取 $A=e_1e_2^T$（rank 1），$B$ 使 $ABe_1 = 0$，则 $(AB)^2=0$。</p>
+      <p><strong style="color:var(--cyan);">关键观察：</strong>若 $A, B$ <em>同时</em>可对角化（存在同一个 $P$），则 $AB$ 也可对角化。非零的可对角化矩阵特征值不全为零，故<strong>不是幂零矩阵</strong>。但题目没说同时可对角化，所以答案是<strong style="color:var(--amber);">不一定</strong>。</p>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════ SECTION 8 ══════════════ -->
+<section class="section" id="s8">
+  <div class="section-header">
+    <span class="section-num">08</span>
+    <h2>不等式与常用技巧</h2>
+  </div>
+
+  <div class="formula-grid">
+    <div class="theorem-box blue" style="margin:0">
+      <div class="box-title">Cauchy–Schwarz</div>
+      $|x^Ty| \le \|x\|_2 \|y\|_2$
+      <p style="color:var(--text-dim);font-size:12px;margin-top:6px;">等号成立 $\Leftrightarrow$ $x = cy$</p>
+    </div>
+    <div class="theorem-box green" style="margin:0">
+      <div class="box-title">AM–GM</div>
+      $\frac{a+b}{2} \ge \sqrt{ab},\ a,b \ge 0$
+    </div>
+    <div class="theorem-box" style="margin:0">
+      <div class="box-title">谱范数 vs Frobenius</div>
+      $\|A\|_2 = \sigma_{\max}$，$\|A\|_F = \sqrt{\sum \sigma_i^2}$
+      $\|A\|_2 \le \|A\|_F \le \sqrt{r}\|A\|_2$
+    </div>
+    <div class="theorem-box purple" style="margin:0">
+      <div class="box-title">条件数</div>
+      $\kappa(A) = \sigma_{\max}/\sigma_{\min}$
+      <p style="color:var(--text-dim);font-size:12px;margin-top:6px;">$\kappa(A^TA) = \kappa(A)^2$，正则化相当于人为增大 $\sigma_{\min}$</p>
+    </div>
+  </div>
+
+  <div class="problem">
+    <div class="problem-header" onclick="toggle(this)">
+      <span class="problem-badge medium">MEDIUM</span>
+      <span class="problem-title">为什么 $X$ 有多重共线性时 $X^TX$ 不可逆？</span>
+      <span class="toggle-icon">＋</span>
+    </div>
+    <div class="problem-body">
+      <div class="problem-q">解释为什么当设计矩阵 $X$ 的列存在多重共线性时，$X^TX$ 不可逆，并给出 Ridge 回归解决思路。</div>
+      <div class="solution-label">解答</div>
+      <p>$\operatorname{rank}(X^TX) = \operatorname{rank}(X)$（因为 $X^TX$ 和 $X$ 有相同的零空间）。</p>
+      <p>若 $X$ 的列线性相关，$\operatorname{rank}(X) < n$（$n$ 是特征数），故 $X^TX$ 降秩不可逆。</p>
+      <p>SVD 视角：$X = U\Sigma V^T$，$X^TX = V\Sigma^2 V^T$，某些奇异值 $\sigma_i = 0$，对应 $X^TX$ 有零特征值。</p>
+      <p><strong style="color:var(--amber);">Ridge 修复：</strong>$(X^TX + \lambda I)^{-1}$ 永远可逆，因为 $(X^TX + \lambda I)$ 的特征值为 $\sigma_i^2 + \lambda > 0$。</p>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════ SECTION 9 ══════════════ -->
+<section class="section" id="s9">
+  <div class="section-header">
+    <span class="section-num">09</span>
+    <h2>OLS 与投影几何</h2>
+  </div>
+
+  <div class="theorem-box">
+    <div class="box-title">Ordinary Least Squares</div>
+    $$\min_\beta \|X\beta - y\|_2^2$$
+    <p style="margin-top:8px;">正规方程：$X^TX\hat\beta = X^Ty$</p>
+    $$\hat\beta = (X^TX)^{-1}X^Ty, \quad \hat y = X\hat\beta = Py$$
+    <p style="margin-top:8px;">$P = X(X^TX)^{-1}X^T$：投影矩阵，$P^2 = P$，$P^T = P$。</p>
+    <p>残差：$e = y - \hat y = (I - P)y$，且 $X^Te = 0$（残差与列空间正交）。</p>
+  </div>
+
+  <div class="card blue">
+    <div class="card-label">用 QR 求解 OLS（数值稳定）</div>
+    <p>$X = QR$，则 $X^TX = R^TQ^TQR = R^TR$，正规方程化为</p>
+    $$R\hat\beta = Q^Ty$$
+    <p>上三角方程组，直接回代，避免 $X^TX$ 条件数平方问题。</p>
+  </div>
+</section>
+
+
+<!-- ══════════════ SECTION 10 ══════════════ -->
+<section class="section" id="s10">
+  <div class="section-header">
+    <span class="section-num">10</span>
+    <h2>矩阵求导 (Matrix Calculus)</h2>
+  </div>
+
+  <div class="card amber">
+    <div class="card-label">常用公式速查</div>
+    <table class="styled-table">
+      <tr>
+        <th>函数 $f$</th><th>$\partial f / \partial x$</th><th>类型</th>
+      </tr>
+      <tr>
+        <td>$f = a^T x$</td>
+        <td>$a$</td>
+        <td>标量对向量</td>
+      </tr>
+      <tr>
+        <td>$f = x^T x$</td>
+        <td>$2x$</td>
+        <td>标量对向量</td>
+      </tr>
+      <tr>
+        <td>$f = x^T A x$</td>
+        <td>$(A + A^T)x$（若 $A$ 对称则为 $2Ax$）</td>
+        <td>标量对向量</td>
+      </tr>
+      <tr>
+        <td>$y = Ax$</td>
+        <td>$\partial y / \partial x = A$</td>
+        <td>向量对向量</td>
+      </tr>
+      <tr>
+        <td>$f = a^T X b$</td>
+        <td>$\partial f / \partial X = ab^T$</td>
+        <td>标量对矩阵</td>
+      </tr>
+      <tr>
+        <td>$f = \operatorname{tr}(AX)$</td>
+        <td>$\partial f / \partial X = A^T$</td>
+        <td>标量对矩阵</td>
+      </tr>
+      <tr>
+        <td>$f = \operatorname{tr}(AXB)$</td>
+        <td>$\partial f / \partial X = A^TB^T$</td>
+        <td>标量对矩阵</td>
+      </tr>
+      <tr>
+        <td>$f = \log\det(X)$</td>
+        <td>$\partial f / \partial X = (X^{-1})^T$</td>
+        <td>标量对矩阵</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="problem">
+    <div class="problem-header" onclick="toggle(this)">
+      <span class="problem-badge medium">MEDIUM</span>
+      <span class="problem-title">推导 OLS 正规方程</span>
+      <span class="toggle-icon">＋</span>
+    </div>
+    <div class="problem-body">
+      <div class="problem-q">利用矩阵求导，推导 $\min_\beta \|X\beta - y\|^2$ 的闭式解。</div>
+      <div class="solution-label">解答</div>
+      <p>展开目标函数：</p>
+      $$f(\beta) = (X\beta - y)^T(X\beta - y) = \beta^TX^TX\beta - 2y^TX\beta + y^Ty$$
+      <p>对 $\beta$ 求导（利用 $\partial(\beta^T A\beta)/\partial\beta = 2A\beta$ for symmetric $A$）：</p>
+      $$\frac{\partial f}{\partial \beta} = 2X^TX\beta - 2X^Ty = 0$$
+      $$\Rightarrow \hat\beta = (X^TX)^{-1}X^Ty$$
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════ SECTION 11 ══════════════ -->
+<section class="section" id="s11">
+  <div class="section-header">
+    <span class="section-num">11</span>
+    <h2>Monte Carlo — 相关资产模拟</h2>
+  </div>
+
+  <div class="card">
+    <div class="card-label">生成 $X \sim N(0, \Sigma)$ 的方法对比</div>
+    <table class="styled-table">
+      <tr>
+        <th>方法</th><th>步骤</th><th>条件</th><th>效率</th>
+      </tr>
+      <tr>
+        <td><span class="pill green">Cholesky</span></td>
+        <td>$\Sigma = LL^T$，令 $X = LZ$</td>
+        <td>正定</td>
+        <td>最快 $O(n^3/3)$</td>
+      </tr>
+      <tr>
+        <td><span class="pill blue">特征分解</span></td>
+        <td>$\Sigma = Q\Lambda Q^T$，令 $X = Q\Lambda^{1/2}Z$</td>
+        <td>半正定</td>
+        <td>中等，可截断负特征值</td>
+      </tr>
+      <tr>
+        <td><span class="pill amber">SVD</span></td>
+        <td>$\Sigma = U\Sigma V^T$，令 $X = U\Sigma^{1/2}Z$</td>
+        <td>任意</td>
+        <td>最通用但最慢</td>
+      </tr>
+      <tr>
+        <td><span class="pill blue">因子模型</span></td>
+        <td>$\Sigma \approx BB^T + D$，$X = Bf + \epsilon$</td>
+        <td>高维近似</td>
+        <td>高维首选</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="interview-tip">
+    <p><strong>面试标准答法（Cholesky）：</strong>给定协方差矩阵 $\Sigma$，做 Cholesky 分解 $\Sigma = LL^T$，令 $X = LZ,\ Z \sim N(0, I)$。验证：$\operatorname{Cov}(X) = L \operatorname{Cov}(Z) L^T = LIL^T = \Sigma$。若 $\Sigma$ 不正定（如数值误差），加 $\varepsilon I$ 扰动或用特征分解截断非正特征值。</p>
+  </div>
+</section>
+
+
+<!-- ══════════════ SECTION — HIGH FREQ PROBLEMS ══════════════ -->
+<section class="section" id="problems">
+  <div class="section-header">
+    <span class="section-num">★</span>
+    <h2>高频面试例题库</h2>
+  </div>
+
+  <div class="problem">
+    <div class="problem-header" onclick="toggle(this)">
+      <span class="problem-badge hard">HARD</span>
+      <span class="problem-title">$A$ 是秩为 1 的矩阵，$A = uv^T$，求其特征值与幂次。</span>
+      <span class="toggle-icon">＋</span>
+    </div>
+    <div class="problem-body">
+      <div class="problem-q">$A = uv^T$（$u, v \in \mathbb{R}^n$，$u, v \ne 0$），求所有特征值，并计算 $A^k$。</div>
+      <div class="solution-label">解答</div>
+      <p>$\operatorname{rank}(A) = 1$（除非 $u \perp v$），故特征值 $\lambda = 0$ 代数重数为 $n-1$，还有 $1$ 个非零特征值。</p>
+      <p>$A^2 = (uv^T)(uv^T) = u(v^Tu)v^T = (v^Tu)A$，所以 $A^2 = \alpha A$，其中 $\alpha = v^Tu$。</p>
+      <p>非零特征值：取 $x = u$，$Ax = uv^Tu = \alpha u$，故 $\lambda_1 = \alpha = v^Tu$（即 $u$ 是特征向量）。</p>
+      <p>故特征值：$\lambda_1 = v^Tu$（重数 1），$\lambda_2 = 0$（重数 $n-1$）。</p>
+      <p>幂次：$A^k = \alpha^{k-1} A = (v^Tu)^{k-1} uv^T$（$k \ge 1$）。</p>
+    </div>
+  </div>
+
+  <div class="problem">
+    <div class="problem-header" onclick="toggle(this)">
+      <span class="problem-badge hard">HARD</span>
+      <span class="problem-title">行秩 = 列秩的证明思路</span>
+      <span class="toggle-icon">＋</span>
+    </div>
+    <div class="problem-body">
+      <div class="problem-q">证明矩阵 $A \in \mathbb{R}^{m \times n}$ 的行秩等于列秩。</div>
+      <div class="solution-label">解答</div>
+      <p>设列秩为 $r$，取列空间的一组基 $c_1, \ldots, c_r$，令 $C = [c_1 \cdots c_r]$（$m \times r$ 矩阵）。</p>
+      <p>则 $A$ 的每一列都是 $c_i$ 的线性组合：$A = CR$（$R$ 是 $r \times n$ 矩阵）。</p>
+      <p>则 $A$ 的每一行是 $R$ 的行的线性组合，故行空间 $\subseteq$ Row$(R)$，行秩 $\le r$（列秩）。</p>
+      <p>同理对 $A^T$ 用以上论证：行秩 $\ge$ 列秩。故行秩 = 列秩。</p>
+    </div>
+  </div>
+
+  <div class="problem">
+    <div class="problem-header" onclick="toggle(this)">
+      <span class="problem-badge medium">MEDIUM</span>
+      <span class="problem-title">Schur 补与分块矩阵行列式</span>
+      <span class="toggle-icon">＋</span>
+    </div>
+    <div class="problem-body">
+      <div class="problem-q">
+        设分块矩阵 $M = \begin{pmatrix} A & B \\ C & D \end{pmatrix}$，其中 $A$ 可逆，$S = D - CA^{-1}B$ 是 $A$ 的 Schur 补。证明 $\det(M) = \det(A)\det(S)$，并说明其与 OLS 的联系。
+      </div>
+      <div class="solution-label">解答</div>
+      <p>分块 LU 分解：</p>
+      $$M = \begin{pmatrix} I & 0 \\ CA^{-1} & I \end{pmatrix} \begin{pmatrix} A & B \\ 0 & S \end{pmatrix}$$
+      <p>第一个矩阵行列式为 1，第二个为 $\det(A)\det(S)$，故 $\det(M) = \det(A)\det(S)$。</p>
+      <p><strong style="color:var(--amber);">OLS 联系：</strong>在贝叶斯线性回归或条件高斯分布中，Schur 补给出条件方差：$\Sigma_{y|x} = \Sigma_{yy} - \Sigma_{yx}\Sigma_{xx}^{-1}\Sigma_{xy}$，即回归残差的方差。</p>
+    </div>
+  </div>
+
+  <div class="problem">
+    <div class="problem-header" onclick="toggle(this)">
+      <span class="problem-badge medium">MEDIUM</span>
+      <span class="problem-title">实对称矩阵不同特征值的特征向量必正交</span>
+      <span class="toggle-icon">＋</span>
+    </div>
+    <div class="problem-body">
+      <div class="problem-q">证明：实对称矩阵 $A = A^T$ 对应不同特征值 $\lambda_1 \ne \lambda_2$ 的特征向量 $v_1, v_2$ 必正交。</div>
+      <div class="solution-label">解答</div>
+      <p>$v_1^T A v_2 = v_1^T (\lambda_2 v_2) = \lambda_2 v_1^T v_2$</p>
+      <p>又因 $A = A^T$：$v_1^T A v_2 = (Av_1)^T v_2 = (\lambda_1 v_1)^T v_2 = \lambda_1 v_1^T v_2$</p>
+      <p>故 $(\lambda_1 - \lambda_2) v_1^T v_2 = 0$，因 $\lambda_1 \ne \lambda_2$，所以 $v_1^T v_2 = 0$。$\square$</p>
+    </div>
+  </div>
+
+  <div class="problem">
+    <div class="problem-header" onclick="toggle(this)">
+      <span class="problem-badge easy">EASY → HARD</span>
+      <span class="problem-title">$\operatorname{tr}(AB) = \operatorname{tr}(BA)$ 的证明及推广</span>
+      <span class="toggle-icon">＋</span>
+    </div>
+    <div class="problem-body">
+      <div class="problem-q">证明 $\operatorname{tr}(AB) = \operatorname{tr}(BA)$，并推广到 $\operatorname{tr}(ABC)$。</div>
+      <div class="solution-label">解答</div>
+      <p>$\operatorname{tr}(AB) = \sum_i (AB)_{ii} = \sum_i \sum_k A_{ik}B_{ki} = \sum_k \sum_i B_{ki}A_{ik} = \sum_k (BA)_{kk} = \operatorname{tr}(BA)$。</p>
+      <p>推广：$\operatorname{tr}(ABC) = \operatorname{tr}(BCA) = \operatorname{tr}(CAB)$（循环轮换，但<strong style="color:var(--red);"> 不是任意置换！</strong>）</p>
+      <p><strong style="color:var(--amber);">应用：</strong>$\operatorname{tr}(x^TAx) = x^TAx$（标量），$\operatorname{tr}(Q^TAQ) = \operatorname{tr}(A)$（正交相似变换不改变迹）。</p>
+    </div>
+  </div>
+
+  <div class="problem">
+    <div class="problem-header" onclick="toggle(this)">
+      <span class="problem-badge hard">HARD · Quant Finance</span>
+      <span class="problem-title">PCA 与 SVD 的关系，低秩近似在风险模型中的应用</span>
+      <span class="toggle-icon">＋</span>
+    </div>
+    <div class="problem-body">
+      <div class="problem-q">解释 PCA 与 SVD 的数学关系。在量化金融中，如何利用低秩近似处理高维协方差矩阵？</div>
+      <div class="solution-label">解答</div>
+      <p><strong style="color:var(--amber);">PCA = 协方差矩阵的特征分解 = 数据矩阵的 SVD。</strong></p>
+      <p>设数据矩阵 $X \in \mathbb{R}^{T \times n}$（中心化后），协方差矩阵 $\hat\Sigma = \frac{1}{T-1}X^TX$。</p>
+      <p>SVD：$X = U\Sigma V^T$，则 $X^TX = V\Sigma^2 V^T$，$V$ 的列即为 PCA 主成分方向（loadings），$\Sigma^2/(T-1)$ 的对角元为各主成分方差。</p>
+      <p><strong style="color:var(--cyan);">低秩近似在风险模型中的作用：</strong></p>
+      <ul>
+        <li>取前 $k$ 个最大奇异值：$\hat\Sigma_k = \sum_{i=1}^k \lambda_i v_i v_i^T + D$（因子模型结构）</li>
+        <li>减少估计误差（高维时协方差估计噪声大）</li>
+        <li>提升矩阵条件数，加速 Cholesky 分解</li>
+        <li>降低 Monte Carlo 模拟成本：只需模拟 $k$ 个因子</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="problem">
+    <div class="problem-header" onclick="toggle(this)">
+      <span class="problem-badge medium">MEDIUM</span>
+      <span class="problem-title">Cayley–Hamilton 定理的应用</span>
+      <span class="toggle-icon">＋</span>
+    </div>
+    <div class="problem-body">
+      <div class="problem-q">利用 Cayley–Hamilton 定理计算 $A^{10}$，其中 $A = \begin{pmatrix} 1 & 2 \\ 0 & 3 \end{pmatrix}$。</div>
+      <div class="solution-label">解答</div>
+      <p>特征多项式：$p(\lambda) = \det(A - \lambda I) = (1-\lambda)(3-\lambda) = \lambda^2 - 4\lambda + 3$</p>
+      <p>Cayley–Hamilton：$A^2 - 4A + 3I = 0 \Rightarrow A^2 = 4A - 3I$</p>
+      <p>递推：$A^3 = A \cdot A^2 = A(4A - 3I) = 4A^2 - 3A = 4(4A-3I) - 3A = 13A - 12I$</p>
+      <p>一般地，$A^n = \alpha_n A + \beta_n I$，利用特征值 $\lambda_1=1, \lambda_2=3$：</p>
+      $$\alpha_n = \frac{3^n - 1^n}{3-1} = \frac{3^n-1}{2}, \quad \beta_n = \frac{3 \cdot 1^n - 1 \cdot 3^n}{3-1} = \frac{3 - 3^n}{2}$$
+      $$A^{10} = \frac{3^{10}-1}{2}A + \frac{3-3^{10}}{2}I$$
+    </div>
+  </div>
+
+</section>
+
+<!-- ══════════════ SECTION S1B ══════════════ -->
+<section class="section" id="s1b">
+  <div class="section-header">
+    <span class="section-num">01+</span>
+    <h2>秩不等式六条：完整推导与记忆</h2>
+  </div>
+
+  <div class="interview-tip">
+    <p><strong>核心口诀：</strong>乘积"最窄的门"，加法"三角不等式"，Sylvester"两次经过 $n$ 维损失 $\le n$"，转置"null space 相同"，Frobenius 是 Sylvester 的三矩阵版。</p>
+  </div>
+
+  <h3>① 上界</h3>
+  <div class="theorem-box">
+    <div class="box-title">$\operatorname{rank}(A) \le \min\{m,n\}$</div>
+    <p><strong style="color:var(--text);">推导：</strong>rank = 列空间维度，列空间 $\subseteq \mathbb{R}^m$，所以 $\le m$；rank 也等于行空间维度，行空间 $\subseteq \mathbb{R}^n$，所以 $\le n$。两个约束取小的。</p>
+    <p style="color:var(--text-dim);margin-top:8px;font-size:13px;">记忆：桶有多小，水就装多少。</p>
+  </div>
+
+  <h3>② 乘积（两个视角对称）</h3>
+  <div class="theorem-box blue">
+    <div class="box-title">$\operatorname{rank}(AB) \le \min\{\operatorname{rank}(A),\operatorname{rank}(B)\}$</div>
+    <div class="formula-grid" style="margin-top:10px;">
+      <div class="formula-cell">
+        <div class="fc-label">看列 → 约束来自 A</div>
+        <p style="font-size:13px;color:var(--text-dim);">$AB$ 的第 $j$ 列 $= A \cdot b_j$（$A$ 的列的线性组合），故</p>
+        $$\mathcal{C}(AB) \subseteq \mathcal{C}(A) \Rightarrow \operatorname{rank}(AB) \le \operatorname{rank}(A)$$
+      </div>
+      <div class="formula-cell">
+        <div class="fc-label">看行 → 约束来自 B</div>
+        <p style="font-size:13px;color:var(--text-dim);">$AB$ 的第 $i$ 行 $= a_i^T \cdot B$（$B$ 的行的线性组合），故</p>
+        $$\mathcal{R}(AB) \subseteq \mathcal{R}(B) \Rightarrow \operatorname{rank}(AB) \le \operatorname{rank}(B)$$
+      </div>
+    </div>
+    <div class="card" style="margin-top:14px;padding:14px 18px;">
+      <table class="styled-table" style="margin:0;">
+        <tr><th>视角</th><th>谁的空间被包含</th><th>结论</th></tr>
+        <tr><td>列空间</td><td>$\mathcal{C}(AB) \subseteq \mathcal{C}(A)$，由<strong>左矩阵 $A$</strong> 控制</td><td>$\le \operatorname{rank}(A)$</td></tr>
+        <tr><td>行空间</td><td>$\mathcal{R}(AB) \subseteq \mathcal{R}(B)$，由<strong>右矩阵 $B$</strong> 控制</td><td>$\le \operatorname{rank}(B)$</td></tr>
+      </table>
+      <p style="font-size:13px;color:var(--text-dim);margin-top:10px;">注意：$B$ 的<strong style="color:var(--text);">列</strong>对乘积不等式没有直接作用——真正起作用的是 $B$ 的<strong style="color:var(--amber);">行</strong>（它们是 $AB$ 行向量的"原材料"）。</p>
+    </div>
+  </div>
+
+  <h3>③ 加法（三角不等式）</h3>
+  <div class="theorem-box green">
+    <div class="box-title">$|\operatorname{rank}(A)-\operatorname{rank}(B)| \le \operatorname{rank}(A+B) \le \operatorname{rank}(A)+\operatorname{rank}(B)$</div>
+    <p><strong style="color:var(--text);">右侧上界：</strong>$\mathcal{C}(A+B) \subseteq \mathcal{C}(A)+\mathcal{C}(B)$（子空间和），维度 $\le \dim\mathcal{C}(A)+\dim\mathcal{C}(B)$。</p>
+    <p style="margin-top:8px;"><strong style="color:var(--text);">左侧下界：</strong>用上界两次：</p>
+    $$\operatorname{rank}(A) = \operatorname{rank}((A+B)-B) \le \operatorname{rank}(A+B)+\operatorname{rank}(B)$$
+    $$\Rightarrow \operatorname{rank}(A+B) \ge \operatorname{rank}(A)-\operatorname{rank}(B)$$
+    <p style="color:var(--text-dim);font-size:13px;margin-top:8px;">对称地得另一侧，取绝对值合并。类比实数 $|a-b|\le|a+b|\le|a|+|b|$。</p>
+  </div>
+
+  <h3>④ Sylvester 不等式（最核心！）</h3>
+  <div class="theorem-box" style="border-left-color:var(--amber);">
+    <div class="box-title">$\operatorname{rank}(A)+\operatorname{rank}(B) \le \operatorname{rank}(AB)+n$，$A\in\mathbb{R}^{m\times n},B\in\mathbb{R}^{n\times p}$</div>
+    <p>等价形式（做题时更常用）：</p>
+    $$\operatorname{rank}(AB) \ge \operatorname{rank}(A)+\operatorname{rank}(B)-n$$
+    <p style="margin-top:12px;"><strong style="color:var(--text);">推导（分块矩阵法）：</strong>构造</p>
+    $$M = \begin{pmatrix} AB & 0 \\ B & -I_n \end{pmatrix}$$
+    <p>对列做变换（第一列加 $A$ 倍的第二列），rank 不变：</p>
+    $$M \to \begin{pmatrix} 0 & A \\ B & -I_n \end{pmatrix}$$
+    <p>右边矩阵：$-I_n$ 贡献满秩 $n$，$A$ 额外贡献 $\operatorname{rank}(A)$，故右边 rank $= n+\operatorname{rank}(A)$。左边 rank $\le \operatorname{rank}(AB)+n$（次加性），且 $\ge \operatorname{rank}(B)$（看右下角块）。联立得 $\operatorname{rank}(A)+\operatorname{rank}(B)\le\operatorname{rank}(AB)+n$。</p>
+    <p style="margin-top:10px;"><strong style="color:var(--amber);">直觉：</strong>$B$ 映射 $\mathbb{R}^p\to\mathbb{R}^n$ 损失 $n-\operatorname{rank}(B)$ 维；$A$ 再映射损失 $n-\operatorname{rank}(A)$ 维。两次损失共用同一个 $n$ 维中间空间，合并损失不超过 $n$，即 $(n-\operatorname{rank}(B))+(n-\operatorname{rank}(A))\le n$。</p>
+    <p style="margin-top:10px;"><strong style="color:var(--cyan);">典型应用：</strong>$A^2=0 \Rightarrow 2\operatorname{rank}(A)\le 0+n \Rightarrow \operatorname{rank}(A)\le n/2$</p>
+  </div>
+
+  <h3>⑤ 转置不变</h3>
+  <div class="theorem-box cyan">
+    <div class="box-title">$\operatorname{rank}(A)=\operatorname{rank}(A^T)=\operatorname{rank}(A^TA)=\operatorname{rank}(AA^T)$</div>
+    <p><strong style="color:var(--text);">关键证明（$\operatorname{rank}(A)=\operatorname{rank}(A^TA)$）：</strong>证明零空间相同。</p>
+    <p>若 $Ax=0$，则 $A^TAx=0$（显然）。若 $A^TAx=0$，则 $x^TA^TAx=0 \Rightarrow \|Ax\|^2=0 \Rightarrow Ax=0$。</p>
+    $$\mathcal{N}(A) = \mathcal{N}(A^TA) \Rightarrow \text{nullity 相同} \Rightarrow \operatorname{rank}(A)=\operatorname{rank}(A^TA)$$
+    <p style="color:var(--text-dim);font-size:13px;margin-top:8px;">OLS 意义：$X^TX$ 和 $X$ 共享零空间，$X$ 有多重共线性时 $X^TX$ 不可逆。</p>
+  </div>
+
+  <h3>⑥ Frobenius 不等式</h3>
+  <div class="theorem-box purple">
+    <div class="box-title">$\operatorname{rank}(AB)+\operatorname{rank}(BC)\le\operatorname{rank}(B)+\operatorname{rank}(ABC)$</div>
+    <p>对 $\begin{pmatrix}AB&0\\B&BC\end{pmatrix}$ 做列变换后 rank 不变，次加性给出上界，分块对角结构给出下界，联立得结论。</p>
+    <p style="margin-top:8px;"><strong style="color:var(--purple);">与 Sylvester 的关系：</strong>取 $C=I$，得 Sylvester：$\operatorname{rank}(AB)+\operatorname{rank}(B)\le\operatorname{rank}(B)+\operatorname{rank}(AB) \cdot n$。Frobenius 是 Sylvester 的三矩阵推广。</p>
+  </div>
+</section>
+
+
+<!-- ══════════════ SECTION S2B ══════════════ -->
+<section class="section" id="s2b">
+  <div class="section-header">
+    <span class="section-num">02+</span>
+    <h2>可对角化条件：完整版</h2>
+  </div>
+
+  <div class="theorem-box">
+    <div class="box-title">核心充要条件</div>
+    $$\boxed{\text{对每个特征值 } \lambda_i:\ \underbrace{\dim\mathcal{N}(A-\lambda_i I)}_{\text{几何重数}} = \underbrace{\text{特征多项式中 } \lambda_i \text{ 的重数}}_{\text{代数重数}}}$$
+    <p style="color:var(--text-dim);font-size:13px;margin-top:8px;">始终有：几何重数 $\le$ 代数重数。等号成立 $\Leftrightarrow$ 可对角化。</p>
+  </div>
+
+  <h3>各充分条件（满足任一即可）</h3>
+  <div class="formula-grid">
+    <div class="theorem-box blue" style="margin:0;">
+      <div class="box-title">$n$ 个不同特征值（最强充分）</div>
+      <p style="font-size:13px;color:var(--text-dim);">不同特征值的特征向量线性无关，直接凑够 $n$ 个。<strong style="color:var(--text);">不是必要条件</strong>（有重特征值也可对角化）。</p>
+    </div>
+    <div class="theorem-box green" style="margin:0;">
+      <div class="box-title">实对称矩阵 $A=A^T$</div>
+      <p style="font-size:13px;color:var(--text-dim);">谱定理保证，且 $A=Q\Lambda Q^T$，$Q$ 正交，特征值全为实数，向量两两正交。</p>
+    </div>
+    <div class="theorem-box" style="margin:0;">
+      <div class="box-title">最小多项式无重根</div>
+      <p style="font-size:13px;color:var(--text-dim);">可对角化 $\Leftrightarrow$ 最小多项式无重根 $\Leftrightarrow$ 所有 Jordan 块大小为 1。</p>
+    </div>
+    <div class="theorem-box cyan" style="margin:0;">
+      <div class="box-title">$A^2=A$（幂等），$A^n=I$</div>
+      <p style="font-size:13px;color:var(--text-dim);">幂等：特征值 $\in\{0,1\}$，几何=代数重数。$A^n=I$：特征值为 $n$ 次单位根（复数域上不同），均可对角化。</p>
+    </div>
+  </div>
+
+  <h3>不可对角化的典型情况</h3>
+  <div class="card red">
+    <div class="card-label">几何重数 &lt; 代数重数 → Jordan 块出现</div>
+    $$A = \begin{pmatrix}0&1\\0&0\end{pmatrix}$$
+    <p>$\lambda=0$ 代数重数 2，$\mathcal{N}(A)=\operatorname{span}\{e_1\}$，几何重数仅 1。不可对角化，需 Jordan 标准型。</p>
+  </div>
+
+  <h3>速查表</h3>
+  <div class="card">
+    <table class="styled-table">
+      <tr><th>矩阵类型</th><th>结论</th><th>原因</th></tr>
+      <tr><td>实对称 $A=A^T$</td><td><span class="pill green">✓ 一定可</span></td><td>谱定理</td></tr>
+      <tr><td>$n$ 个不同特征值</td><td><span class="pill green">✓ 一定可</span></td><td>不同特征向量线性无关</td></tr>
+      <tr><td>$A^2=A$（幂等）</td><td><span class="pill green">✓ 一定可</span></td><td>特征值 $\in\{0,1\}$，几何=代数</td></tr>
+      <tr><td>$A^n=I$</td><td><span class="pill green">✓ $\mathbb{C}$ 上可</span></td><td>最小多项式整除 $x^n-1$，无重根</td></tr>
+      <tr><td>幂零 $A^k=0$，$A\ne0$</td><td><span class="pill red">✗ 一定不可</span></td><td>特征值全 0，几何重数 $&lt; n$</td></tr>
+      <tr><td>一般方阵</td><td><span class="pill amber">? 不确定</span></td><td>需验证几何=代数重数</td></tr>
+    </table>
+  </div>
+
+  <div class="problem">
+    <div class="problem-header" onclick="toggle(this)">
+      <span class="problem-badge medium">MEDIUM</span>
+      <span class="problem-title">有 0 特征值的矩阵可能可逆吗？</span>
+      <span class="toggle-icon">＋</span>
+    </div>
+    <div class="problem-body">
+      <div class="problem-q">如果矩阵 $A$ 有特征值 $\lambda=0$，它可能可逆吗？</div>
+      <div class="solution-label">解答</div>
+      <p><strong style="color:var(--red);">不可能。</strong>$\lambda=0$ 是特征值 $\Rightarrow \exists v\ne0$ 使 $Av=0$，即零空间非平凡，$\operatorname{nullity}(A)>0$，$\operatorname{rank}(A)&lt;n$。</p>
+      <p>同时 $\det(A)=\prod_i\lambda_i=0$（连乘中含 0 项），故 $A$ 不可逆。</p>
+      <p>这是绝对充要关系：<strong style="color:var(--amber);">$\lambda=0$ 是特征值 $\Leftrightarrow$ $A$ 不可逆 $\Leftrightarrow$ $\det(A)=0$ $\Leftrightarrow$ $\operatorname{rank}(A)&lt;n$</strong>。</p>
+    </div>
+  </div>
+
+  <div class="problem">
+    <div class="problem-header" onclick="toggle(this)">
+      <span class="problem-badge hard">HARD</span>
+      <span class="problem-title">特征多项式 $(\lambda-2)^3(\lambda-5)$，rank$(A-2I)=1$ vs $2$，哪种可对角化？</span>
+      <span class="toggle-icon">＋</span>
+    </div>
+    <div class="problem-body">
+      <div class="problem-q">$4\times4$ 矩阵特征多项式为 $(\lambda-2)^3(\lambda-5)$。情况一：$\operatorname{rank}(A-2I)=1$；情况二：$\operatorname{rank}(A-2I)=2$。分别判断可否对角化。</div>
+      <div class="solution-label">解答</div>
+      <p>$\lambda=5$ 代数重数 1，几何重数自动为 1。关键看 $\lambda=2$（代数重数 3）。</p>
+      <p>几何重数 $=\dim\mathcal{N}(A-2I)=4-\operatorname{rank}(A-2I)$</p>
+      <ul>
+        <li><strong style="color:var(--green);">情况一：</strong>几何重数 $=4-1=3=$ 代数重数 $\Rightarrow$ <span class="pill green">可对角化</span></li>
+        <li><strong style="color:var(--red);">情况二：</strong>几何重数 $=4-2=2&lt;3 \Rightarrow$ <span class="pill red">不可对角化</span>，需 Jordan 块</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="problem">
+    <div class="problem-header" onclick="toggle(this)">
+      <span class="problem-badge hard">HARD · 上下文题</span>
+      <span class="problem-title">$A,B$ 均可对角化，rank 和为 5（$4\times4$），$AB$ 是幂零矩阵吗？</span>
+      <span class="toggle-icon">＋</span>
+    </div>
+    <div class="problem-body">
+      <div class="problem-q">$A,B$ 均为 $4\times4$ 且均可对角化，$\operatorname{rank}(A)+\operatorname{rank}(B)=5$。$AB$ 是幂零矩阵吗？</div>
+      <div class="solution-label">解答</div>
+      <p><strong style="color:var(--cyan);">第一步：$AB\ne0$</strong></p>
+      <p>由 Sylvester：$\operatorname{rank}(AB)\ge\operatorname{rank}(A)+\operatorname{rank}(B)-n=5-4=1>0$，故 $AB$ 不是零矩阵。</p>
+      <p><strong style="color:var(--cyan);">第二步：$AB$ 不一定是幂零的</strong></p>
+      <p><strong style="color:var(--red);">反例（不幂零）：</strong>$A=\operatorname{diag}(1,1,0,0),\ B=\operatorname{diag}(1,1,1,0)$，$AB=\operatorname{diag}(1,1,0,0)$，含特征值 1，不幂零。</p>
+      <p><strong style="color:var(--green);">构造（幂零）：</strong>$A=e_1e_1^T$（rank 1），$B$ 为置换矩阵且第一列是 $e_2$，则 $AB$ 是秩 1 的严格上三角，$(AB)^2=0$。</p>
+      <p><strong style="color:var(--amber);">关键判断：</strong>若两者<em>同时</em>可对角化（存在共同的 $P$），则 $AB$ 也可对角化。非零可对角化矩阵特征值含非零项，不可能是幂零矩阵。故此情况下 $AB$ <strong>一定不是</strong>幂零矩阵。</p>
+    </div>
+  </div>
+
+  <div class="problem">
+    <div class="problem-header" onclick="toggle(this)">
+      <span class="problem-badge medium">MEDIUM · 上下文题</span>
+      <span class="problem-title">$[1,2,3,\ldots]$，$[1,4,9,\ldots]$，$[1,8,27,\ldots]$ 构成的矩阵是 full rank 吗？</span>
+      <span class="toggle-icon">＋</span>
+    </div>
+    <div class="problem-body">
+      <div class="problem-q">将三个无穷向量 $v_1=[1,2,3,\ldots]$，$v_2=[1,4,9,\ldots]=\{j^2\}$，$v_3=[1,8,27,\ldots]=\{j^3\}$ 的前 $m$ 个分量构成 $m\times3$ 矩阵，问该矩阵是否 full rank（rank=3）？</div>
+      <div class="solution-label">解答</div>
+      <p><strong style="color:var(--amber);">多项式论证：</strong>设 $\alpha j+\beta j^2+\gamma j^3=0$ 对所有正整数 $j$ 成立，即多项式 $p(x)=x(\alpha+\beta x+\gamma x^2)=0$ 有无穷多个零点。次数 $\le3$ 的多项式若有无穷多零点则恒为零，故 $\alpha=\beta=\gamma=0$。三向量线性无关。</p>
+      <p><strong style="color:var(--cyan);">Vandermonde 验证（$m=3$ 子矩阵）：</strong></p>
+      $$M = \begin{pmatrix}1&2&3\\1&4&9\\1&8&27\end{pmatrix}$$
+      <p>分解为 $M = V \cdot D$，其中 $D=\operatorname{diag}(1,2,3)$，$V$ 是 Vandermonde 矩阵（行为 $x^1,x^2,x^3$ 在 $x=1,2,3$）：</p>
+      $$\det(M)=\det(V)\cdot\det(D)=(2-1)(3-1)(3-2)\cdot6=1\cdot2\cdot1\cdot6=12\ne0$$
+      <p><strong style="color:var(--green);">结论：Full rank，rank = 3。</strong></p>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════ SECTION S7B ══════════════ -->
+<section class="section" id="s7b">
+  <div class="section-header">
+    <span class="section-num">07+</span>
+    <h2>Jordan 标准型深度解析</h2>
+  </div>
+
+  <h3>为什么需要 Jordan 标准型？</h3>
+  <div class="card amber">
+    <div class="card-label">动机</div>
+    <p>对角化失败时（几何重数 &lt; 代数重数），矩阵无法写成 $PDP^{-1}$。但任何方阵在复数域上都相似于一个"几乎对角"的矩阵：</p>
+    $$\text{对角化} \subset \text{Jordan 标准型} \supset \text{任意方阵}$$
+  </div>
+
+  <h3>Jordan 块</h3>
+  <div class="theorem-box">
+    <div class="box-title">$k\times k$ Jordan 块定义</div>
+    $$J_k(\lambda) = \begin{pmatrix}\lambda&1&&\\&\lambda&1&\\&&\ddots&1\\&&&\lambda\end{pmatrix}$$
+    <p style="color:var(--text-dim);font-size:13px;margin-top:8px;">对角是 $\lambda$，上对角线全是 1，其余为 0。$k=1$ 时退化为普通对角元（可对角化情形）。</p>
+  </div>
+
+  <h3>关键计数关系（做题核心）</h3>
+  <div class="card">
+    <table class="styled-table">
+      <tr><th>量</th><th>计算方式</th><th>含义</th></tr>
+      <tr>
+        <td>Jordan 块<strong>总个数</strong></td>
+        <td>$n-\operatorname{rank}(A-\lambda I)$</td>
+        <td>= 几何重数</td>
+      </tr>
+      <tr>
+        <td>最大块<strong>大小</strong></td>
+        <td>$\lambda$ 在最小多项式中的幂次</td>
+        <td>最顽固的"缺陷"</td>
+      </tr>
+      <tr>
+        <td>大小 $\ge k$ 的块<strong>个数</strong></td>
+        <td>$\operatorname{rank}(A-\lambda I)^{k-1}-\operatorname{rank}(A-\lambda I)^k$</td>
+        <td>逐层分析</td>
+      </tr>
+      <tr>
+        <td>大小<strong>恰好为 $k$</strong> 的块个数</td>
+        <td>$r_{k-1}-2r_k+r_{k+1}$，$r_j=\operatorname{rank}(A-\lambda I)^j$</td>
+        <td>差分公式</td>
+      </tr>
+      <tr>
+        <td>所有块大小之和</td>
+        <td>= 代数重数</td>
+        <td>必须凑到代数重数</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="problem">
+    <div class="problem-header" onclick="toggle(this)">
+      <span class="problem-badge hard">HARD</span>
+      <span class="problem-title">从 rank 序列确定 $6\times6$ 矩阵的 Jordan 结构</span>
+      <span class="toggle-icon">＋</span>
+    </div>
+    <div class="problem-body">
+      <div class="problem-q">$6\times6$ 矩阵，$\lambda=3$ 是唯一特征值（代数重数 6），已知 $r_0=6,\ r_1=4,\ r_2=2,\ r_3=1,\ r_4=0$（$r_k=\operatorname{rank}(A-3I)^k$）。确定 Jordan 标准型。</div>
+      <div class="solution-label">解答（差分公式）</div>
+      <p>大小恰为 $k$ 的块数 $n_k = r_{k-1}-2r_k+r_{k+1}$：</p>
+      <ul>
+        <li>$n_1 = r_0-2r_1+r_2 = 6-8+2 = 0$ 个 $1\times1$ 块</li>
+        <li>$n_2 = r_1-2r_2+r_3 = 4-4+1 = 1$ 个 $2\times2$ 块</li>
+        <li>$n_3 = r_2-2r_3+r_4 = 2-2+0 = 0$ 个 $3\times3$ 块</li>
+        <li>$n_4 = r_3-2r_4+0 = 1-0+0 = 1$ 个 $4\times4$ 块</li>
+      </ul>
+      <p>验证：$0\cdot1+1\cdot2+0\cdot3+1\cdot4=6$ ✓</p>
+      $$J = \begin{pmatrix}3&1&&&&&\\&3&&&&& \\ &&3&1&&&\\&&&3&1&&\\&&&&3&1&\\&&&&&3\end{pmatrix} \quad (J_2(3) \oplus J_4(3))$$
+    </div>
+  </div>
+
+  <h3>广义特征向量（Jordan 链）</h3>
+  <div class="theorem-box blue">
+    <div class="box-title">Jordan 链结构</div>
+    <p>一个 $k\times k$ Jordan 块对应一条链：</p>
+    $$v_1 \xleftarrow{(A-\lambda I)} v_2 \xleftarrow{(A-\lambda I)} \cdots \xleftarrow{(A-\lambda I)} v_k$$
+    <p style="margin-top:8px;">即 $(A-\lambda I)v_j = v_{j-1}$，$v_1$ 是真正的特征向量，$v_2,\ldots,v_k$ 是广义特征向量。</p>
+    <p style="margin-top:8px;">满足：$(A-\lambda I)^j v_k = v_{k-j}$，$(A-\lambda I)^k v_k = 0$。</p>
+  </div>
+
+  <div class="problem">
+    <div class="problem-header" onclick="toggle(this)">
+      <span class="problem-badge medium">MEDIUM</span>
+      <span class="problem-title">计算 $J_k(\lambda)^m$：Jordan 块的幂次公式</span>
+      <span class="toggle-icon">＋</span>
+    </div>
+    <div class="problem-body">
+      <div class="problem-q">证明 Jordan 块 $J_k(\lambda)^m$ 的表达式，并说明其与幂零矩阵的联系。</div>
+      <div class="solution-label">解答</div>
+      <p>分解 $J_k(\lambda) = \lambda I + N$，其中 $N$ 是严格上三角幂零矩阵（$N^k=0$）。</p>
+      <p>因 $\lambda I$ 和 $N$ 可交换，二项式定理：</p>
+      $$J_k(\lambda)^m = (\lambda I+N)^m = \sum_{j=0}^{k-1}\binom{m}{j}\lambda^{m-j}N^j$$
+      $$= \begin{pmatrix}\lambda^m & \binom{m}{1}\lambda^{m-1} & \binom{m}{2}\lambda^{m-2} & \cdots \\ & \lambda^m & \binom{m}{1}\lambda^{m-1} & \cdots \\ & & \ddots & \vdots \\ & & & \lambda^m\end{pmatrix}$$
+      <p><strong style="color:var(--cyan);">关键推论：</strong></p>
+      <ul>
+        <li>若 $|\lambda|&lt;1$：$J_k(\lambda)^m\to0$（$m\to\infty$），系统稳定</li>
+        <li>若 $\lambda=0$（幂零块）：$J_k(0)^k=0$，验证幂零性</li>
+        <li>若 $|\lambda|=1,\lambda\ne1$：振荡不收敛</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>与其他概念的关系总结</h3>
+  <div class="card">
+    <table class="styled-table">
+      <tr><th>概念</th><th>在 Jordan 形中的表现</th></tr>
+      <tr><td>可对角化</td><td>所有 Jordan 块大小为 1，即 $J=D$（对角矩阵）</td></tr>
+      <tr><td>幂零矩阵</td><td>所有特征值为 0，Jordan 块对角全 0，$J^k=0$</td></tr>
+      <tr><td>幂等矩阵</td><td>特征值 $\in\{0,1\}$，Jordan 块全为 $1\times1$（可对角化）</td></tr>
+      <tr><td>最小多项式</td><td>$m_A(\lambda)=\prod_i(\lambda-\lambda_i)^{s_i}$，$s_i$=最大 Jordan 块大小</td></tr>
+      <tr><td>特征多项式</td><td>$p_A(\lambda)=\prod_i(\lambda-\lambda_i)^{m_i}$，$m_i$=代数重数=块大小之和</td></tr>
+    </table>
+  </div>
+
+  <div class="problem">
+    <div class="problem-header" onclick="toggle(this)">
+      <span class="problem-badge hard">HARD · 上下文题</span>
+      <span class="problem-title">协方差矩阵的逆是协方差矩阵吗？Principal minor 是协方差则本身也是吗？</span>
+      <span class="toggle-icon">＋</span>
+    </div>
+    <div class="problem-body">
+      <div class="problem-q">（1）若 $\Sigma$ 是可逆协方差矩阵，$\Sigma^{-1}$ 是协方差矩阵吗？（2）若 $3\times3$ 矩阵所有 $2\times2$ 主子式都是协方差矩阵，本身一定是协方差矩阵吗？</div>
+      <div class="solution-label">解答</div>
+      <p><strong style="color:var(--green);">（1）是的。</strong>协方差矩阵 = 对称半正定；可逆时为对称正定 (SPD)。</p>
+      <p>设 $\Sigma=Q\Lambda Q^T$（特征值 $\lambda_i>0$），则 $\Sigma^{-1}=Q\Lambda^{-1}Q^T$，特征值 $1/\lambda_i>0$。</p>
+      <ul>
+        <li>对称性：$(\Sigma^{-1})^T=(\Sigma^T)^{-1}=\Sigma^{-1}$ ✓</li>
+        <li>正定性：特征值 $1/\lambda_i>0$ ✓</li>
+      </ul>
+      <p>$\Sigma^{-1}$ 在统计上称<strong style="color:var(--amber);">精度矩阵（Precision Matrix）</strong>，高斯图模型中的条件独立结构由它决定。</p>
+      <p style="margin-top:12px;"><strong style="color:var(--red);">（2）不一定。</strong>反例：</p>
+      $$A = \begin{pmatrix}1&0.9&0.9\\0.9&1&-0.9\\0.9&-0.9&1\end{pmatrix}$$
+      <p>所有 $2\times2$ 主子式行列式 $=1-0.81=0.19>0$，均为合法协方差矩阵 ✓。但</p>
+      $$\det(A) = 1\cdot(1-0.81) - 0.9\cdot(0.9+0.81) + 0.9\cdot(-0.81-0.9) < 0$$
+      <p>$A$ 不是半正定，<strong style="color:var(--red);">不是协方差矩阵</strong>。低维主子式 PSD 无法控制高维方向的曲率。</p>
+    </div>
+  </div>
+
+</section>
+
+<!-- ══════════════ SECTION — NEW PROBLEMS ══════════════ -->
+<section class="section" id="problems2">
+  <div class="section-header">
+    <span class="section-num">★+</span>
+    <h2>新增高频题目</h2>
+  </div>
+
+  <div class="problem">
+    <div class="problem-header" onclick="toggle(this)">
+      <span class="problem-badge hard">HARD · SIG原题</span>
+      <span class="problem-title">可逆协方差矩阵的逆还是协方差矩阵吗？</span>
+      <span class="toggle-icon">＋</span>
+    </div>
+    <div class="problem-body">
+      <div class="problem-q">设 $\Sigma$ 是一个可逆的协方差矩阵（对称正定，SPD），$\Sigma^{-1}$ 也是协方差矩阵吗？</div>
+      <div class="solution-label">解答</div>
+      <p><strong style="color:var(--green);">是的。</strong> 验证 $\Sigma^{-1}$ 也是 SPD：</p>
+      <p><strong style="color:var(--amber);">对称性：</strong> $(\Sigma^{-1})^T = (\Sigma^T)^{-1} = \Sigma^{-1}$ ✓</p>
+      <p><strong style="color:var(--amber);">正定性：</strong> $\Sigma = Q\Lambda Q^T$（特征值 $\lambda_i > 0$），则</p>
+      $$\Sigma^{-1} = Q\Lambda^{-1}Q^T,\quad \Lambda^{-1} = \operatorname{diag}(1/\lambda_1,\ldots,1/\lambda_n)$$
+      <p>$1/\lambda_i > 0$，故 $\Sigma^{-1}$ 也是正定的。 ✓</p>
+      <p style="color:var(--cyan);font-size:13px;margin-top:8px;">$\Sigma^{-1}$ 在统计中称为<strong style="color:var(--text);">精度矩阵（Precision Matrix）</strong>，在高斯图模型中，其非零元素对应条件独立结构。</p>
+    </div>
+  </div>
+
+  <div class="problem">
+    <div class="problem-header" onclick="toggle(this)">
+      <span class="problem-badge hard">HARD · SIG原题</span>
+      <span class="problem-title">$3\times3$ 矩阵所有 principal minor 是协方差矩阵，本身是吗？</span>
+      <span class="toggle-icon">＋</span>
+    </div>
+    <div class="problem-body">
+      <div class="problem-q">若一个 $3\times3$ 矩阵的所有主子矩阵（principle minors）都是协方差矩阵，它本身一定是协方差矩阵吗？</div>
+      <div class="solution-label">解答</div>
+      <p><strong style="color:var(--red);">不一定。</strong> 反例：</p>
+      $$A = \begin{pmatrix}1&0.9&0.9\\0.9&1&-0.9\\0.9&-0.9&1\end{pmatrix}$$
+      <p>所有 $1\times1$ 主子式 $= 1 > 0$ ✓，所有 $2\times2$ 主子式 $\det = 1-0.81 = 0.19 > 0$ ✓，每个子矩阵都是合法协方差矩阵。</p>
+      <p>但 $\det(A) = 1(0.19) - 0.9(0.9+0.81) + 0.9(-0.81-0.9) < 0$，$A$ 不是半正定，<strong style="color:var(--red);">不是协方差矩阵</strong>。</p>
+      <p><strong style="color:var(--cyan);">本质原因：</strong>PSD 要求所有主子式行列式 $\ge 0$，但低维子矩阵 PSD 不能控制高维方向的曲率——三个变量两两正相关时，第三对相关系数必须受到约束（如上一节三变量相关系数例题）。</p>
+    </div>
+  </div>
+
+  <div class="problem">
+    <div class="problem-header" onclick="toggle(this)">
+      <span class="problem-badge hard">HARD · SIG原题</span>
+      <span class="problem-title">$[1,2,3,\ldots]$，$[1,4,9,\ldots]$，$[1,8,27,\ldots]$ 三向量 full rank 吗？</span>
+      <span class="toggle-icon">＋</span>
+    </div>
+    <div class="problem-body">
+      <div class="problem-q">三个无穷向量 $v_1 = (1,2,3,\ldots)$，$v_2 = (1,4,9,\ldots) = (1^2,2^2,3^2,\ldots)$，$v_3 = (1,8,27,\ldots) = (1^3,2^3,3^3,\ldots)$，它们线性无关（full rank）吗？</div>
+      <div class="solution-label">解答</div>
+      <p><strong style="color:var(--green);">是的，线性无关，full rank。</strong></p>
+      <p><strong style="color:var(--amber);">证明（多项式论证）：</strong>设 $\alpha \cdot j + \beta \cdot j^2 + \gamma \cdot j^3 = 0$ 对所有 $j = 1,2,3,\ldots$ 成立。</p>
+      <p>即多项式 $p(x) = \alpha x + \beta x^2 + \gamma x^3 = x(\alpha + \beta x + \gamma x^2)$ 在无穷多个点 $x = 1,2,3,\ldots$ 取零值。</p>
+      <p>次数 $\le 3$ 的多项式若有无穷多零点，则恒为零，故 $\alpha = \beta = \gamma = 0$，线性无关。</p>
+      <p><strong style="color:var(--amber);">验证（Vandermonde 行列式）：</strong>取 $j=1,2,3$ 构成 $3\times3$ 子矩阵：</p>
+      $$M = \begin{pmatrix}1&2&3\\1&4&9\\1&8&27\end{pmatrix}$$
+      <p>分解：$M = \begin{pmatrix}1^1&2^1&3^1\\1^2&2^2&3^2\\1^3&2^3&3^3\end{pmatrix}$，这是 Vandermonde 矩阵的转置乘以 $\operatorname{diag}(1,2,3)$。</p>
+      $$\det(M) = (2-1)(3-1)(3-2) \cdot 1\cdot2\cdot3 = 1\cdot2\cdot1\cdot6 = 12 \ne 0 \checkmark$$
+    </div>
+  </div>
+
+  <div class="problem">
+    <div class="problem-header" onclick="toggle(this)">
+      <span class="problem-badge hard">HARD</span>
+      <span class="problem-title">不同特征值的特征向量线性无关（证明）</span>
+      <span class="toggle-icon">＋</span>
+    </div>
+    <div class="problem-body">
+      <div class="problem-q">证明：$n$ 个不同特征值 $\lambda_1,\ldots,\lambda_n$ 对应的特征向量 $x_1,\ldots,x_n$ 线性无关。</div>
+      <div class="solution-label">解答（归纳法 + 消去法）</div>
+      <p>假设 $c_1x_1+\cdots+c_nx_n = 0$，且 $c_i$ 不全为零。两边左乘 $A$：</p>
+      $$c_1\lambda_1 x_1 + \cdots + c_n\lambda_n x_n = 0 \quad \cdots (2)$$
+      <p>$(2) - \lambda_n \times (1)$：$c_1(\lambda_1-\lambda_n)x_1 + \cdots + c_{n-1}(\lambda_{n-1}-\lambda_n)x_{n-1} = 0$</p>
+      <p>不断重复这个操作，最终得到 $c_1(\lambda_1-\lambda_2)\cdots(\lambda_1-\lambda_n)x_1 = 0$。</p>
+      <p>因为 $x_1 \ne 0$ 且所有 $\lambda_i$ 不同，所以 $c_1 = 0$。类似地推出所有 $c_i = 0$，矛盾。故线性无关。$\square$</p>
+    </div>
+  </div>
+
+  <div class="problem">
+    <div class="problem-header" onclick="toggle(this)">
+      <span class="problem-badge medium">MEDIUM</span>
+      <span class="problem-title">实对称矩阵特征值全为实数（证明）</span>
+      <span class="toggle-icon">＋</span>
+    </div>
+    <div class="problem-body">
+      <div class="problem-q">证明实对称矩阵 $A = A^T$ 的所有特征值为实数。</div>
+      <div class="solution-label">解答</div>
+      <p>设 $\lambda$ 是复特征值，$x$ 是对应的复特征向量（可能是复数）。$\lambda^*$ 是 $\lambda$ 的共轭。</p>
+      <p>因 $A$ 是实矩阵，$A\bar{x} = \overline{Ax} = \overline{\lambda x} = \lambda^* \bar{x}$。</p>
+      <p>计算 $\bar{x}^T A x$：</p>
+      $$\bar{x}^T A x = \bar{x}^T (\lambda x) = \lambda \bar{x}^T x = \lambda \|x\|^2$$
+      $$\bar{x}^T A x = (A\bar{x})^T x = (\lambda^* \bar{x})^T x = \lambda^* \bar{x}^T x = \lambda^* \|x\|^2$$
+      <p>故 $(\lambda - \lambda^*)\|x\|^2 = 0$。因 $x \ne 0$，$\|x\|^2 > 0$，所以 $\lambda = \lambda^*$，即 $\lambda$ 为实数。$\square$</p>
+    </div>
+  </div>
+
+</section>
+
+<!-- ══════════════ SECTION 15 — RAYLEIGH ══════════════ -->
+<section class="section" id="s15">
+  <div class="section-header">
+    <span class="section-num">12</span>
+    <h2>$\max\ x^TAx$ 与 Rayleigh 商</h2>
+  </div>
+
+  <h3>Step 0：为什么可以先假设 $A$ 对称？</h3>
+
+  <div class="theorem-box">
+    <div class="box-title">对称 / 反对称分解</div>
+    <p>任意方阵 $A$ 都可以唯一分解为对称部分与反对称部分之和：</p>
+    $$A = \underbrace{\frac{A+A^T}{2}}_{A_s\ (\text{对称})} + \underbrace{\frac{A-A^T}{2}}_{A_k\ (\text{反对称},\ A_k^T=-A_k)}$$
+    <p style="margin-top:10px;">代入二次型：</p>
+    $$x^TAx = x^TA_s x + x^TA_k x$$
+    <p style="margin-top:8px;"><strong style="color:var(--amber);">关键：$x^TA_k x = 0$ 恒成立。</strong></p>
+    <p style="color:var(--text-dim);font-size:13px;">因此 $x^TAx = x^TA_s x$，优化问题完全等价于对称矩阵版本。</p>
+  </div>
+
+  <h3>为什么 $x^TA_k x = 0$？</h3>
+  <div class="theorem-box cyan">
+    <div class="box-title">反对称矩阵的二次型恒为零</div>
+    <p>设 $S = A - A^T$（反对称，$S^T = -S$）。$x^TSx$ 是标量，故</p>
+    $$x^TSx = (x^TSx)^T = x^TS^T x = x^T(-S)x = -x^TSx$$
+    $$\Rightarrow\quad 2\,x^TSx = 0 \quad\Rightarrow\quad x^TSx = 0$$
+    <p style="color:var(--text-dim);font-size:13px;margin-top:8px;">与 $x$ 无关，对所有向量恒成立。</p>
+  </div>
+
+  <div class="interview-tip">
+    <p><strong>一句话总结：</strong>$A$ 的反对称部分对二次型没有任何贡献，所以 $\max x^TAx$ 只取决于 $\frac{A+A^T}{2}$。面试时先写出这一步分解，立刻展示深度。</p>
+  </div>
+
+  <h3>Step 1：无约束情况 → 问题无界</h3>
+  <div class="card red">
+    <div class="card-label">无约束时无意义</div>
+    <p>若 $A_s$ 有正特征值 $\lambda > 0$，取对应特征向量 $v$，令 $x = tv$：</p>
+    $$x^TA_s x = t^2 v^TA_s v = t^2\lambda\|v\|^2 \xrightarrow{t\to\infty} +\infty$$
+    <p style="margin-top:8px;">故必须加约束，最自然的是 $\|x\|_2 = 1$（单位球面）或等价的 Rayleigh 商形式。</p>
+  </div>
+
+  <h3>Step 2：约束 $\|x\|=1$ → 答案是最大特征值</h3>
+  <div class="theorem-box green">
+    <div class="box-title">主定理</div>
+    $$\max_{\|x\|=1}\ x^TAx = \lambda_{\max}(A_s) = \lambda_{\max}\!\left(\frac{A+A^T}{2}\right)$$
+    <p style="margin-top:10px;"><strong style="color:var(--text);">证明：</strong>谱定理给出 $A_s = Q\Lambda Q^T$，令 $y = Q^Tx$（正交换基，$\|y\|=\|x\|=1$）：</p>
+    $$x^TA_s x = y^T\Lambda y = \sum_i \lambda_i y_i^2$$
+    <p>在 $\sum_i y_i^2 = 1$ 约束下，这是特征值的加权平均（权重 $y_i^2 \ge 0$，和为 1）：</p>
+    $$\sum_i \lambda_i y_i^2 \le \lambda_{\max}\sum_i y_i^2 = \lambda_{\max}$$
+    <p>当 $y = e_k$（$\lambda_{\max}$ 对应分量的标准基），即 $x = q_k$（最大特征值的特征向量）时等号成立。$\square$</p>
+  </div>
+
+  <h3>Rayleigh 商（去掉 $\|x\|=1$ 的限制）</h3>
+  <div class="theorem-box blue">
+    <div class="box-title">Rayleigh Quotient</div>
+    $$R(x) = \frac{x^TAx}{x^Tx}, \quad x \ne 0$$
+    $$\max_{x\ne0} R(x) = \lambda_{\max}(A_s), \qquad \min_{x\ne0} R(x) = \lambda_{\min}(A_s)$$
+    <p style="color:var(--text-dim);font-size:13px;margin-top:8px;">将 $x = \|x\| \cdot \hat x$ 代入即化为 $\|x\|=1$ 情形，结论不变。Rayleigh 商是尺度不变的。</p>
+  </div>
+
+  <h3>Courant–Fischer 定理（所有特征值的 min-max 刻画）</h3>
+  <div class="theorem-box purple">
+    <div class="box-title">Courant–Fischer Min-Max Theorem</div>
+    <p>设 $A_s$ 的特征值 $\lambda_1 \ge \lambda_2 \ge \cdots \ge \lambda_n$，则</p>
+    $$\lambda_k = \max_{\dim V = k}\ \min_{x \in V,\, \|x\|=1} x^TA_s x = \min_{\dim V = n-k+1}\ \max_{x \in V,\, \|x\|=1} x^TA_s x$$
+    <p style="margin-top:10px;">等价的简洁形式：</p>
+    $$\lambda_k = \max_{\substack{x \perp q_1,\ldots,q_{k-1}\\\|x\|=1}} x^TA_s x$$
+    <p style="color:var(--text-dim);font-size:13px;margin-top:8px;">在前 $k-1$ 个特征向量的正交补中找最大值，得第 $k$ 大特征值。PCA 逐步提取主成分正是这个过程。</p>
+  </div>
+
+  <div class="card">
+    <div class="card-label">极值总览</div>
+    <table class="styled-table">
+      <tr><th>优化问题</th><th>最优值</th><th>最优 $x$</th></tr>
+      <tr>
+        <td>$\max_{\|x\|=1} x^TAx$</td>
+        <td>$\lambda_{\max}(A_s)$</td>
+        <td>$\lambda_{\max}$ 的特征向量 $q_1$</td>
+      </tr>
+      <tr>
+        <td>$\min_{\|x\|=1} x^TAx$</td>
+        <td>$\lambda_{\min}(A_s)$</td>
+        <td>$\lambda_{\min}$ 的特征向量 $q_n$</td>
+      </tr>
+      <tr>
+        <td>$\max_{\|x\|=1,\, x\perp q_1} x^TAx$</td>
+        <td>$\lambda_2$（第二大特征值）</td>
+        <td>$q_2$（第二特征向量）</td>
+      </tr>
+      <tr>
+        <td>$\max_{x\ne0} \frac{x^TAx}{x^Tx}$</td>
+        <td>$\lambda_{\max}(A_s)$</td>
+        <td>同上，尺度不变</td>
+      </tr>
+      <tr>
+        <td>$\max_{\|x\|=1} \|Ax\|^2 = \max x^TA^TAx$</td>
+        <td>$\sigma_{\max}^2$（最大奇异值平方）</td>
+        <td>$A^TA$ 的最大特征向量（右奇异向量）</td>
+      </tr>
+    </table>
+  </div>
+
+  <h3>完整推导链</h3>
+  <div class="card amber">
+    <div class="card-label">流程图</div>
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text-dim);line-height:2.2;">
+      <span style="color:var(--text);">max x<sup>T</sup>Ax</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;│ <span style="color:var(--text-faint);">A = A_s + A_k（对称 + 反对称分解）</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;│ <span style="color:var(--text-faint);">x<sup>T</sup>A_k x = 0（反对称二次型恒为零）</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;▼<br>
+      <span style="color:var(--text);">max x<sup>T</sup>A_s x，A_s = (A+A<sup>T</sup>)/2</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;│ <span style="color:var(--text-faint);">加约束 ‖x‖ = 1</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;│ <span style="color:var(--text-faint);">谱定理：A_s = QΛQ<sup>T</sup>，换基 y = Q<sup>T</sup>x</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;▼<br>
+      <span style="color:var(--text);">max Σ λᵢ yᵢ²，subject to Σ yᵢ² = 1</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;│ <span style="color:var(--text-faint);">加权平均，权重非负和为 1</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;▼<br>
+      <span style="color:var(--amber);">最大值 = λ_max(A_s)，在 x = 对应特征向量时取到</span>
+    </div>
+  </div>
+
+  <h3>量化金融中的应用</h3>
+  <div class="card blue">
+    <div class="card-label">Why This Matters in Quant Finance</div>
+    <p>协方差矩阵 $\Sigma$ 已经是对称正半定的，所以 $\Sigma_s = \Sigma$，Rayleigh 商直接给出：</p>
+    <ul style="padding-left:20px;color:var(--text-dim);font-size:14px;line-height:2.2;margin-top:10px;">
+      <li><strong style="color:var(--text);">最大化组合方差的方向</strong> = $\lambda_{\max}(\Sigma)$ 对应的特征向量 = 第一主成分</li>
+      <li><strong style="color:var(--text);">PCA 降维</strong> = 逐步用 Courant–Fischer 提取各主成分方向</li>
+      <li><strong style="color:var(--text);">风险最大的因子暴露</strong> = $\lambda_{\max}$ 方向，风险预算时需重点控制</li>
+      <li><strong style="color:var(--text);">条件数 $\kappa = \lambda_{\max}/\lambda_{\min}$</strong> = Rayleigh 商最大值与最小值之比，决定矩阵病态程度</li>
+    </ul>
+  </div>
+
+  <div class="problem">
+    <div class="problem-header" onclick="toggle(this)">
+      <span class="problem-badge hard">HARD</span>
+      <span class="problem-title">$A$ 不对称时，$\max_{\|x\|=1} x^TAx$ 的解是什么？完整求解。</span>
+      <span class="toggle-icon">＋</span>
+    </div>
+    <div class="problem-body">
+      <div class="problem-q">设 $A = \begin{pmatrix}2 & 3 \\ 1 & 2\end{pmatrix}$，求 $\max_{\|x\|=1} x^TAx$。</div>
+      <div class="solution-label">解答</div>
+      <p><strong style="color:var(--amber);">Step 1：</strong>计算对称部分</p>
+      $$A_s = \frac{A+A^T}{2} = \frac{1}{2}\begin{pmatrix}4&4\\4&4\end{pmatrix} = \begin{pmatrix}2&2\\2&2\end{pmatrix}$$
+      <p><strong style="color:var(--amber);">Step 2：</strong>求 $A_s$ 的特征值</p>
+      $$\det(A_s - \lambda I) = (2-\lambda)^2 - 4 = \lambda^2 - 4\lambda = \lambda(\lambda-4) = 0$$
+      <p>特征值：$\lambda_1 = 4,\ \lambda_2 = 0$。</p>
+      <p><strong style="color:var(--amber);">Step 3：</strong>结论</p>
+      $$\max_{\|x\|=1} x^TAx = \lambda_{\max}(A_s) = 4$$
+      <p>最优 $x$：$\lambda_1=4$ 的特征向量，$(A_s - 4I)v = 0 \Rightarrow v = \frac{1}{\sqrt{2}}\begin{pmatrix}1\\1\end{pmatrix}$。</p>
+      <p><strong style="color:var(--cyan);">验证：</strong>$x^TAx = \frac{1}{2}(1,1)\begin{pmatrix}2&3\\1&2\end{pmatrix}\begin{pmatrix}1\\1\end{pmatrix} = \frac{1}{2}(1,1)\begin{pmatrix}5\\3\end{pmatrix} = \frac{8}{2} = 4$ ✓</p>
+    </div>
+  </div>
+
+  <div class="problem">
+    <div class="problem-header" onclick="toggle(this)">
+      <span class="problem-badge medium">MEDIUM</span>
+      <span class="problem-title">证明 Rayleigh 商的极值恰好是特征值，且无"间隙"</span>
+      <span class="toggle-icon">＋</span>
+    </div>
+    <div class="problem-body">
+      <div class="problem-q">设 $A$ 是 $n\times n$ 对称矩阵，特征值 $\lambda_1\ge\cdots\ge\lambda_n$。证明 $\{R(x) : x\ne0\} = [\lambda_n, \lambda_1]$，即 Rayleigh 商能取到最小特征值和最大特征值之间的所有值。</div>
+      <div class="solution-label">解答</div>
+      <p><strong style="color:var(--amber);">上下界：</strong>已由换基证明 $R(x)\in[\lambda_n,\lambda_1]$。</p>
+      <p><strong style="color:var(--amber);">连续性：</strong>$R(x) = \frac{x^TAx}{x^Tx}$ 是 $\mathbb{R}^n\setminus\{0\}$ 上的连续函数，其定义域（去掉原点的连通集）在 $R$ 下的像是连通集，即区间。</p>
+      <p><strong style="color:var(--amber);">端点可达：</strong>$R(q_1)=\lambda_1$，$R(q_n)=\lambda_n$。</p>
+      <p>由介值定理，$R$ 能取到 $[\lambda_n, \lambda_1]$ 中所有值。$\square$</p>
+      <p style="color:var(--text-dim);font-size:13px;margin-top:8px;">推论：$A$ 正定 $\Leftrightarrow$ $\lambda_n>0$ $\Leftrightarrow$ $R(x)>0,\ \forall x\ne0$，即 $x^TAx>0$ 恒成立。</p>
+    </div>
+  </div>
+
+  <div class="problem">
+    <div class="problem-header" onclick="toggle(this)">
+      <span class="problem-badge hard">HARD · 综合题</span>
+      <span class="problem-title">$\max\|Ax\|^2$ subject to $\|x\|=1$：与 SVD 的关系</span>
+      <span class="toggle-icon">＋</span>
+    </div>
+    <div class="problem-body">
+      <div class="problem-q">设 $A\in\mathbb{R}^{m\times n}$（一般矩形矩阵），求 $\max_{\|x\|=1}\|Ax\|^2$，并说明与 SVD 的关系。</div>
+      <div class="solution-label">解答</div>
+      <p>$\|Ax\|^2 = x^TA^TAx$，这是以 $A^TA$（$n\times n$ 对称半正定矩阵）为参数的二次型。</p>
+      <p>$A^TA$ 的特征值 = $A$ 的奇异值的平方：$A^TA = V\Sigma^T\Sigma V^T$，故</p>
+      $$\max_{\|x\|=1} x^TA^TAx = \lambda_{\max}(A^TA) = \sigma_{\max}^2(A)$$
+      <p>最优 $x = v_1$（最大奇异值对应的右奇异向量），此时 $\|Av_1\| = \sigma_1$。</p>
+      <p><strong style="color:var(--amber);">谱范数：</strong>$\|A\|_2 = \max_{\|x\|=1}\|Ax\| = \sigma_{\max}(A)$，这正是矩阵谱范数的定义。</p>
+      <p><strong style="color:var(--cyan);">几何意义：</strong>$A$ 把单位球映射成一个椭球，半轴长度是各奇异值 $\sigma_1\ge\cdots\ge\sigma_r>0$，方向是右奇异向量。$\sigma_1$ 是最长半轴，即 $A$ 最大拉伸方向。</p>
+    </div>
+  </div>
+
+</section>
+
+<!-- Footer -->
+<div style="border-top:1px solid var(--border);padding-top:32px;margin-top:40px;color:var(--text-faint);font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.1em;">
+  Linear Algebra — Complete Interview Guide · Princeton MFin · 2025–2026<br>
+  <span style="color:var(--text-faint);">覆盖考点：Rank / Nullity / Eigenvalues / Diagonalization / Jordan Form / SVD / Idempotent / Nilpotent / PSD / OLS / Rayleigh Quotient / Courant–Fischer / Matrix Calculus / Monte Carlo / Rank Inequalities / Covariance</span>
+</div>
+
+</main>
+
+<script>
+function toggle(header) {
+  const body = header.nextElementSibling;
+  const icon = header.querySelector('.toggle-icon');
+  const isOpen = body.classList.contains('open');
+  body.classList.toggle('open', !isOpen);
+  icon.textContent = isOpen ? '＋' : '－';
+}
+
+// Animate sections on scroll
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.style.opacity = '1';
+      e.target.style.transform = 'translateY(0)';
+    }
+  });
+}, { threshold: 0.05 });
+
+document.querySelectorAll('.section').forEach(s => {
+  s.style.opacity = '0';
+  s.style.transform = 'translateY(18px)';
+  s.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+  observer.observe(s);
+});
+
+// Active nav highlighting
+const sections = document.querySelectorAll('.section');
+const navItems = document.querySelectorAll('.nav-item');
+
+window.addEventListener('scroll', () => {
+  let current = '';
+  sections.forEach(s => {
+    if (window.scrollY >= s.offsetTop - 100) current = s.id;
+  });
+  navItems.forEach(item => {
+    item.style.borderLeftColor = 'transparent';
+    item.style.color = '';
+    if (item.getAttribute('href') === '#' + current) {
+      item.style.borderLeftColor = 'var(--amber)';
+      item.style.color = 'var(--amber)';
+      item.style.background = 'var(--amber-glow)';
+    } else {
+      item.style.background = '';
+    }
+  });
+});
+</script>
+</body>
+</html>

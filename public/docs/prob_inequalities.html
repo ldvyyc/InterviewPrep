@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>概率不等式 & 恒等式 — Quant Study Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<style>
+:root {
+  --bg: #0c0c0e;
+  --bg2: #131316;
+  --bg3: #1a1a1f;
+  --bg4: #202026;
+  --border: rgba(255,255,255,0.06);
+  --border2: rgba(255,255,255,0.11);
+  --text: #ddd9d0;
+  --muted: #7a7870;
+  --heading: #f0ede6;
+  --purple: #a78bfa;
+  --teal: #5eead4;
+  --coral: #fb923c;
+  --amber: #fbbf24;
+  --blue: #60a5fa;
+  --green: #86efac;
+  --pink: #f472b6;
+  --red: #f87171;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  font-size: 14.5px;
+  line-height: 1.75;
+  display: flex;
+  min-height: 100vh;
+}
+
+/* ── Sidebar ── */
+.sidebar {
+  width: 230px;
+  min-height: 100vh;
+  background: var(--bg2);
+  border-right: 0.5px solid var(--border);
+  padding: 1.75rem 0 3rem;
+  position: fixed;
+  top: 0; left: 0;
+  overflow-y: auto;
+  z-index: 10;
+  scrollbar-width: thin;
+}
+.sidebar-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 15px;
+  color: var(--heading);
+  padding: 0 1.25rem 1.25rem;
+  border-bottom: 0.5px solid var(--border);
+  margin-bottom: 0.75rem;
+  letter-spacing: -0.01em;
+  line-height: 1.4;
+}
+.sidebar-title span { color: var(--purple); }
+.nav-group { margin-bottom: 0.25rem; }
+.nav-label {
+  display: block;
+  font-size: 9.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 0.6rem 1.25rem 0.3rem;
+}
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0.38rem 1.25rem;
+  color: var(--muted);
+  font-size: 13px;
+  cursor: pointer;
+  border-left: 2px solid transparent;
+  transition: all 0.15s;
+  text-decoration: none;
+}
+.nav-item:hover, .nav-item.active {
+  color: var(--heading);
+  background: rgba(255,255,255,0.03);
+  border-left-color: var(--purple);
+}
+.nav-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ── Main ── */
+.main {
+  margin-left: 230px;
+  flex: 1;
+  padding: 3rem 3.5rem 5rem;
+  max-width: 860px;
+}
+
+/* ── Section ── */
+.section {
+  margin-bottom: 4.5rem;
+  scroll-margin-top: 1.5rem;
+}
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 0.5px solid var(--border);
+}
+.section-icon {
+  width: 28px; height: 28px;
+  border-radius: 7px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+.section-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 22px;
+  color: var(--heading);
+  letter-spacing: -0.025em;
+}
+.section-sub {
+  font-size: 12px;
+  color: var(--muted);
+  margin-left: auto;
+  font-family: 'DM Mono', monospace;
+}
+
+/* ── Cards ── */
+.card {
+  background: var(--bg3);
+  border: 0.5px solid var(--border2);
+  border-radius: 10px;
+  padding: 1.25rem 1.4rem;
+  margin: 1rem 0;
+  overflow-x: auto;
+}
+.card.accent-purple { border-left: 2.5px solid var(--purple); }
+.card.accent-teal   { border-left: 2.5px solid var(--teal); }
+.card.accent-coral  { border-left: 2.5px solid var(--coral); }
+.card.accent-amber  { border-left: 2.5px solid var(--amber); }
+.card.accent-blue   { border-left: 2.5px solid var(--blue); }
+.card.accent-green  { border-left: 2.5px solid var(--green); }
+.card.accent-pink   { border-left: 2.5px solid var(--pink); }
+
+.card-label {
+  font-size: 10px;
+  font-family: 'DM Mono', monospace;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+}
+.card-label.purple { color: var(--purple); }
+.card-label.teal   { color: var(--teal); }
+.card-label.coral  { color: var(--coral); }
+.card-label.amber  { color: var(--amber); }
+.card-label.blue   { color: var(--blue); }
+.card-label.green  { color: var(--green); }
+.card-label.pink   { color: var(--pink); }
+
+/* ── Grid ── */
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin: 1rem 0;
+}
+.grid-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0.75rem;
+  margin: 1rem 0;
+}
+
+/* ── Theorem block ── */
+.theorem {
+  background: var(--bg4);
+  border: 0.5px solid var(--border2);
+  border-radius: 10px;
+  margin: 1.25rem 0;
+  overflow: hidden;
+}
+.theorem-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.8rem 1.25rem;
+  border-bottom: 0.5px solid var(--border);
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s;
+}
+.theorem-header:hover { background: rgba(255,255,255,0.02); }
+.theorem-name {
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--heading);
+  flex: 1;
+}
+.theorem-tag {
+  font-size: 10.5px;
+  padding: 2px 9px;
+  border-radius: 20px;
+  font-family: 'DM Mono', monospace;
+}
+.theorem-chevron {
+  color: var(--muted);
+  font-size: 11px;
+  transition: transform 0.2s;
+}
+.theorem.open .theorem-chevron { transform: rotate(180deg); }
+.theorem-body {
+  display: none;
+  padding: 1rem 1.25rem 1.25rem;
+}
+.theorem.open .theorem-body { display: block; }
+
+/* ── Steps ── */
+.steps { margin: 0.75rem 0; }
+.step {
+  display: flex;
+  gap: 0.85rem;
+  margin-bottom: 1rem;
+  align-items: flex-start;
+}
+.step-n {
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px;
+  font-family: 'DM Mono', monospace;
+  font-weight: 500;
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+.step-c { flex: 1; }
+.step-c p { font-size: 13.5px; margin-bottom: 0.4rem; font-weight: 300; }
+
+/* ── Comparison table ── */
+.ctable {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+  font-size: 13px;
+}
+.ctable th {
+  background: var(--bg4);
+  color: var(--heading);
+  font-weight: 500;
+  padding: 0.6rem 1rem;
+  text-align: left;
+  border-bottom: 0.5px solid var(--border2);
+}
+.ctable td {
+  padding: 0.55rem 1rem;
+  border-bottom: 0.5px solid var(--border);
+  color: var(--text);
+  font-weight: 300;
+  vertical-align: top;
+}
+.ctable tr:last-child td { border-bottom: none; }
+.ctable tr:hover td { background: rgba(255,255,255,0.015); }
+
+p { font-weight: 300; margin-bottom: 0.8rem; color: var(--text); }
+.sub { font-size: 13px; font-weight: 500; color: var(--teal); letter-spacing: 0.05em; text-transform: uppercase; margin: 1.75rem 0 0.6rem; }
+.note {
+  background: rgba(251,191,36,0.06);
+  border: 0.5px solid rgba(251,191,36,0.18);
+  border-radius: 7px;
+  padding: 0.75rem 1rem;
+  font-size: 13px;
+  color: #e8d090;
+  margin: 0.75rem 0;
+}
+.note strong { color: var(--amber); font-weight: 500; }
+
+/* ── Example blocks ── */
+.example {
+  background: var(--bg2);
+  border: 0.5px solid var(--border2);
+  border-radius: 10px;
+  margin: 1.25rem 0;
+  overflow: hidden;
+}
+.example-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.7rem 1.1rem;
+  cursor: pointer;
+  user-select: none;
+  border-bottom: 0.5px solid transparent;
+  transition: background 0.15s;
+}
+.example-header:hover { background: rgba(255,255,255,0.02); }
+.example.open .example-header { border-bottom-color: var(--border); }
+.example-badge {
+  font-size: 10px;
+  font-family: 'DM Mono', monospace;
+  letter-spacing: 0.07em;
+  padding: 2px 8px;
+  border-radius: 20px;
+  background: rgba(94,234,212,0.1);
+  color: var(--teal);
+  flex-shrink: 0;
+}
+.example-q {
+  font-size: 13.5px;
+  font-weight: 400;
+  color: var(--heading);
+  flex: 1;
+}
+.example-chevron {
+  color: var(--muted);
+  font-size: 11px;
+  transition: transform 0.2s;
+  flex-shrink: 0;
+}
+.example.open .example-chevron { transform: rotate(180deg); }
+.example-body {
+  display: none;
+  padding: 1rem 1.1rem 1.1rem;
+}
+.example.open .example-body { display: block; }
+.example-body p { font-size: 13.5px; margin-bottom: 0.5rem; font-weight: 300; }
+.example-body .card { margin: 0.5rem 0; padding: 0.9rem 1.1rem; }
+.ans {
+  display: inline-block;
+  background: rgba(94,234,212,0.08);
+  border: 0.5px solid rgba(94,234,212,0.2);
+  border-radius: 6px;
+  padding: 3px 10px;
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  color: var(--teal);
+  margin-top: 0.3rem;
+}
+
+@media (max-width: 768px) {
+  .sidebar { display: none; }
+  .main { margin-left: 0; padding: 1.5rem; }
+  .grid-2, .grid-3 { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<nav class="sidebar">
+  <div class="sidebar-title">概率不等式<br><span>&</span> 期望恒等式</div>
+
+  <div class="nav-group">
+    <span class="nav-label">期望 & 方差</span>
+    <a class="nav-item active" onclick="go('expectation')"><span class="nav-dot" style="background:var(--teal)"></span>条件期望</a>
+    <a class="nav-item" onclick="go('variance')"><span class="nav-dot" style="background:var(--purple)"></span>全方差公式</a>
+    <a class="nav-item" onclick="go('wald')"><span class="nav-dot" style="background:var(--blue)"></span>Wald 方程</a>
+  </div>
+  <div class="nav-group">
+    <span class="nav-label">凸性不等式</span>
+    <a class="nav-item" onclick="go('jensen')"><span class="nav-dot" style="background:var(--coral)"></span>Jensen 不等式</a>
+    <a class="nav-item" onclick="go('amgm')"><span class="nav-dot" style="background:var(--green)"></span>AM-GM</a>
+    <a class="nav-item" onclick="go('young')"><span class="nav-dot" style="background:var(--amber)"></span>Young 不等式</a>
+  </div>
+  <div class="nav-group">
+    <span class="nav-label">概率不等式</span>
+    <a class="nav-item" onclick="go('markov')"><span class="nav-dot" style="background:var(--red)"></span>Markov</a>
+    <a class="nav-item" onclick="go('chebyshev')"><span class="nav-dot" style="background:var(--pink)"></span>Chebyshev</a>
+    <a class="nav-item" onclick="go('cantelli')"><span class="nav-dot" style="background:var(--coral)"></span>Cantelli</a>
+  </div>
+  <div class="nav-group">
+    <span class="nav-label">范数 & 内积</span>
+    <a class="nav-item" onclick="go('cauchy')"><span class="nav-dot" style="background:var(--purple)"></span>Cauchy-Schwarz</a>
+    <a class="nav-item" onclick="go('holder')"><span class="nav-dot" style="background:var(--blue)"></span>Hölder</a>
+    <a class="nav-item" onclick="go('norms')"><span class="nav-dot" style="background:var(--teal)"></span>范数</a>
+  </div>
+  <div class="nav-group">
+    <span class="nav-label">对比速查</span>
+    <a class="nav-item" onclick="go('compare')"><span class="nav-dot" style="background:var(--amber)"></span>不等式对比表</a>
+  </div>
+</nav>
+
+<main class="main">
+
+<!-- ══════════════════ 条件期望 ══════════════════ -->
+<div class="section" id="expectation">
+  <div class="section-header">
+    <div class="section-icon" style="background:rgba(94,234,212,0.12)">𝔼</div>
+    <h2 class="section-title">条件期望</h2>
+    <span class="section-sub">tower property</span>
+  </div>
+
+  <div class="card accent-teal">
+    <div class="card-label teal">全期望公式（Law of Total Expectation）</div>
+    $$E[X] = E\bigl[E[X \mid Y]\bigr]$$
+  </div>
+
+  <div class="card accent-teal">
+    <div class="card-label teal">条件全期望（Tower Property）</div>
+    $$E[X \mid \mathcal{G}] = E\bigl[E[X \mid \mathcal{F}] \mid \mathcal{G}\bigr], \quad \mathcal{G} \subseteq \mathcal{F}$$
+    <p style="margin-top:0.5rem;font-size:13px;font-weight:300">更粗的 $\sigma$-代数取期望后，结果只保留粗的信息。</p>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-label teal">离散形式</div>
+      $$E[X] = \sum_y E[X \mid Y=y]\,P(Y=y)$$
+    </div>
+    <div class="card">
+      <div class="card-label teal">连续形式</div>
+      $$E[X] = \int E[X \mid Y=y]\,f_Y(y)\,dy$$
+    </div>
+  </div>
+
+  <div class="note">
+    <strong>面试常见：</strong>全期望公式 = 先对 $Y$ 条件，再对 $Y$ 积分/求和。直觉：先分组算，再加权平均。
+  </div>
+
+  <div class="example" onclick="toggleEx(this)">
+    <div class="example-header">
+      <span class="example-badge">例题</span>
+      <span class="example-q">骰子：先抛一枚骰子得 $N$，再抛 $N$ 枚硬币，求正面期望数。</span>
+      <span class="example-chevron">▼</span>
+    </div>
+    <div class="example-body">
+      <p>令 $X$ = 正面总数，$N$ = 骰子点数（$1$到$6$均匀）。</p>
+      <p>条件期望：$E[X\mid N=n] = n/2$（$n$ 枚公平硬币）。</p>
+      <div class="card">$$E[X] = E\bigl[E[X\mid N]\bigr] = E\!\left[\frac{N}{2}\right] = \frac{E[N]}{2} = \frac{3.5}{2} = 1.75$$</div>
+      <span class="ans">答案：1.75</span>
+    </div>
+  </div>
+
+  <div class="sub">条件期望的性质</div>
+  <div class="card">
+    <div class="card-label teal">关键性质</div>
+    $$E[g(Y)X \mid Y] = g(Y)\,E[X \mid Y] \quad \text{（taking out known factors）}$$
+    $$E[X \mid Y] = E[X] \quad \text{if } X \perp Y$$
+    $$E[aX + bZ \mid Y] = a\,E[X\mid Y] + b\,E[Z\mid Y] \quad \text{（线性）}$$
+  </div>
+</div>
+
+<!-- ══════════════════ 全方差公式 ══════════════════ -->
+<div class="section" id="variance">
+  <div class="section-header">
+    <div class="section-icon" style="background:rgba(167,139,250,0.12)">σ²</div>
+    <h2 class="section-title">全方差公式</h2>
+    <span class="section-sub">Eve's law</span>
+  </div>
+
+  <div class="card accent-purple">
+    <div class="card-label purple">全方差公式（Law of Total Variance）</div>
+    $$\text{Var}(X) = E\bigl[\text{Var}(X\mid Y)\bigr] + \text{Var}\bigl(E[X\mid Y]\bigr)$$
+  </div>
+
+  <div class="sub">推导</div>
+  <div class="steps">
+    <div class="step">
+      <div class="step-n" style="background:rgba(167,139,250,0.15);color:var(--purple)">1</div>
+      <div class="step-c">
+        <p>利用方差定义拆分：</p>
+        <div class="card" style="margin:0.3rem 0">$$\text{Var}(X) = E[X^2] - (E[X])^2$$</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-n" style="background:rgba(167,139,250,0.15);color:var(--purple)">2</div>
+      <div class="step-c">
+        <p>注意 $E[X^2] = E[E[X^2\mid Y]]$（全期望），以及：</p>
+        <div class="card" style="margin:0.3rem 0">$$E[X^2\mid Y] = \text{Var}(X\mid Y) + (E[X\mid Y])^2$$</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-n" style="background:rgba(167,139,250,0.15);color:var(--purple)">3</div>
+      <div class="step-c">
+        <p>代入并展开，得：</p>
+        <div class="card accent-purple" style="margin:0.3rem 0">
+          $$\text{Var}(X) = \underbrace{E[\text{Var}(X\mid Y)]}_{\text{within-group variance}} + \underbrace{\text{Var}(E[X\mid Y])}_{\text{between-group variance}}$$
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-label purple">条件方差定义</div>
+      $$\text{Var}(X\mid Y) = E[X^2\mid Y] - (E[X\mid Y])^2$$
+    </div>
+    <div class="card">
+      <div class="card-label purple">全协方差公式</div>
+      $$\text{Cov}(X,Z) = E[\text{Cov}(X,Z\mid Y)] + \text{Cov}(E[X\mid Y], E[Z\mid Y])$$
+    </div>
+  </div>
+
+  <div class="note">
+    <strong>直觉：</strong>总方差 = 组内平均方差（条件方差的期望）+ 组间方差（条件均值的方差）。ANOVA 的本质就是这个分解。
+  </div>
+
+  <div class="example" onclick="toggleEx(this)">
+    <div class="example-header">
+      <span class="example-badge">例题</span>
+      <span class="example-q">上题中，求正面数 $X$ 的方差。</span>
+      <span class="example-chevron">▼</span>
+    </div>
+    <div class="example-body">
+      <p>条件方差：$\text{Var}(X\mid N=n) = n/4$（$n$ 枚公平硬币方差之和）。</p>
+      <p>条件均值：$E[X\mid N] = N/2$。</p>
+      <div class="card">
+        $$E[\text{Var}(X\mid N)] = E\!\left[\frac{N}{4}\right] = \frac{3.5}{4} = 0.875$$
+        $$\text{Var}(E[X\mid N]) = \text{Var}\!\left(\frac{N}{2}\right) = \frac{\text{Var}(N)}{4} = \frac{35/12}{4} = \frac{35}{48} \approx 0.729$$
+        $$\text{Var}(X) = 0.875 + 0.729 \approx 1.604$$
+      </div>
+      <p style="font-size:12.5px;color:var(--muted)">其中 $\text{Var}(N) = E[N^2]-(E[N])^2 = 91/6 - 49/4 = 35/12$。</p>
+      <span class="ans">答案：≈ 1.604</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ Wald 方程 ══════════════════ -->
+<div class="section" id="wald">
+  <div class="section-header">
+    <div class="section-icon" style="background:rgba(96,165,250,0.12)">Σ</div>
+    <h2 class="section-title">Wald 方程</h2>
+    <span class="section-sub">random sum</span>
+  </div>
+
+  <div class="card accent-blue">
+    <div class="card-label blue">Wald's Equation</div>
+    <p style="font-size:13px;margin-bottom:0.5rem">$X_1,X_2,\ldots$ i.i.d.，$N$ 是非负整值随机变量，$N \perp X_i$，$E[|X_i|]&lt;\infty$，$E[N]&lt;\infty$。令 $S_N = X_1+\cdots+X_N$，则：</p>
+    $$E[S_N] = E[N]\cdot E[X_i]$$
+  </div>
+
+  <div class="sub">推导</div>
+  <div class="card">
+    $$E[S_N] = E\left[\sum_{i=1}^{N} X_i\right] = E\left[\sum_{i=1}^{\infty} X_i \cdot \mathbf{1}_{i \leq N}\right] = \sum_{i=1}^{\infty} E[X_i]\cdot P(N \geq i) = E[X_i]\cdot E[N]$$
+    <p style="font-size:12.5px;margin-top:0.5rem;font-weight:300">最后一步用了 $\sum_{i=1}^{\infty} P(N\geq i) = E[N]$（非负整数期望公式）。</p>
+  </div>
+
+  <div class="note">
+    <strong>应用：</strong>保险精算（随机次数的随机损失之和）、随机游走步数期望、排队论。
+  </div>
+
+  <div class="example" onclick="toggleEx(this)">
+    <div class="example-header">
+      <span class="example-badge">例题</span>
+      <span class="example-q">保险：每天索赔次数 $N\sim\text{Poisson}(3)$，每次损失 $X_i\sim\text{Exp}(1/1000)$，求每天总损失期望。</span>
+      <span class="example-chevron">▼</span>
+    </div>
+    <div class="example-body">
+      <p>$E[N]=3$，$E[X_i]=1000$，$N\perp X_i$，直接用 Wald 方程：</p>
+      <div class="card">$$E[S_N] = E[N]\cdot E[X_i] = 3\times 1000 = 3000$$</div>
+      <p>无需对 $N$ 的所有可能值分别计算再加权，Wald 方程一步到位。</p>
+      <span class="ans">答案：3000</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ Jensen ══════════════════ -->
+<div class="section" id="jensen">
+  <div class="section-header">
+    <div class="section-icon" style="background:rgba(251,146,60,0.12)">∪</div>
+    <h2 class="section-title">Jensen 不等式</h2>
+    <span class="section-sub">convexity → inequality</span>
+  </div>
+
+  <div class="card accent-coral">
+    <div class="card-label coral">Jensen's Inequality</div>
+    <p style="font-size:13px;margin-bottom:0.5rem">$\varphi$ 凸（convex），$X$ 可积，则：</p>
+    $$\varphi(E[X]) \leq E[\varphi(X)]$$
+    <p style="font-size:12.5px;margin-top:0.5rem;font-weight:300">"=" 当且仅当 $X$ a.s. 常数，或 $\varphi$ 在 $X$ 的范围上是线性的。</p>
+  </div>
+
+  <div class="card">
+    <div class="card-label coral">条件版本</div>
+    $$\varphi(E[X\mid \mathcal{G}]) \leq E[\varphi(X)\mid \mathcal{G}]$$
+  </div>
+
+  <div class="sub">推导思路</div>
+  <p>在 $m = E[X]$ 处，凸函数存在支撑线 $ax+b$ 使得 $\varphi(x) \geq ax+b$ 对所有 $x$，且 $\varphi(m) = am+b$。取期望：</p>
+  <div class="card">$$E[\varphi(X)] \geq E[aX+b] = aE[X]+b = am+b = \varphi(m) = \varphi(E[X])$$</div>
+
+  <div class="sub">金融应用</div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-label coral">对数收益率 vs 算术收益率</div>
+      $$E[\log(1+R)] \leq \log(E[1+R])$$
+      <p style="font-size:12.5px;margin-top:0.4rem;font-weight:300">几何平均 ≤ 算术平均，Kelly 准则背后的原理。</p>
+    </div>
+    <div class="card">
+      <div class="card-label coral">期权定价下界</div>
+      $$E[\max(S-K,0)] \geq \max(E[S]-K, 0)$$
+      <p style="font-size:12.5px;margin-top:0.4rem;font-weight:300">$\max(\cdot,0)$ 是凸函数，期权价格 ≥ 内在价值。</p>
+    </div>
+  </div>
+
+  <div class="example" onclick="toggleEx(this)">
+    <div class="example-header">
+      <span class="example-badge">例题</span>
+      <span class="example-q">$X$ 均匀分布在 $[0,2]$，比较 $E[e^X]$ 与 $e^{E[X]}$。</span>
+      <span class="example-chevron">▼</span>
+    </div>
+    <div class="example-body">
+      <p>$e^x$ 是凸函数，由 Jensen：$e^{E[X]} \leq E[e^X]$。</p>
+      <p>计算：$E[X]=1$，所以 $e^{E[X]} = e \approx 2.718$。</p>
+      <div class="card">$$E[e^X] = \int_0^2 e^x \cdot \frac{1}{2}\,dx = \frac{e^2-1}{2} \approx \frac{7.389-1}{2} \approx 3.195$$</div>
+      <p>$3.195 > 2.718$，验证 Jensen 不等式严格成立（$X$ 非常数）。</p>
+      <span class="ans">$E[e^X] = (e^2-1)/2 \approx 3.195 > e \approx 2.718 = e^{E[X]}$</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ AM-GM ══════════════════ -->
+<div class="section" id="amgm">
+  <div class="section-header">
+    <div class="section-icon" style="background:rgba(134,239,172,0.12)">≥</div>
+    <h2 class="section-title">AM-GM 不等式</h2>
+    <span class="section-sub">Jensen 的推论</span>
+  </div>
+
+  <div class="card accent-green">
+    <div class="card-label green">AM ≥ GM</div>
+    $$\frac{x_1+\cdots+x_n}{n} \geq (x_1\cdots x_n)^{1/n}, \quad x_i > 0$$
+  </div>
+
+  <div class="sub">用 Jensen 推导</div>
+  <p>$\log x$ 是凹函数（concave），对凹函数 Jensen 不等式方向反转：</p>
+  <div class="card">
+    $$\log\!\left(\frac{x_1+\cdots+x_n}{n}\right) \geq \frac{\log x_1+\cdots+\log x_n}{n} = \log(x_1\cdots x_n)^{1/n}$$
+  </div>
+  <p>两边取 $\exp$ 即得 AM ≥ GM。等号当且仅当 $x_1=\cdots=x_n$。</p>
+
+  <div class="example" onclick="toggleEx(this)">
+    <div class="example-header">
+      <span class="example-badge">例题</span>
+      <span class="example-q">证明：对正实数 $a,b$，有 $a+b \geq 2\sqrt{ab}$，等号何时成立？</span>
+      <span class="example-chevron">▼</span>
+    </div>
+    <div class="example-body">
+      <p>AM-GM 的 $n=2$ 情形：</p>
+      <div class="card">$$\frac{a+b}{2} \geq \sqrt{ab} \implies a+b \geq 2\sqrt{ab}$$</div>
+      <p>等号当且仅当 $a=b$。</p>
+      <p>直接证明：$({\sqrt{a}-\sqrt{b}})^2 \geq 0 \Rightarrow a - 2\sqrt{ab} + b \geq 0$，即得。</p>
+      <p style="font-size:12.5px;color:var(--muted)">应用：矩形面积固定时，正方形周长最小；周长固定时，正方形面积最大。</p>
+      <span class="ans">等号当且仅当 $a=b$</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ Young ══════════════════ -->
+<div class="section" id="young">
+  <div class="section-header">
+    <div class="section-icon" style="background:rgba(251,191,36,0.12)">≤</div>
+    <h2 class="section-title">Young 不等式</h2>
+    <span class="section-sub">Hölder 的基础</span>
+  </div>
+
+  <div class="card accent-amber">
+    <div class="card-label amber">Young's Inequality</div>
+    <p style="font-size:13px;margin-bottom:0.5rem">$a,b \geq 0$，$p,q > 1$，$\frac{1}{p}+\frac{1}{q}=1$，则：</p>
+    $$ab \leq \frac{a^p}{p} + \frac{b^q}{q}$$
+    <p style="font-size:12.5px;margin-top:0.4rem;font-weight:300">"=" 当且仅当 $a^p = b^q$。</p>
+  </div>
+
+  <div class="sub">推导（用 Jensen）</div>
+  <div class="card">
+    <p style="font-size:13px">$\varphi(x)=e^x$ 凸，Jensen 给出 $e^{\lambda x + (1-\lambda)y} \leq \lambda e^x + (1-\lambda)e^y$。</p>
+    <p style="font-size:13px">令 $x = \ln a^p$，$y = \ln b^q$，$\lambda = 1/p$，即得 Young 不等式。</p>
+  </div>
+
+  <div class="example" onclick="toggleEx(this)">
+    <div class="example-header">
+      <span class="example-badge">例题</span>
+      <span class="example-q">用 Young 不等式证明：$ab \leq \frac{a^2}{2} + \frac{b^2}{2}$，$a,b\geq0$。</span>
+      <span class="example-chevron">▼</span>
+    </div>
+    <div class="example-body">
+      <p>取 $p=q=2$（此时 $1/p+1/q=1$），代入 Young 不等式：</p>
+      <div class="card">$$ab \leq \frac{a^2}{2} + \frac{b^2}{2}$$</div>
+      <p>这等价于 $(a-b)^2 \geq 0$，等号当 $a=b$ 时成立。</p>
+      <p style="font-size:12.5px;color:var(--muted)">这是最常用的"$2ab \leq a^2+b^2$"不等式，在推导方差公式、Cauchy-Schwarz 等处频繁出现。</p>
+      <span class="ans">等号当且仅当 $a=b$</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ Markov ══════════════════ -->
+<div class="section" id="markov">
+  <div class="section-header">
+    <div class="section-icon" style="background:rgba(248,113,113,0.12)">M</div>
+    <h2 class="section-title">Markov 不等式</h2>
+    <span class="section-sub">最弱但最基础</span>
+  </div>
+
+  <div class="card accent-coral">
+    <div class="card-label coral">Markov's Inequality</div>
+    <p style="font-size:13px;margin-bottom:0.5rem">$X \geq 0$，$a > 0$：</p>
+    $$P(X \geq a) \leq \frac{E[X]}{a}$$
+  </div>
+
+  <div class="sub">推导</div>
+  <div class="card">
+    $$X \geq a \cdot \mathbf{1}_{\{X \geq a\}} \implies E[X] \geq a \cdot P(X \geq a)$$
+  </div>
+
+  <div class="note">
+    <strong>应用：</strong>$X\geq 0$，$E[X]=5$，则 $P(X\geq 20)\leq 5/20=0.25$。所有概率不等式的基础。
+  </div>
+
+  <div class="example" onclick="toggleEx(this)">
+    <div class="example-header">
+      <span class="example-badge">例题</span>
+      <span class="example-q">某股票日收益率 $R\geq0$，$E[R]=2\%$。用 Markov 给出 $P(R\geq10\%)$ 的上界。</span>
+      <span class="example-chevron">▼</span>
+    </div>
+    <div class="example-body">
+      <p>直接代入 Markov 不等式，$a=0.1$：</p>
+      <div class="card">$$P(R\geq 0.1) \leq \frac{E[R]}{0.1} = \frac{0.02}{0.1} = 0.2$$</div>
+      <p>即超过 10% 的概率至多 20%。这个界非常松（没有用到分布形状），但完全不假设分布。</p>
+      <span class="ans">上界：20%</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ Chebyshev ══════════════════ -->
+<div class="section" id="chebyshev">
+  <div class="section-header">
+    <div class="section-icon" style="background:rgba(244,114,182,0.12)">Ch</div>
+    <h2 class="section-title">Chebyshev 不等式</h2>
+    <span class="section-sub">双侧尾概率</span>
+  </div>
+
+  <div class="card accent-pink">
+    <div class="card-label pink">Chebyshev's Inequality</div>
+    $$P(|X-\mu| \geq t) \leq \frac{\sigma^2}{t^2}$$
+  </div>
+
+  <div class="sub">推导（从 Markov）</div>
+  <div class="card">
+    <p style="font-size:13px">令 $Y=(X-\mu)^2\geq 0$，对 $Y$ 用 Markov 不等式：</p>
+    $$P(|X-\mu|\geq t) = P(Y \geq t^2) \leq \frac{E[Y]}{t^2} = \frac{\sigma^2}{t^2}$$
+  </div>
+
+  <div class="note">
+    <strong>应用：</strong>$\sigma=3$，$P(|X-\mu|\geq 9)\leq 9/81 \approx 11.1\%$。用于构建置信区间（不假设分布）。
+  </div>
+
+  <div class="example" onclick="toggleEx(this)">
+    <div class="example-header">
+      <span class="example-badge">例题</span>
+      <span class="example-q">某策略日 PnL 均值 $\mu=0$，$\sigma=1000$ 元。不知分布，给出单日亏损超 $3000$ 元的概率上界。</span>
+      <span class="example-chevron">▼</span>
+    </div>
+    <div class="example-body">
+      <p>亏损超 3000 即 $X-\mu \leq -3000$，由对称性等价于 $|X-\mu|\geq 3000$。取 $t=3000$：</p>
+      <div class="card">$$P(|X-\mu|\geq 3000) \leq \frac{\sigma^2}{t^2} = \frac{1000^2}{3000^2} = \frac{1}{9} \approx 11.1\%$$</div>
+      <p>若知道分布是正态，则 $P(|Z|\geq3) \approx 0.27\%$，Chebyshev 的界松得多，但无需假设分布。</p>
+      <span class="ans">上界：1/9 ≈ 11.1%</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ Cantelli ══════════════════ -->
+<div class="section" id="cantelli">
+  <div class="section-header">
+    <div class="section-icon" style="background:rgba(251,146,60,0.12)">C</div>
+    <h2 class="section-title">Cantelli 不等式</h2>
+    <span class="section-sub">单侧风控</span>
+  </div>
+
+  <div class="card accent-coral">
+    <div class="card-label coral">Cantelli's Inequality（单侧）</div>
+    $$P(X - \mu \geq t) \leq \frac{\sigma^2}{\sigma^2 + t^2}$$
+  </div>
+
+  <div class="sub">推导</div>
+  <div class="card">
+    <p style="font-size:13px">令 $Y = X - \mu + \lambda$（$\lambda > 0$），$Y \geq 0$ 不一定成立，但：</p>
+    $$P(X-\mu\geq t) = P(Y\geq t+\lambda) \leq \frac{E[Y^2]}{(t+\lambda)^2} = \frac{\sigma^2+\lambda^2}{(t+\lambda)^2}$$
+    <p style="font-size:13px;margin-top:0.5rem">对 $\lambda$ 最优化（令导数为0），得 $\lambda^* = \sigma^2/t$，代入得：</p>
+    $$P(X-\mu\geq t) \leq \frac{\sigma^2}{\sigma^2+t^2}$$
+  </div>
+
+  <div class="note">
+    <strong>应用：</strong>单边风险控制（VaR 估计）。比 Chebyshev 更紧（单侧），但仍不假设分布。
+  </div>
+
+  <div class="example" onclick="toggleEx(this)">
+    <div class="example-header">
+      <span class="example-badge">例题</span>
+      <span class="example-q">同上题，用 Cantelli 给出单日亏损超 $3000$ 元的（单侧）概率上界，并与 Chebyshev 比较。</span>
+      <span class="example-chevron">▼</span>
+    </div>
+    <div class="example-body">
+      <p>亏损超 3000 即 $\mu - X \geq 3000$，即 $(-X) - (-\mu) \geq 3000$，对 $-X$ 用 Cantelli（$t=3000$，$\sigma=1000$）：</p>
+      <div class="card">$$P(X-\mu \leq -3000) \leq \frac{\sigma^2}{\sigma^2+t^2} = \frac{10^6}{10^6+9\times10^6} = \frac{1}{10} = 10\%$$</div>
+      <p>Chebyshev 给出双侧界 $1/9\approx11.1\%$，其中单侧最多 $1/9$；Cantelli 直接给单侧 $10\%$，更紧。</p>
+      <span class="ans">Cantelli 上界：10%（优于 Chebyshev 的 11.1%）</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ Cauchy-Schwarz ══════════════════ -->
+<div class="section" id="cauchy">
+  <div class="section-header">
+    <div class="section-icon" style="background:rgba(167,139,250,0.12)">C-S</div>
+    <h2 class="section-title">Cauchy-Schwarz 不等式</h2>
+    <span class="section-sub">相关系数 |ρ|≤1 的来源</span>
+  </div>
+
+  <div class="card accent-purple">
+    <div class="card-label purple">Cauchy-Schwarz（期望形式）</div>
+    $$|E[XY]|^2 \leq E[X^2]\cdot E[Y^2]$$
+    <p style="font-size:12.5px;margin-top:0.4rem;font-weight:300">"=" 当且仅当 $X = aY$ a.s.。</p>
+  </div>
+
+  <div class="card">
+    <div class="card-label purple">向量形式</div>
+    $$|\langle x,y\rangle|^2 \leq \|x\|^2\|y\|^2 \implies \left(\sum x_i y_i\right)^2 \leq \left(\sum x_i^2\right)\left(\sum y_i^2\right)$$
+  </div>
+
+  <div class="sub">推导</div>
+  <div class="card">
+    <p style="font-size:13px">$0 \leq E[(X-tY)^2] = E[X^2] - 2tE[XY] + t^2E[Y^2]$，此二次函数（关于 $t$）非负，故判别式 $\Delta \leq 0$：</p>
+    $$4(E[XY])^2 - 4E[X^2]E[Y^2] \leq 0$$
+  </div>
+
+  <div class="note">
+    <strong>应用：</strong>相关系数 $|\rho| \leq 1$ 的严格证明。令 $U=(X-\mu_X)/\sigma_X$，$V=(Y-\mu_Y)/\sigma_Y$，则 $|\rho|=|E[UV]|\leq\sqrt{E[U^2]E[V^2]}=1$。
+  </div>
+
+  <div class="example" onclick="toggleEx(this)">
+    <div class="example-header">
+      <span class="example-badge">例题</span>
+      <span class="example-q">证明：对任意随机变量 $X$，有 $(E[X])^2 \leq E[X^2]$。</span>
+      <span class="example-chevron">▼</span>
+    </div>
+    <div class="example-body">
+      <p>令 Cauchy-Schwarz 中 $Y=1$（常数）：</p>
+      <div class="card">$$|E[X\cdot 1]|^2 \leq E[X^2]\cdot E[1^2] = E[X^2]\cdot 1$$</div>
+      <p>即 $(E[X])^2 \leq E[X^2]$，等价于 $\text{Var}(X) = E[X^2]-(E[X])^2 \geq 0$。</p>
+      <p style="font-size:12.5px;color:var(--muted)">这也是方差非负的另一种证明。</p>
+      <span class="ans">$(E[X])^2 \leq E[X^2]$，即方差非负</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ Hölder ══════════════════ -->
+<div class="section" id="holder">
+  <div class="section-header">
+    <div class="section-icon" style="background:rgba(96,165,250,0.12)">H</div>
+    <h2 class="section-title">Hölder 不等式</h2>
+    <span class="section-sub">Cauchy-Schwarz 的推广</span>
+  </div>
+
+  <div class="card accent-blue">
+    <div class="card-label blue">Hölder's Inequality</div>
+    <p style="font-size:13px;margin-bottom:0.5rem">$p,q>1$，$\frac{1}{p}+\frac{1}{q}=1$，则：</p>
+    $$E[|XY|] \leq \|X\|_p \cdot \|Y\|_q = (E[|X|^p])^{1/p}\cdot(E[|Y|^q])^{1/q}$$
+  </div>
+
+  <div class="sub">推导（从 Young 不等式）</div>
+  <div class="card">
+    <p style="font-size:13px">令 $\tilde{X} = X/\|X\|_p$，$\tilde{Y}=Y/\|Y\|_q$，对每个样本点用 Young 不等式：</p>
+    $$|\tilde{X}\tilde{Y}| \leq \frac{|\tilde{X}|^p}{p}+\frac{|\tilde{Y}|^q}{q}$$
+    <p style="font-size:13px;margin-top:0.4rem">取期望：$E[|\tilde{X}\tilde{Y}|]\leq \frac{1}{p}+\frac{1}{q}=1$，还原即得。</p>
+  </div>
+
+  <div class="note">
+    <strong>特例：</strong>$p=q=2$ 时退化为 Cauchy-Schwarz。Hölder 是对偶范数存在性的证明：$L^p$ 的对偶是 $L^q$。
+  </div>
+
+  <div class="example" onclick="toggleEx(this)">
+    <div class="example-header">
+      <span class="example-badge">例题</span>
+      <span class="example-q">$X\sim\text{Uniform}[0,1]$，用 Hölder 不等式（$p=3,q=3/2$）给出 $E[X^{1/2}]$ 的上界。</span>
+      <span class="example-chevron">▼</span>
+    </div>
+    <div class="example-body">
+      <p>令 $f=X^{1/2}$，$g=1$，取 $p=3$，$q=3/2$（满足 $1/3+2/3=1$）：</p>
+      <div class="card">$$E[X^{1/2}] = E[f\cdot g] \leq \|f\|_3\cdot\|g\|_{3/2} = (E[X^{3/2}])^{1/3}\cdot 1$$</div>
+      <p>计算：$E[X^{3/2}]=\int_0^1 x^{3/2}dx = 2/5$，故 $E[X^{1/2}]\leq (2/5)^{1/3}\approx 0.737$。</p>
+      <p>真实值：$E[X^{1/2}]=\int_0^1 x^{1/2}dx=2/3\approx0.667$，上界有效。</p>
+      <span class="ans">$E[X^{1/2}] \leq (2/5)^{1/3} \approx 0.737$</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ 范数 ══════════════════ -->
+<div class="section" id="norms">
+  <div class="section-header">
+    <div class="section-icon" style="background:rgba(94,234,212,0.12)">‖·‖</div>
+    <h2 class="section-title">范数</h2>
+    <span class="section-sub">$L^p$ norm</span>
+  </div>
+
+  <div class="card accent-teal">
+    <div class="card-label teal">$L^p$ 范数定义</div>
+    $$\|x\|_p = \left(\sum_i |x_i|^p\right)^{1/p}, \quad 1\leq p < \infty \qquad \|x\|_\infty = \max_i|x_i|$$
+  </div>
+
+  <div class="grid-3">
+    <div class="card">
+      <div class="card-label teal">$L^1$：曼哈顿距离</div>
+      $$\|x\|_1 = \sum|x_i|$$
+      <p style="font-size:12px;margin-top:0.4rem">单位球：菱形</p>
+    </div>
+    <div class="card">
+      <div class="card-label teal">$L^2$：欧氏距离</div>
+      $$\|x\|_2 = \sqrt{\sum x_i^2}$$
+      <p style="font-size:12px;margin-top:0.4rem">单位球：圆形</p>
+    </div>
+    <div class="card">
+      <div class="card-label teal">$L^\infty$：最大值</div>
+      $$\|x\|_\infty = \max|x_i|$$
+      <p style="font-size:12px;margin-top:0.4rem">单位球：方形</p>
+    </div>
+  </div>
+
+  <div class="note">
+    <strong>单调性：</strong>对固定向量，$p\leq q \Rightarrow \|x\|_p \geq \|x\|_q$。$p$ 越小越平均，$p$ 越大越重视峰值。<br>
+    <strong>对偶：</strong>$L^p$ 的对偶范数是 $L^q$（$1/p+1/q=1$）。$L^1$ 对偶 $L^\infty$，$L^2$ 自对偶。
+  </div>
+
+  <div class="example" onclick="toggleEx(this)">
+    <div class="example-header">
+      <span class="example-badge">例题</span>
+      <span class="example-q">向量 $x=(3,4)$，计算 $\|x\|_1$，$\|x\|_2$，$\|x\|_\infty$，验证单调性。</span>
+      <span class="example-chevron">▼</span>
+    </div>
+    <div class="example-body">
+      <div class="card">
+        $$\|x\|_1 = |3|+|4| = 7$$
+        $$\|x\|_2 = \sqrt{9+16} = 5$$
+        $$\|x\|_\infty = \max(3,4) = 4$$
+      </div>
+      <p>$7 \geq 5 \geq 4$，验证 $\|x\|_1\geq\|x\|_2\geq\|x\|_\infty$。</p>
+      <p style="font-size:12.5px;color:var(--muted)">ML应用：L1正则化（Lasso）促进稀疏解，L2正则化（Ridge）均匀缩小权重。两者行为差异来自范数几何形状的不同。</p>
+      <span class="ans">$\|x\|_1=7 \geq \|x\|_2=5 \geq \|x\|_\infty=4$</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ 对比表 ══════════════════ -->
+<div class="section" id="compare">
+  <div class="section-header">
+    <div class="section-icon" style="background:rgba(251,191,36,0.12)">≈</div>
+    <h2 class="section-title">不等式对比速查</h2>
+    <span class="section-sub">summary</span>
+  </div>
+
+  <table class="ctable">
+    <thead>
+      <tr><th>不等式</th><th>形式</th><th>条件</th><th>应用</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="color:var(--red);font-weight:500">Markov</td>
+        <td>$P(X\geq a)\leq E[X]/a$</td>
+        <td>$X\geq0$，$a>0$</td>
+        <td>一切概率上界的基础</td>
+      </tr>
+      <tr>
+        <td style="color:var(--pink);font-weight:500">Chebyshev</td>
+        <td>$P(|X-\mu|\geq t)\leq \sigma^2/t^2$</td>
+        <td>有限方差</td>
+        <td>置信区间，不依赖分布</td>
+      </tr>
+      <tr>
+        <td style="color:var(--coral);font-weight:500">Cantelli</td>
+        <td>$P(X-\mu\geq t)\leq \sigma^2/(\sigma^2+t^2)$</td>
+        <td>有限方差，单侧</td>
+        <td>单边风控，VaR 估计</td>
+      </tr>
+      <tr>
+        <td style="color:var(--coral);font-weight:500">Jensen</td>
+        <td>$\varphi(E[X])\leq E[\varphi(X)]$</td>
+        <td>$\varphi$ 凸</td>
+        <td>AM-GM，期权定价，Kelly</td>
+      </tr>
+      <tr>
+        <td style="color:var(--amber);font-weight:500">Young</td>
+        <td>$ab\leq a^p/p+b^q/q$</td>
+        <td>$1/p+1/q=1$</td>
+        <td>Hölder 的推导基础</td>
+      </tr>
+      <tr>
+        <td style="color:var(--purple);font-weight:500">Cauchy-Schwarz</td>
+        <td>$|E[XY]|^2\leq E[X^2]E[Y^2]$</td>
+        <td>二阶矩有限</td>
+        <td>$|\rho|\leq1$，最小二乘</td>
+      </tr>
+      <tr>
+        <td style="color:var(--blue);font-weight:500">Hölder</td>
+        <td>$E[|XY|]\leq\|X\|_p\|Y\|_q$</td>
+        <td>$1/p+1/q=1$</td>
+        <td>C-S 的推广，对偶范数</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="sub">强度关系</div>
+  <div class="card">
+    <p style="font-size:13px">Markov $\xrightarrow{\text{令}Y=(X-\mu)^2}$ Chebyshev $\xrightarrow{\text{优化}\lambda}$ Cantelli</p>
+    <p style="font-size:13px">Young $\xrightarrow{\text{取期望}}$ Hölder $\xrightarrow{p=q=2}$ Cauchy-Schwarz</p>
+    <p style="font-size:13px">Jensen $\xrightarrow{\log\text{凹}}$ AM-GM，Jensen $\xrightarrow{e^x\text{凸},\lambda=1/p}$ Young</p>
+  </div>
+</div>
+
+</main>
+
+<script>
+function go(id) {
+  document.getElementById(id).scrollIntoView({behavior:'smooth'});
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  event.target.closest('.nav-item').classList.add('active');
+}
+
+function toggle(el) {
+  el.classList.toggle('open');
+}
+
+function toggleEx(el) {
+  el.classList.toggle('open');
+}
+
+renderMathInElement(document.body, {
+  delimiters: [
+    {left:'$$', right:'$$', display:true},
+    {left:'$', right:'$', display:false}
+  ],
+  throwOnError: false
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quant Interview Card Games</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,900;1,400&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<style>
+:root {
+  --bg:       #0b1a0d;
+  --bg2:      #111f13;
+  --surface:  #162519;
+  --surface2: #1d3022;
+  --border:   #2a4535;
+  --border2:  #3a5f48;
+  --gold:     #c9a84c;
+  --gold2:    #e8c97a;
+  --text:     #cdd6c5;
+  --text2:    #9aad94;
+  --muted:    #6a8570;
+  --red:      #c0392b;
+  --teal:     #2ecc71;
+  --r:        8px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'EB Garamond', Georgia, serif;
+  font-size: 17px;
+  line-height: 1.75;
+  display: flex;
+  min-height: 100vh;
+}
+
+/* ── SIDEBAR ────────────────────────── */
+.sidebar {
+  width: 250px;
+  min-width: 250px;
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  padding: 24px 0;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+
+.sidebar-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 13px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--gold);
+  padding: 0 20px 18px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 14px;
+}
+
+.nav-group { margin-bottom: 6px; }
+
+.nav-game {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 20px;
+  font-family: 'Playfair Display', serif;
+  font-size: 14px;
+  color: var(--text);
+  text-decoration: none;
+  border-left: 2px solid transparent;
+  transition: all 0.2s;
+}
+.nav-game:hover, .nav-game.active {
+  color: var(--gold);
+  border-left-color: var(--gold);
+  background: rgba(201,168,76,0.06);
+}
+
+.nav-sub {
+  padding: 5px 20px 5px 40px;
+  font-size: 12.5px;
+  color: var(--muted);
+  text-decoration: none;
+  display: block;
+  transition: color 0.2s;
+  letter-spacing: 0.3px;
+}
+.nav-sub:hover { color: var(--text); }
+
+.suit-label {
+  font-size: 16px;
+  opacity: 0.8;
+  min-width: 18px;
+}
+
+/* ── MAIN ───────────────────────────── */
+main {
+  flex: 1;
+  max-width: 900px;
+  padding: 52px 52px 80px;
+  overflow-x: hidden;
+}
+
+/* ── HEADER ─────────────────────────── */
+.page-header {
+  margin-bottom: 60px;
+  padding-bottom: 36px;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+}
+.page-header::before {
+  content: '♠ ♥ ♦ ♣';
+  position: absolute;
+  top: 0;
+  right: 0;
+  font-size: 22px;
+  color: var(--border2);
+  letter-spacing: 10px;
+}
+
+.page-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 42px;
+  font-weight: 900;
+  color: var(--gold2);
+  line-height: 1.1;
+  margin-bottom: 10px;
+}
+
+.page-subtitle {
+  font-size: 16px;
+  color: var(--text2);
+  font-style: italic;
+}
+
+/* ── GAME SECTIONS ─────────────────── */
+.game-section {
+  margin-bottom: 72px;
+  scroll-margin-top: 24px;
+}
+
+.game-header {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  margin-bottom: 28px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.game-number {
+  font-family: 'Playfair Display', serif;
+  font-size: 13px;
+  color: var(--gold);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  opacity: 0.7;
+  flex-shrink: 0;
+}
+
+.game-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 30px;
+  font-weight: 900;
+  color: var(--gold2);
+}
+
+.game-alias {
+  font-size: 14px;
+  color: var(--muted);
+  font-style: italic;
+}
+
+/* ── SUB-SECTIONS ─────────────────── */
+h3 {
+  font-family: 'Playfair Display', serif;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 30px 0 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+h3::before {
+  content: '';
+  display: inline-block;
+  width: 4px;
+  height: 16px;
+  background: var(--gold);
+  border-radius: 2px;
+}
+
+p { margin-bottom: 10px; color: var(--text); }
+
+/* ── CARDS ──────────────────────────── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 20px 24px;
+  margin: 14px 0;
+}
+
+.card.highlight {
+  border-color: var(--gold);
+  background: rgba(201,168,76,0.06);
+}
+
+.card.red-border { border-color: var(--red); background: rgba(192,57,43,0.06); }
+.card.teal-border { border-color: var(--teal); background: rgba(46,204,113,0.06); }
+
+.card-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 10px;
+}
+
+/* ── GAME TREE ──────────────────────── */
+.tree-container {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 24px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  overflow-x: auto;
+  margin: 16px 0;
+  line-height: 1.8;
+}
+
+.tree-node { color: var(--text2); }
+.tree-action { color: var(--gold); font-weight: 600; }
+.tree-p1 { color: #7ec8e3; }
+.tree-p2 { color: #f39c12; }
+.tree-outcome { color: var(--teal); }
+.tree-fold { color: var(--red); }
+
+/* ── STRATEGY TABLE ─────────────────── */
+.strat-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 14px 0;
+  font-size: 15px;
+}
+.strat-table th {
+  background: var(--surface2);
+  color: var(--gold);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 10px 14px;
+  text-align: left;
+  border: 1px solid var(--border);
+}
+.strat-table td {
+  padding: 9px 14px;
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+.strat-table tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
+.badge {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 4px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11.5px;
+  font-weight: 600;
+}
+.badge-bet { background: rgba(46,204,113,0.18); color: var(--teal); }
+.badge-check { background: rgba(231,76,60,0.14); color: #e88; }
+.badge-call { background: rgba(52,152,219,0.2); color: #87ceeb; }
+.badge-fold { background: rgba(192,57,43,0.18); color: #e74c3c; }
+.badge-bluff { background: rgba(155,89,182,0.2); color: #cc99ff; }
+
+/* ── MATH BOX ───────────────────────── */
+.math-block {
+  background: var(--bg2);
+  border-left: 3px solid var(--gold);
+  border-radius: 0 var(--r) var(--r) 0;
+  padding: 14px 20px;
+  margin: 14px 0;
+  overflow-x: auto;
+}
+
+.math-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+/* ── KEY INSIGHT ────────────────────── */
+.insight {
+  border: 1px solid var(--border2);
+  border-radius: var(--r);
+  padding: 16px 20px;
+  margin: 12px 0;
+  background: var(--surface2);
+  position: relative;
+  padding-left: 44px;
+}
+.insight::before {
+  content: '★';
+  position: absolute;
+  left: 16px;
+  top: 16px;
+  color: var(--gold);
+  font-size: 15px;
+}
+.insight strong { color: var(--gold2); }
+
+/* ── GAP TABLE (Acey-Deucy) ─────────── */
+.gap-grid {
+  display: grid;
+  grid-template-columns: repeat(13, 1fr);
+  gap: 4px;
+  margin: 14px 0;
+}
+.gap-cell {
+  aspect-ratio: 1;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 600;
+}
+.gap-fold { background: rgba(192,57,43,0.25); color: #f88; border: 1px solid rgba(192,57,43,0.4); }
+.gap-half { background: rgba(243,156,18,0.2); color: #f4a; border: 1px solid rgba(243,156,18,0.4); }
+.gap-bet  { background: rgba(46,204,113,0.2); color: #5ef; border: 1px solid rgba(46,204,113,0.4); }
+
+/* ── HI-LO GRID ─────────────────────── */
+.hilo-grid {
+  display: grid;
+  grid-template-columns: repeat(13, 1fr);
+  gap: 5px;
+  margin: 14px 0;
+}
+.hilo-cell {
+  aspect-ratio: 0.7;
+  border-radius: 5px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  gap: 2px;
+}
+.hilo-cell .rank { font-size: 14px; font-weight: 700; }
+.hilo-cell .dir { font-size: 9px; letter-spacing: 0; }
+.hilo-higher { background: rgba(46,204,113,0.15); border: 1px solid rgba(46,204,113,0.35); color: #5ef; }
+.hilo-lower  { background: rgba(192,57,43,0.15); border: 1px solid rgba(192,57,43,0.35); color: #f88; }
+.hilo-even   { background: rgba(243,156,18,0.1); border: 1px solid rgba(243,156,18,0.3); color: #f4c; }
+
+/* ── SECTION DIVIDER ────────────────── */
+.section-divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 44px 0;
+}
+
+/* ── FORMULA INLINE ─────────────────── */
+.f { font-family: 'JetBrains Mono', monospace; font-size: 14px; color: var(--gold2); }
+
+/* ── EV METER ────────────────────────── */
+.ev-bar-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 6px 0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+}
+.ev-bar-wrap .label { width: 90px; color: var(--text2); flex-shrink: 0; }
+.ev-bar-wrap .bar-track {
+  flex: 1;
+  height: 8px;
+  background: var(--surface2);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.ev-bar-wrap .bar-fill {
+  height: 100%;
+  border-radius: 4px;
+}
+.ev-bar-wrap .val { width: 50px; text-align: right; }
+
+/* ── SCROLLBAR ────────────────────────── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: var(--bg2); }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+/* ── KELLEY TABLE ────────────────────── */
+.kelly-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--border);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+}
+.kelly-row:last-child { border-bottom: none; }
+
+/* ── RESPONSIVE ────────────────────── */
+@media (max-width: 900px) {
+  .sidebar { display: none; }
+  main { padding: 28px 20px 60px; }
+}
+</style>
+</head>
+
+<body>
+
+<!-- ╔══════════ SIDEBAR ══════════╗ -->
+<nav class="sidebar">
+  <div class="sidebar-title">牌类博弈手册</div>
+  
+  <div class="nav-group">
+    <a href="#kuhn" class="nav-game">
+      <span class="suit-label">♠</span> AKQ Game
+    </a>
+    <a href="#kuhn-setup" class="nav-sub">游戏设定</a>
+    <a href="#kuhn-tree" class="nav-sub">博弈树</a>
+    <a href="#kuhn-nash" class="nav-sub">Nash均衡推导</a>
+    <a href="#kuhn-strategy" class="nav-sub">策略速查</a>
+  </div>
+
+  <div class="nav-group">
+    <a href="#acey" class="nav-game">
+      <span class="suit-label">♥</span> Acey-Deucy
+    </a>
+    <a href="#acey-setup" class="nav-sub">游戏设定</a>
+    <a href="#acey-prob" class="nav-sub">概率分析</a>
+    <a href="#acey-kelly" class="nav-sub">Kelly准则</a>
+    <a href="#acey-strategy" class="nav-sub">策略速查</a>
+  </div>
+
+  <div class="nav-group">
+    <a href="#hilo" class="nav-game">
+      <span class="suit-label">♦</span> Hi-Lo
+    </a>
+    <a href="#hilo-setup" class="nav-sub">游戏设定</a>
+    <a href="#hilo-basic" class="nav-sub">基础策略</a>
+    <a href="#hilo-counting" class="nav-sub">计牌优化</a>
+  </div>
+
+  <div class="nav-group">
+    <a href="#continuous" class="nav-game">
+      <span class="suit-label">♣</span> [0,1] Poker
+    </a>
+    <a href="#cont-setup" class="nav-sub">游戏设定</a>
+    <a href="#cont-strategy" class="nav-sub">阈值策略</a>
+    <a href="#cont-compare" class="nav-sub">与AKQ的联系</a>
+  </div>
+</nav>
+
+<!-- ╔══════════ MAIN ══════════════╗ -->
+<main>
+
+  <header class="page-header">
+    <div class="page-title">Quant Interview<br>Card Games</div>
+    <div class="page-subtitle">博弈论 · 概率论 · 最优策略 &mdash; 面试完全手册</div>
+  </header>
+
+  <!-- ═══════════════════════════════════════════════
+       GAME 1: AKQ / KUHN POKER
+  ═══════════════════════════════════════════════ -->
+  <section class="game-section" id="kuhn">
+
+    <div class="game-header">
+      <div class="game-number">GAME 01</div>
+      <div>
+        <div class="game-title">AKQ Game</div>
+        <div class="game-alias">亦称 Kuhn Poker &mdash; 最小可解扑克模型</div>
+      </div>
+    </div>
+
+    <!-- SETUP -->
+    <div id="kuhn-setup"></div>
+    <h3>游戏设定</h3>
+    <p>三张牌 \(\{A, K, Q\}\)（\(A \succ K \succ Q\)），两名玩家各下底注 \(\$1\)（总底池 \(\$2\)），每人各发一张牌。</p>
+    <p>每轮行动：下注 \(\$1\)（Bet）或 过牌（Check）；若对手下注则可跟注（Call）或弃牌（Fold）。摊牌时点数大者赢得全部底池。</p>
+
+    <div class="card">
+      <div class="card-title">净收益 Payoff（以 P1 视角）</div>
+      <table class="strat-table">
+        <thead><tr><th>情形</th><th>P1</th><th>P2</th></tr></thead>
+        <tbody>
+          <tr><td>P1 Bet → P2 Fold</td><td style="color:var(--teal)">+$1（赢 P2 底注）</td><td style="color:var(--red)">−$1</td></tr>
+          <tr><td>P1 Bet → P2 Call → P1 赢 showdown</td><td style="color:var(--teal)">+$2</td><td style="color:var(--red)">−$2</td></tr>
+          <tr><td>P1 Bet → P2 Call → P2 赢 showdown</td><td style="color:var(--red)">−$2</td><td style="color:var(--teal)">+$2</td></tr>
+          <tr><td>P1/P2 均 Check → showdown（P1 赢）</td><td style="color:var(--teal)">+$1</td><td style="color:var(--red)">−$1</td></tr>
+          <tr><td>P1 Check → P2 Bet → P1 Fold</td><td style="color:var(--red)">−$1</td><td style="color:var(--teal)">+$1</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- GAME TREE -->
+    <div id="kuhn-tree"></div>
+    <h3>完整博弈树</h3>
+    <div class="tree-container">
+<span class="tree-p1">[P1 行动]</span>
+│
+├── <span class="tree-action">Bet $1</span>
+│     └── <span class="tree-p2">[P2 行动]</span>
+│           ├── <span class="tree-action">Call</span>  → Showdown：大牌赢 <span class="tree-outcome">+$2 / −$2</span>
+│           └── <span class="tree-action">Fold</span>  → P1 赢   <span class="tree-outcome">+$1 / −$1</span>
+│
+└── <span class="tree-action">Check</span>
+      └── <span class="tree-p2">[P2 行动]</span>
+            ├── <span class="tree-action">Bet $1</span>
+            │     └── <span class="tree-p1">[P1 行动]</span>
+            │           ├── <span class="tree-action">Call</span> → Showdown：大牌赢 <span class="tree-outcome">+$2 / −$2</span>
+            │           └── <span class="tree-action">Fold</span> → P2 赢  <span class="tree-fold">−$1 / +$1</span>
+            └── <span class="tree-action">Check</span> → Showdown：大牌赢 <span class="tree-outcome">+$1 / −$1</span>
+    </div>
+
+    <!-- NASH DERIVATION -->
+    <div id="kuhn-nash"></div>
+    <h3>Nash 均衡推导</h3>
+
+    <p>设 P1 以概率 \(b\) 用 \(Q\)（最差牌）进行虚张声势（Bluff），P2 以概率 \(q\) 用 \(K\)（中间牌）Fold（或以 \(1-q\) Call）。均衡要求双方均无利可图的偏离。</p>
+
+    <h3 style="font-size:15px;margin-top:20px;">Step 1：求 P1 的 Bluff 频率 \(b\)</h3>
+    <p>P1 Bet 时，P2 的底池赔率为：付出 \(\$1\) 赢得 \(\$4\)（若 win），净条件为需赢 \(\geq 25\%\)。</p>
+
+    <div class="math-block">
+      <div class="math-label">P2 用 K 面对 P1 下注时的胜率（P1 的下注范围 = A + Q×b）</div>
+      \[
+        \Pr[P1\text{ has }Q \mid P1\text{ bets}] = \frac{\tfrac{1}{3}\cdot b}{\tfrac{1}{3}\cdot 1 + \tfrac{1}{3}\cdot b} = \frac{b}{1+b}
+      \]
+    </div>
+
+    <div class="math-block">
+      <div class="math-label">P2 用 K Call/Fold 无差异条件（Call 期望 = Fold 期望 = −$1）</div>
+      \[
+        \underbrace{\frac{b}{1+b}}_{\Pr[\text{win}]} \cdot 2 - \underbrace{\frac{1}{1+b}}_{\Pr[\text{lose}]} \cdot 2 = -1
+        \;\Longrightarrow\; b = \tfrac{1}{3}
+      \]
+    </div>
+
+    <div class="insight">
+      <strong>Bluff 比例</strong>：P1 的下注范围中，值牌（A）占 \(\tfrac{3}{4}\)，虚张声势（Q）占 \(\tfrac{1}{4}\)，即 <strong>1 bluff : 3 value</strong>。
+      这使 P2 恰好面临 break-even pot odds。
+    </div>
+
+    <h3 style="font-size:15px;margin-top:20px;">Step 2：求 P2 的 Call 频率 \(q\)</h3>
+    <p>P1 用 \(Q\) bluff 的期望必须与 check 的期望相等，以保持混合策略均衡。</p>
+
+    <div class="math-block">
+      <div class="math-label">P1 用 Q Check 的期望（必输，因为 Q 是最小牌）</div>
+      \[
+        \text{EV}(\text{Check with }Q) = \underbrace{-\$1}_{\text{P2有A→P2 Bet→P1 Fold}} \cdot \tfrac{1}{2} + \underbrace{-\$1}_{\text{P2有K→P2 Bet→P1 Fold}} \cdot \tfrac{1}{2} = -\$1
+      \]
+    </div>
+
+    <div class="math-block">
+      <div class="math-label">P1 用 Q Bluff 的期望</div>
+      \[
+        \text{EV}(\text{Bluff with }Q)
+        = \underbrace{-\$2}_{\text{P2有A,必Call}} \cdot \tfrac{1}{2}
+        + \Big[\underbrace{q \cdot (-2)}_{\text{P2有K,Call}} + \underbrace{(1-q)\cdot(+1)}_{\text{P2有K,Fold}}\Big] \cdot \tfrac{1}{2}
+      \]
+      \[
+        = -1 + \tfrac{1}{2}(1 - 3q) \;\overset{!}{=}\; -1 \;\Longrightarrow\; q = \tfrac{1}{3}
+      \]
+    </div>
+
+    <div class="insight">
+      <strong>P2 的 K 应以 \(q = \tfrac{1}{3}\) 概率 Fold（或 \(\tfrac{2}{3}\) 概率 Call）</strong>，令 P1 用 Q bluff 无利可图。
+    </div>
+
+    <h3 style="font-size:15px;margin-top:20px;">Step 3：验证博弈价值</h3>
+
+    <div class="math-block">
+      <div class="math-label">P1 各手牌期望（均衡下）</div>
+      \[
+        \text{EV}(A) = \tfrac{1}{2}\cdot\underbrace{\tfrac{4}{3}}_{\text{P2有K，Call 1/3}} + \tfrac{1}{2}\cdot\underbrace{1}_{\text{P2有Q，必Fold}} = \tfrac{7}{6}
+      \]
+      \[
+        \text{EV}(K) = \tfrac{1}{2}\cdot(+1) + \tfrac{1}{2}\cdot(-1) = 0
+      \]
+      \[
+        \text{EV}(Q) = -1
+      \]
+      \[
+        \boxed{\text{EV(P1)} = \tfrac{1}{3}\cdot\tfrac{7}{6} + \tfrac{1}{3}\cdot 0 + \tfrac{1}{3}\cdot(-1) = \tfrac{1}{18} \approx +\$0.056}
+      \]
+    </div>
+
+    <div class="insight">
+      <strong>P1 在均衡下有微弱正期望 \(+\tfrac{1}{18}\)</strong>（先手优势超过了无位置劣势）。这与直觉相悖——P2 虽然后手（positional advantage），但 P1 拥有主动权（initiative），整体略占上风。
+    </div>
+
+    <!-- STRATEGY CHEAT SHEET -->
+    <div id="kuhn-strategy"></div>
+    <h3>完整策略速查表</h3>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:8px;">
+      <div class="card highlight">
+        <div class="card-title">P1 策略（先手）</div>
+        <table class="strat-table">
+          <thead><tr><th>手牌</th><th>行动</th><th>若 P2 反 Bet</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><strong>A ♠</strong></td>
+              <td><span class="badge badge-bet">永远 Bet</span></td>
+              <td>—</td>
+            </tr>
+            <tr>
+              <td><strong>K ♠</strong></td>
+              <td><span class="badge badge-check">永远 Check</span></td>
+              <td><span class="badge badge-fold">Fold</span></td>
+            </tr>
+            <tr>
+              <td><strong>Q ♠</strong></td>
+              <td><span class="badge badge-bluff">Bet (概率 ⅓)</span></td>
+              <td><span class="badge badge-fold">Fold</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card highlight">
+        <div class="card-title">P2 策略（后手）</div>
+        <table class="strat-table">
+          <thead><tr><th>手牌</th><th>面对 P1 Bet</th><th>P1 Check 后</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><strong>A ♠</strong></td>
+              <td><span class="badge badge-call">永远 Call</span></td>
+              <td><span class="badge badge-bet">永远 Bet</span></td>
+            </tr>
+            <tr>
+              <td><strong>K ♠</strong></td>
+              <td><span class="badge badge-call">Call (概率 ⅓)</span></td>
+              <td><span class="badge badge-bet">永远 Bet</span>*</td>
+            </tr>
+            <tr>
+              <td><strong>Q ♠</strong></td>
+              <td><span class="badge badge-fold">永远 Fold</span></td>
+              <td><span class="badge badge-check">永远 Check</span></td>
+            </tr>
+          </tbody>
+        </table>
+        <p style="font-size:12px;color:var(--muted);margin-top:8px;">*P1 Check后P2持K：知P1必有Q（A会Bet），必赢，故大胆Bet。</p>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:14px;">
+      <div class="card-title">核心直觉速记</div>
+      <ul style="padding-left:18px;line-height:2.2;">
+        <li><strong>Bluff 频率</strong>：每 3 次 value bet，配 1 次 bluff → 赔率锁死对手</li>
+        <li><strong>中间牌（K）的悖论</strong>：K 既不值得大牌价值下注，也不值得虚张声势，永远 check</li>
+        <li><strong>Check 后的信息泄漏</strong>：P1 check 意味着持 K 或 Q（A 必 bet），P2 持 K 时即可安全 bet</li>
+        <li><strong>底池赔率对称</strong>：P1 bluff 频率 \(\tfrac{1}{3}\) ↔ P2 K 的胜率恰好 \(\tfrac{1}{4}\)（Break-even）</li>
+      </ul>
+    </div>
+
+  </section>
+
+  <hr class="section-divider">
+
+  <!-- ═══════════════════════════════════════════════
+       GAME 2: ACEY-DEUCY
+  ═══════════════════════════════════════════════ -->
+  <section class="game-section" id="acey">
+
+    <div class="game-header">
+      <div class="game-number">GAME 02</div>
+      <div>
+        <div class="game-title">Acey-Deucy</div>
+        <div class="game-alias">亦称 In-Between / Between the Sheets</div>
+      </div>
+    </div>
+
+    <!-- SETUP -->
+    <div id="acey-setup"></div>
+    <h3>游戏设定</h3>
+    <p>标准 52 张牌（A=1 或 14，2–10 面值，J=11，Q=12，K=13）。庄家发两张牌面朝上；玩家下注任意金额（通常 \$0 至底池总额），猜第三张牌是否落在两张明牌<strong>之间</strong>（严格不等式，不含边界值）。</p>
+
+    <div class="card">
+      <div class="card-title">结算规则</div>
+      <table class="strat-table">
+        <thead><tr><th>第三张牌</th><th>结果</th><th>收益</th></tr></thead>
+        <tbody>
+          <tr><td>严格落在两牌之间</td><td style="color:var(--teal)">赢</td><td style="color:var(--teal)">+下注额</td></tr>
+          <tr><td>在范围之外</td><td style="color:var(--red)">输</td><td style="color:var(--red)">−下注额</td></tr>
+          <tr><td>恰好等于某边界值（"Post"）</td><td style="color:#f39c12">超额输</td><td style="color:#f39c12">−2×下注额</td></tr>
+          <tr><td>两牌相同（如 7-7）</td><td style="color:var(--muted)">不可能赢，跳过</td><td>0（不下注）</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- PROBABILITY -->
+    <div id="acey-prob"></div>
+    <h3>概率分析</h3>
+    <p>设两张明牌点数为 \(a\) 与 \(b\)（\(a < b\)），Gap \(= b - a - 1\)（严格居中的点数种数），剩余牌 \(50\) 张。</p>
+
+    <div class="math-block">
+      <div class="math-label">精确概率（边界牌各剩 3 张）</div>
+      \[
+        P(\text{win}) = \frac{4 \times \text{Gap}}{50}, \quad
+        P(\text{post}) = \frac{6}{50}, \quad
+        P(\text{lose}) = \frac{44 - 4\cdot\text{Gap}}{50}
+      \]
+    </div>
+
+    <div class="math-block">
+      <div class="math-label">下注 $b 的期望收益（含 Post 超额损失）</div>
+      \[
+        \text{EV}(b) = b \cdot \big[P(\text{win}) - P(\text{lose}) - 2\cdot P(\text{post})\big]
+        = b \cdot \frac{8\cdot\text{Gap} - 56}{50}
+      \]
+    </div>
+
+    <div class="math-block">
+      <div class="math-label">EV 为正的条件</div>
+      \[
+        8\cdot\text{Gap} - 56 > 0 \;\Longrightarrow\; \text{Gap} > 7 \;\Longrightarrow\; b - a > 8
+      \]
+    </div>
+
+    <div class="insight">
+      <strong>核心结论</strong>：当两牌差值 \(b - a \geq 9\)（即严格居中有 \(\geq 8\) 个点数）时下注才有正期望，否则放弃下注。例如 2-K (差值11, Gap=9) 是绝佳机会，5-9 (差值4, Gap=3) 应放弃。
+    </div>
+
+    <!-- KELLY -->
+    <div id="acey-kelly"></div>
+    <h3>Kelly 准则 —— 最优下注比例</h3>
+    <p>Kelly 准则最大化长期复利增长率：\(f^* = \dfrac{p \cdot b - q}{b}\)。此处赔率 \(b=1\)（1:1），故：</p>
+
+    <div class="math-block">
+      <div class="math-label">Kelly 分数（基于底池）</div>
+      \[
+        f^* = p - q = P(\text{win}) - \big[P(\text{lose}) + P(\text{post})\big]
+        = \frac{8\cdot\text{Gap} - 56}{50}
+      \]
+    </div>
+
+    <p style="margin-top:8px;">例如 Gap=9（如 2 和 K）：</p>
+    <div class="math-block">
+      \[
+        f^* = \frac{8\times9 - 56}{50} = \frac{16}{50} = 32\%\text{ 的底池}
+      \]
+    </div>
+
+    <div class="card red-border" style="margin-top:12px;">
+      <div class="card-title">⚠ 实践建议</div>
+      <p>Kelly 分数是理论上限，实操中建议使用 <strong>Half-Kelly</strong>（0.5 × f*）以降低方差，尤其是考虑到 Post 超额输的肥尾风险。</p>
+    </div>
+
+    <!-- STRATEGY CHEAT SHEET -->
+    <div id="acey-strategy"></div>
+    <h3>策略速查：按 Gap 分级</h3>
+
+    <p style="margin-bottom:10px;">颜色图例：<span style="color:#f88">红=弃注</span> · <span style="color:#fa0">橙=边际</span> · <span style="color:#5ef">蓝=积极下注</span></p>
+
+    <table class="strat-table" style="font-size:13.5px;">
+      <thead>
+        <tr><th>差值 (b−a)</th><th>Gap</th><th>P(win)</th><th>EV 符号</th><th>建议 Kelly 分数</th><th>操作</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>≤ 2</td><td>≤ 1</td><td>≤ 8%</td><td style="color:var(--red)">大幅负</td><td>—</td><td><span class="badge badge-fold">不下注</span></td></tr>
+        <tr><td>3–5</td><td>2–4</td><td>16–32%</td><td style="color:var(--red)">负</td><td>—</td><td><span class="badge badge-fold">不下注</span></td></tr>
+        <tr><td>6–8</td><td>5–7</td><td>40–56%</td><td style="color:var(--red)">仍为负*</td><td>—</td><td><span class="badge badge-fold">不下注</span></td></tr>
+        <tr><td>9</td><td>8</td><td>64%</td><td style="color:#fa0">≈ 0（含Post后）</td><td>~0%</td><td><span class="badge" style="background:rgba(243,156,18,0.2);color:#fa0">谨慎最小注</span></td></tr>
+        <tr><td>10</td><td>9</td><td>72%</td><td style="color:var(--teal)">+</td><td>~16%</td><td><span class="badge badge-bet">下注</span></td></tr>
+        <tr><td>11</td><td>10</td><td>80%</td><td style="color:var(--teal)">++</td><td>~32%</td><td><span class="badge badge-bet">积极下注</span></td></tr>
+        <tr><td>12（A–K）</td><td>11</td><td>88%</td><td style="color:var(--teal)">+++</td><td>~48%</td><td><span class="badge badge-bet">最大力下注</span></td></tr>
+      </tbody>
+    </table>
+    <p style="font-size:12.5px;color:var(--muted);margin-top:6px;">* Gap=5–7 在 EV 分析中因 Post 规则仍为负期望，尽管 P(win) 看似不低。</p>
+
+    <div class="insight">
+      <strong>Ace 的特殊性</strong>：A 可作为最低牌（1）或最高牌（14）。若两张牌为 A-3，视 A 为低牌，Gap=1（差）；若两张牌为 A-Q，视 A 为最高，可选视 Q 以下全部为"在内"，Gap=11（极好）。庄家通常规定 A 按最有利方向计。
+    </div>
+
+  </section>
+
+  <hr class="section-divider">
+
+  <!-- ═══════════════════════════════════════════════
+       GAME 3: HI-LO
+  ═══════════════════════════════════════════════ -->
+  <section class="game-section" id="hilo">
+
+    <div class="game-header">
+      <div class="game-number">GAME 03</div>
+      <div>
+        <div class="game-title">Hi-Lo</div>
+        <div class="game-alias">高低猜牌 —— 条件概率 &amp; 计牌</div>
+      </div>
+    </div>
+
+    <!-- SETUP -->
+    <div id="hilo-setup"></div>
+    <h3>游戏设定</h3>
+    <p>庄家翻开一张明牌，点数为 \(r\)（A=1, 2–10 面值, J=11, Q=12, K=13）。玩家猜测下一张牌是<strong>更高</strong>还是<strong>更低</strong>。猜对赢 \(\$1\)，猜错输 \(\$1\)（平局一般为 Push 退回）。</p>
+
+    <!-- BASIC STRATEGY -->
+    <div id="hilo-basic"></div>
+    <h3>基础策略（不计牌）</h3>
+    <p>剩余 51 张牌中：</p>
+
+    <div class="math-block">
+      \[
+        P(\text{next} > r) = \frac{(13-r)\times 4}{51}, \quad
+        P(\text{next} < r) = \frac{(r-1)\times 4}{51}, \quad
+        P(\text{next} = r) = \frac{3}{51}
+      \]
+    </div>
+
+    <p style="margin-top:10px;">猜"更高"的期望 \(= \text{EV}_\text{higher} - \text{EV}_\text{lower}\) 为正 \(\Leftrightarrow\) \(P(>\,r) > P(<\,r) \Leftrightarrow\) \(13 - r > r - 1 \Leftrightarrow r < 7\)。</p>
+
+    <div class="insight">
+      <strong>决策规则</strong>：当 \(r \leq 6\) 猜高；当 \(r \geq 8\) 猜低；当 \(r = 7\) 时两边概率相同（\(\tfrac{24}{51}\)），期望为零，此时应<strong>跳过或下最小注</strong>。
+    </div>
+
+    <h3>各明牌的最优选择</h3>
+    <div class="hilo-grid">
+      <div class="hilo-cell hilo-higher"><span class="rank">A</span><span class="dir">↑ HIGH</span></div>
+      <div class="hilo-cell hilo-higher"><span class="rank">2</span><span class="dir">↑ HIGH</span></div>
+      <div class="hilo-cell hilo-higher"><span class="rank">3</span><span class="dir">↑ HIGH</span></div>
+      <div class="hilo-cell hilo-higher"><span class="rank">4</span><span class="dir">↑ HIGH</span></div>
+      <div class="hilo-cell hilo-higher"><span class="rank">5</span><span class="dir">↑ HIGH</span></div>
+      <div class="hilo-cell hilo-higher"><span class="rank">6</span><span class="dir">↑ HIGH</span></div>
+      <div class="hilo-cell hilo-even"><span class="rank">7</span><span class="dir">≈ EVEN</span></div>
+      <div class="hilo-cell hilo-lower"><span class="rank">8</span><span class="dir">↓ LOW</span></div>
+      <div class="hilo-cell hilo-lower"><span class="rank">9</span><span class="dir">↓ LOW</span></div>
+      <div class="hilo-cell hilo-lower"><span class="rank">10</span><span class="dir">↓ LOW</span></div>
+      <div class="hilo-cell hilo-lower"><span class="rank">J</span><span class="dir">↓ LOW</span></div>
+      <div class="hilo-cell hilo-lower"><span class="rank">Q</span><span class="dir">↓ LOW</span></div>
+      <div class="hilo-cell hilo-lower"><span class="rank">K</span><span class="dir">↓ LOW</span></div>
+    </div>
+
+    <h3 style="margin-top:20px;">EV 计算（明牌 = 2）</h3>
+    <div class="math-block">
+      \[
+        P(> 2) = \frac{11 \times 4}{51} = \frac{44}{51} \approx 86.3\%
+      \]
+      \[
+        P(< 2) = \frac{1 \times 4}{51} = \frac{4}{51} \approx 7.8\%, \quad P(= 2) = \frac{3}{51} \approx 5.9\%
+      \]
+      \[
+        \text{EV}(\text{猜高}) = \frac{44}{51}\cdot(+1) + \frac{4}{51}\cdot(-1) = \frac{40}{51} \approx +\$0.78
+      \]
+    </div>
+
+    <!-- CARD COUNTING -->
+    <div id="hilo-counting"></div>
+    <h3>进阶：动态计牌优化</h3>
+    <p>Hi-Lo 存在可利用的信息优势——随着牌被翻开，剩余牌堆的概率分布实时更新。</p>
+
+    <div class="card">
+      <div class="card-title">计牌系统（High-Low Count）</div>
+      <table class="strat-table">
+        <thead><tr><th>牌面</th><th>计数调整</th><th>含义</th></tr></thead>
+        <tbody>
+          <tr><td>2, 3, 4, 5, 6</td><td style="color:var(--teal)">+1（小牌出去）</td><td>剩余牌平均点数升高→下一张更可能大</td></tr>
+          <tr><td>7, 8, 9</td><td>0（中性）</td><td>无显著影响</td></tr>
+          <tr><td>10, J, Q, K, A</td><td style="color:var(--red)">−1（大牌出去）</td><td>剩余牌平均点数降低→下一张更可能小</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p style="margin-top:12px;">真实计数（True Count）= 运行计数 ÷ 剩余牌副数。True Count 越高，对猜"高"越有利，反之对猜"低"有利。</p>
+
+    <div class="math-block">
+      <div class="math-label">动态更新的精确方法</div>
+      \[
+        P(\text{next} > r \mid \text{已见牌}) = \frac{\sum_{k=r+1}^{13} n_k}{N_\text{remaining}}
+      \]
+      其中 \(n_k\) 为剩余牌中点数 \(k\) 的张数，\(N_\text{remaining}\) 为剩余总张数。
+    </div>
+
+    <div class="insight">
+      <strong>面试要点</strong>：即使不用完整计牌，"记住已翻出的极端牌（A、2、K）"也能显著提升决策质量。当多张小牌已出，剩余牌偏大，更倾向于猜"低"。
+    </div>
+
+  </section>
+
+  <hr class="section-divider">
+
+  <!-- ═══════════════════════════════════════════════
+       GAME 4: [0,1] CONTINUOUS POKER
+  ═══════════════════════════════════════════════ -->
+  <section class="game-section" id="continuous">
+
+    <div class="game-header">
+      <div class="game-number">GAME 04</div>
+      <div>
+        <div class="game-title">[0, 1] Continuous Poker</div>
+        <div class="game-alias">连续型扑克 —— AKQ 博弈的无限维推广</div>
+      </div>
+    </div>
+
+    <!-- SETUP -->
+    <div id="cont-setup"></div>
+    <h3>游戏设定</h3>
+    <p>双方各下底注 \(\$1\)，各自从 \(\text{Uniform}[0,1]\) 抽取手牌强度 \(x, y\)（数字越大越强），点数大者赢。P1 先行：下注 \(\$B\) 或 过牌（Check-Fold，不允许 P2 反注以保持简洁性）。</p>
+
+    <div class="card">
+      <div class="card-title">规则摘要</div>
+      <ul style="padding-left:18px;line-height:2;">
+        <li>P1 Bet → P2 Call（摊牌）或 Fold（P1 赢 \(\$1\)）</li>
+        <li>P1 Check → 直接 Fold（或进入摊牌，视版本）</li>
+        <li>摊牌：\(x > y\) P1 赢 \(\$2\)；\(x < y\) P1 输 \(\$2\)</li>
+      </ul>
+    </div>
+
+    <!-- STRATEGY -->
+    <div id="cont-strategy"></div>
+    <h3>均衡阈值策略</h3>
+    <p>连续情形下，P1 的最优策略具有 <strong>三段式结构</strong>：</p>
+
+    <div class="math-block">
+      <div class="math-label">P1 最优下注范围</div>
+      \[
+        \text{Bet if } x \in [0,\, \alpha] \cup [\beta,\, 1], \quad \text{Check if } x \in (\alpha, \beta)
+      \]
+      <p style="font-size:14px;margin-top:8px;color:var(--text2)">
+        \([0,\alpha]\)：虚张声势（Bluff）区间 &nbsp;|&nbsp;
+        \([\beta, 1]\)：价值下注（Value Bet）区间 &nbsp;|&nbsp;
+        \((\alpha,\beta)\)：中档手牌，不下注
+      </p>
+    </div>
+
+    <h3 style="font-size:15px;margin-top:20px;">阈值推导（Bet = $1，Ante = $1）</h3>
+    <p>P2 以阈值 \(c\) 决定是否 Call：若 \(y > c\) 则 Call，否则 Fold。</p>
+
+    <div class="math-block">
+      <div class="math-label">P2 的 Call/Fold 无差异条件（EV(Call) = EV(Fold) = −$1）</div>
+      \[
+        \Pr[x < y \mid P1\text{ bet}, y = c] \cdot 2 - \Pr[x > y \mid P1\text{ bet}, y = c] \cdot 2 = -1
+      \]
+      \[
+        \Pr[P1\text{ wins} \mid y=c] = \frac{1}{4}
+      \]
+    </div>
+
+    <div class="math-block">
+      <div class="math-label">由对称性求解阈值（Bet 范围 = [0,α] ∪ [β,1]，均匀分布）</div>
+      \[
+        \Pr[x < c \mid x \in [0,\alpha]\cup[\beta,1]] = \frac{\min(c,\alpha) + \max(c-\beta,0)}{\alpha + (1-\beta)} \overset{!}{=} \frac{1}{4}
+      \]
+    </div>
+
+    <p>在 Value bet 区域 \(y = c \in (\alpha, \beta)\) 时 \(c > \alpha\) 且 \(c < \beta\)，分子 \(= \alpha\)，故 \(\alpha / (\alpha + 1 - \beta) = 1/4\)，即：</p>
+
+    <div class="math-block">
+      \[
+        \frac{\alpha}{\alpha + 1 - \beta} = \frac{1}{4} \;\Rightarrow\; 4\alpha = \alpha + 1 - \beta \;\Rightarrow\; \beta = 1 - 3\alpha
+      \]
+    </div>
+
+    <div class="math-block">
+      <div class="math-label">P1 用 α（Bluff 边界）无差异条件（Bluff EV = Check EV）</div>
+      \[
+        \text{EV}(\text{bluff at }x=\alpha) = (1-c)\cdot(+1) + c\cdot\big[-2\alpha + 0\big] \overset{!}{=} 0
+      \]
+      <p style="font-size:13px;color:var(--text2);margin-top:6px;">（\(P(P2\text{ fold}) = 1-c\)；\(P(P2\text{ call and }y > \alpha) \approx c \cdot 1\) for small α）</p>
+    </div>
+
+    <p>在 \(B=\$1\)，Ante=\(\$1\) 的标准设定下，均衡解为：</p>
+
+    <div class="math-block">
+      \[
+        \boxed{\alpha = \frac{1}{4},\quad \beta = \frac{1}{4},\quad c = \frac{1}{3}}
+      \]
+      <p style="margin-top:8px;color:var(--text2);font-size:14px;">即：P1 用最差 25% 的手牌 Bluff，用最强 75% 的手牌 Value Bet（此参数下 α=β 退化为"只要不是底部就 bet"的极端情况），P2 以 33% 为 Fold 线。</p>
+    </div>
+
+    <!-- COMPARE WITH AKQ -->
+    <div id="cont-compare"></div>
+    <h3>与 AKQ Game 的对应关系</h3>
+
+    <div class="card">
+      <div class="card-title">离散 AKQ ↔ 连续 [0,1] Poker 对照</div>
+      <table class="strat-table">
+        <thead><tr><th>维度</th><th>AKQ Game</th><th>[0,1] Poker</th></tr></thead>
+        <tbody>
+          <tr><td>手牌空间</td><td>离散 {Q, K, A}</td><td>连续 [0, 1]</td></tr>
+          <tr><td>最差手牌</td><td>Q（Bluff 频率 ⅓）</td><td>\(x \in [0,\alpha]\)</td></tr>
+          <tr><td>中间手牌</td><td>K（永远 Check）</td><td>\(x \in (\alpha,\beta)\)</td></tr>
+          <tr><td>最强手牌</td><td>A（永远 Bet）</td><td>\(x \in [\beta, 1]\)</td></tr>
+          <tr><td>Bluff:Value 比</td><td>1:3</td><td>\(\alpha:(1-\beta)\)</td></tr>
+          <tr><td>P2 Call 阈值</td><td>K 以 ⅓ 概率 Call</td><td>\(y > c = \tfrac{1}{3}\)</td></tr>
+          <tr><td>核心原理</td><td colspan="2" style="text-align:center;">底池赔率使双方均无差异；Bluff 频率 = ¼ × 下注范围</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="insight">
+      <strong>统一原理</strong>：无论离散还是连续，最优 Bluff 频率由<strong>底池赔率</strong>决定。当赔率为 1:1（Call $1 赢 $3），对手需赢 25% 才值得 Call，故 P1 应使对手恰好 25% 的下注是 Bluff。这个 <strong>"1:3 Bluff-to-Value"</strong> 比例是职业扑克和 quant 交易面试中最核心的博弈论结论之一。
+    </div>
+
+    <h3>综合复习：各博弈共性原则</h3>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;">
+      <div class="card teal-border">
+        <div class="card-title">博弈论核心</div>
+        <ul style="padding-left:16px;line-height:2.1;font-size:15px;">
+          <li>Nash 均衡：双方均无偏离激励</li>
+          <li>混合策略使对手无差异</li>
+          <li>Bluff 频率由底池赔率锁定</li>
+          <li>位置劣势≠期望劣势（AKQ P1 胜）</li>
+        </ul>
+      </div>
+      <div class="card highlight">
+        <div class="card-title">概率/Kelly 核心</div>
+        <ul style="padding-left:16px;line-height:2.1;font-size:15px;">
+          <li>Kelly: \(f^* = p - q\)（1:1赔率）</li>
+          <li>期望 &gt; 0 才下注，否则零投入</li>
+          <li>Post 规则产生肥尾→降低 Kelly</li>
+          <li>动态计牌更新条件概率</li>
+        </ul>
+      </div>
+    </div>
+
+  </section>
+
+</main>
+
+<script>
+  // Render KaTeX
+  document.addEventListener("DOMContentLoaded", function() {
+    renderMathInElement(document.body, {
+      delimiters: [
+        {left: "\\[", right: "\\]", display: true},
+        {left: "\\(", right: "\\)", display: false}
+      ],
+      throwOnError: false
+    });
+  });
+
+  // Active nav highlight on scroll
+  const sections = document.querySelectorAll('.game-section');
+  const navLinks = document.querySelectorAll('.nav-game');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const id = entry.target.id;
+        navLinks.forEach(a => {
+          a.classList.toggle('active', a.getAttribute('href') === '#' + id);
+        });
+      }
+    });
+  }, { rootMargin: '-30% 0px -60% 0px' });
+  sections.forEach(s => observer.observe(s));
+</script>
+
+</body>
+</html>

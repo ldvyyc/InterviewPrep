@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AQR Managed Futures & Commodities — 面试准备</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Source+Serif+4:ital,wght@0,300;0,400;1,300&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script>
+<style>
+:root {
+  --bg: #f5f2ec;
+  --surface: #faf8f3;
+  --surface2: #eee9df;
+  --border: #d6cfc2;
+  --accent: #1a3a2a;
+  --accent2: #8b4513;
+  --accent3: #2c5f8a;
+  --gold: #b8860b;
+  --text: #2a2520;
+  --text-dim: #7a6f62;
+  --text-light: #a09080;
+  --mono: 'JetBrains Mono', monospace;
+  --sans: 'Syne', sans-serif;
+  --serif: 'Source Serif 4', serif;
+  --sidebar-w: 270px;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--serif);
+  font-size: 15px;
+  line-height: 1.8;
+  display: flex;
+  min-height: 100vh;
+}
+
+/* SIDEBAR */
+#sidebar {
+  width: var(--sidebar-w);
+  min-height: 100vh;
+  background: var(--accent);
+  position: fixed;
+  top: 0; left: 0;
+  overflow-y: auto;
+  z-index: 100;
+  padding-bottom: 40px;
+}
+#sidebar-header {
+  padding: 32px 22px 24px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+#sidebar-header .firm {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: rgba(255,255,255,0.5);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+#sidebar-header h1 {
+  font-family: var(--sans);
+  font-size: 16px;
+  color: #fff;
+  font-weight: 700;
+  line-height: 1.4;
+}
+#sidebar-header .date-badge {
+  margin-top: 14px;
+  display: inline-block;
+  background: var(--gold);
+  color: #fff;
+  font-family: var(--mono);
+  font-size: 10px;
+  padding: 4px 10px;
+  border-radius: 2px;
+  letter-spacing: 0.05em;
+}
+#sidebar nav { padding: 18px 0; }
+.nav-group {
+  padding: 8px 22px 4px;
+  font-family: var(--mono);
+  font-size: 8.5px;
+  color: rgba(255,255,255,0.35);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-top: 12px;
+}
+#sidebar a {
+  display: block;
+  padding: 7px 22px 7px 26px;
+  color: rgba(255,255,255,0.6);
+  text-decoration: none;
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 400;
+  border-left: 2px solid transparent;
+  transition: all 0.15s;
+}
+#sidebar a:hover, #sidebar a.active {
+  color: #fff;
+  border-left-color: var(--gold);
+  background: rgba(255,255,255,0.06);
+}
+
+/* MAIN */
+#main {
+  margin-left: var(--sidebar-w);
+  flex: 1;
+  padding: 56px 68px 100px;
+  max-width: calc(100% - var(--sidebar-w));
+}
+
+/* HERO */
+#hero {
+  padding-bottom: 48px;
+  border-bottom: 2px solid var(--border);
+  margin-bottom: 56px;
+}
+.hero-tag {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--accent2);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+#hero h1 {
+  font-family: var(--sans);
+  font-size: 38px;
+  font-weight: 800;
+  color: var(--accent);
+  line-height: 1.15;
+  margin-bottom: 12px;
+}
+#hero .subtitle {
+  color: var(--text-dim);
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 16px;
+  max-width: 580px;
+  margin-bottom: 20px;
+}
+.pill {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 9.5px;
+  padding: 3px 10px;
+  border-radius: 2px;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  margin: 3px 3px 3px 0;
+  background: var(--surface);
+}
+
+/* SECTION */
+.section { margin-bottom: 72px; padding-top: 16px; }
+.section-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--text-light);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+h2 {
+  font-family: var(--sans);
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 20px;
+  line-height: 1.2;
+}
+h3 {
+  font-family: var(--sans);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--accent3);
+  margin: 26px 0 10px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid var(--border);
+  letter-spacing: 0.03em;
+}
+h4 {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  color: var(--accent2);
+  font-weight: 500;
+  margin: 18px 0 7px;
+}
+p { margin-bottom: 13px; }
+
+/* BLOCKS */
+.math-block {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--gold);
+  border-radius: 2px;
+  padding: 18px 22px;
+  margin: 16px 0;
+  overflow-x: auto;
+}
+.math-block .katex-display { margin: 0; }
+
+.insight {
+  background: #eef4f0;
+  border: 1px solid #b8d4c0;
+  border-left: 3px solid var(--accent);
+  border-radius: 2px;
+  padding: 15px 18px;
+  margin: 14px 0;
+  font-size: 13.5px;
+  color: var(--accent);
+}
+.insight::before {
+  content: '▸ ';
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--gold);
+}
+
+.warning {
+  background: #fdf5e8;
+  border: 1px solid #e8c87a;
+  border-left: 3px solid var(--gold);
+  border-radius: 2px;
+  padding: 15px 18px;
+  margin: 14px 0;
+  font-size: 13.5px;
+  color: #5a3c00;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 18px 20px;
+  margin: 12px 0;
+}
+.card-title {
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+
+.qbox {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 16px 20px;
+  margin: 14px 0;
+}
+.qbox-q {
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+.qbox-q::before {
+  content: 'Q: ';
+  color: var(--accent2);
+  font-family: var(--mono);
+  font-size: 11px;
+}
+.qbox-a {
+  font-size: 13.5px;
+  color: var(--text-dim);
+  padding-left: 16px;
+  border-left: 2px solid var(--border);
+}
+.qbox-a::before {
+  display: block;
+  content: 'A:';
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--accent3);
+  margin-bottom: 4px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-size: 13px;
+}
+th {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  border-bottom: 2px solid var(--border);
+  padding: 8px 12px;
+  text-align: left;
+  background: var(--surface2);
+}
+td {
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+tr:hover td { background: var(--surface); }
+
+code {
+  font-family: var(--mono);
+  font-size: 12px;
+  background: var(--surface2);
+  padding: 2px 6px;
+  border-radius: 2px;
+  color: var(--accent2);
+}
+
+.divider {
+  height: 1px;
+  background: linear-gradient(90deg, var(--border), transparent);
+  margin: 56px 0;
+}
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin: 14px 0;
+}
+.grid-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 14px;
+  margin: 14px 0;
+}
+
+/* STEPS */
+.steps { margin: 14px 0; }
+.step { display: flex; gap: 14px; margin-bottom: 12px; align-items: flex-start; }
+.step-num {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--surface);
+  background: var(--accent);
+  border-radius: 2px;
+  min-width: 26px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 3px;
+  flex-shrink: 0;
+}
+
+/* TAG */
+.tag-row { margin: 10px 0 20px; }
+.tag-item {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 9.5px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  margin: 2px;
+  color: white;
+}
+.tag-green { background: var(--accent); }
+.tag-brown { background: var(--accent2); }
+.tag-blue  { background: var(--accent3); }
+.tag-gold  { background: var(--gold); }
+
+/* AQR SPECIAL */
+.aqr-box {
+  background: linear-gradient(135deg, var(--accent) 0%, #2d5a42 100%);
+  border-radius: 4px;
+  padding: 24px 28px;
+  color: white;
+  margin: 18px 0;
+}
+.aqr-box h4 { color: #b8e0c8; font-family: var(--sans); font-size: 13px; margin-bottom: 10px; }
+.aqr-box p { color: rgba(255,255,255,0.85); font-size: 13.5px; margin-bottom: 8px; }
+.aqr-box ul { padding-left: 18px; color: rgba(255,255,255,0.8); font-size: 13px; line-height: 2; }
+</style>
+</head>
+<body>
+
+<div id="sidebar">
+  <div id="sidebar-header">
+    <div class="firm">AQR Capital Management</div>
+    <h1>Managed Futures &amp;<br>Commodities Research</h1>
+    <div class="date-badge">面试 — Tuesday 24th 12:30pm</div>
+  </div>
+  <nav>
+    <div class="nav-group">AQR 背景</div>
+    <a href="#aqr">AQR 公司概况</a>
+    <a href="#mfc">MF&C 团队</a>
+
+    <div class="nav-group">期货基础</div>
+    <a href="#futures-basics">期货合约基础</a>
+    <a href="#pricing">定价与基差</a>
+    <a href="#curve">远期曲线结构</a>
+
+    <div class="nav-group">大宗商品</div>
+    <a href="#commodities">商品市场概览</a>
+    <a href="#roll">Roll Yield 与展期</a>
+    <a href="#factors">商品因子</a>
+
+    <div class="nav-group">策略</div>
+    <a href="#trend">Trend Following / CTA</a>
+    <a href="#carry">Carry 策略</a>
+    <a href="#risk">风险管理</a>
+
+    <div class="nav-group">面试题</div>
+    <a href="#technical">技术问题</a>
+    <a href="#behavioral">经历 &amp; Behavioral</a>
+    <a href="#aqr-specific">AQR 专项问题</a>
+  </nav>
+</div>
+
+<div id="main">
+
+<!-- HERO -->
+<div id="hero">
+  <div class="hero-tag">AQR Capital Management — Managed Futures &amp; Commodities Research</div>
+  <h1>面试准备指南<br>Interview Prep Guide</h1>
+  <p class="subtitle">明日面试：James Lofton, Managing Director — macro &amp; multi-strategy funds research</p>
+  <div class="tag-row">
+    <span class="tag-item tag-green">期货定价</span>
+    <span class="tag-item tag-green">Contango/Backwardation</span>
+    <span class="tag-item tag-brown">Roll Yield</span>
+    <span class="tag-item tag-brown">商品因子</span>
+    <span class="tag-item tag-blue">Trend Following</span>
+    <span class="tag-item tag-blue">Carry</span>
+    <span class="tag-item tag-gold">AQR 文化</span>
+    <span class="tag-item tag-gold">系统化策略</span>
+  </div>
+</div>
+
+<!-- ══════════ AQR 背景 ══════════ -->
+<div class="section" id="aqr">
+  <div class="section-label">01 — AQR 背景</div>
+  <h2>AQR 公司概况</h2>
+
+  <div class="aqr-box">
+    <h4>核心身份</h4>
+    <p>AQR（Applied Quantitative Research）成立于 1998 年，由 Cliff Asness 等人从高盛 Asset Management 团队离开后创立。管理资产约 $100B+，是全球最大的系统化/量化对冲基金之一。</p>
+    <ul>
+      <li>总部：Greenwich, Connecticut（以及伦敦、香港等）</li>
+      <li>策略：Equity Long/Short，Managed Futures，Multi-Strategy，Fixed Income，Risk Parity</li>
+      <li>方法论：Factor-based，系统化，学术驱动（大量发表 peer-reviewed 论文）</li>
+      <li>文化：极度重视研究严谨性，"Research first"——发现 alpha 后一定要能解释"为什么"</li>
+    </ul>
+  </div>
+
+  <h3>AQR 的核心哲学（必须掌握）</h3>
+  <p>AQR 认为市场 alpha 来自于<strong>系统性风险溢价（risk premia）</strong>和<strong>行为偏差</strong>，而非单次押注。他们的策略：</p>
+  <div class="grid-3">
+    <div class="card">
+      <div class="card-title">因子化（Factor-Based）</div>
+      <p style="font-size:13px">将超额收益分解为可解释的因子：Value、Momentum、Carry、Defensive。</p>
+    </div>
+    <div class="card">
+      <div class="card-title">多资产（Multi-Asset）</div>
+      <p style="font-size:13px">跨股票、债券、商品、外汇同时运行相同因子，分散化提高 Sharpe ratio。</p>
+    </div>
+    <div class="card">
+      <div class="card-title">学术严谨</div>
+      <p style="font-size:13px">策略必须有学术论文支撑，防止 data mining。out-of-sample 检验极为重要。</p>
+    </div>
+  </div>
+
+  <h3>重要 AQR 论文（可提及增分）</h3>
+  <table>
+    <tr><th>论文</th><th>核心结论</th><th>与 MF&C 关联</th></tr>
+    <tr><td>"Value and Momentum Everywhere" (2013)</td><td>动量与价值因子跨资产普遍存在</td><td>商品期货 momentum 策略</td></tr>
+    <tr><td>"Carry" (2018)</td><td>Carry 因子在所有资产类别中均产生超额收益</td><td>商品 carry = roll yield</td></tr>
+    <tr><td>"Time Series Momentum" (2012)</td><td>各资产品种的时间序列动量显著正 Sharpe</td><td>CTA/趋势跟踪基础</td></tr>
+    <tr><td>"Commodities for the Long Run" (2019)</td><td>商品期货长期收益主要来自 roll yield 而非现货涨跌</td><td>直接相关</td></tr>
+  </table>
+</div>
+
+<!-- ══════════ MF&C ══════════ -->
+<div class="section" id="mfc">
+  <div class="section-label">02 — 团队背景</div>
+  <h2>Managed Futures &amp; Commodities 团队</h2>
+
+  <p>James Lofton 是该团队的 Managing Director，负责 <strong>macro and multi-strategy funds</strong> 的研究。面试重点会涉及：</p>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">Managed Futures（管理期货）</div>
+      <p style="font-size:13px">通过系统化方法交易全球期货（商品、利率、外汇、股指）。AQR 的 managed futures 策略以 <strong>trend following</strong> 为核心，辅以 carry、value 等因子。</p>
+    </div>
+    <div class="card">
+      <div class="card-title">Multi-Strategy Funds</div>
+      <p style="font-size:13px">将 managed futures 与其他策略（股票、固收）结合，利用低相关性实现风险分散。商品在此扮演通胀对冲和分散化角色。</p>
+    </div>
+  </div>
+
+  <div class="insight">James 的工作重心在 macro 视角下的商品因子研究，以及跨资产策略的整合。面试时可以将自己在 Millennium 的波动率因子工程经验，与商品的 vol 因子（如 vol term structure）联系起来。</div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ══════════ 期货基础 ══════════ -->
+<div class="section" id="futures-basics">
+  <div class="section-label">03 — 期货基础</div>
+  <h2>期货合约基础</h2>
+
+  <h3>核心概念</h3>
+  <p>期货合约是在未来特定日期以约定价格买卖标的资产的协议。对于商品期货，标的通常是实物商品（原油、黄金、大豆等）。</p>
+
+  <div class="math-block">
+    $$F_{0,T} = S_0 \cdot e^{(r + u - y)T}$$
+  </div>
+
+  <p>其中 $S_0$ = 现货价格，$r$ = 无风险利率，$u$ = 储存成本（storage cost），$y$ = 便利收益（convenience yield），$T$ = 到期时间。</p>
+
+  <h3>总收益分解（重要！）</h3>
+  <p>持有商品期货的总收益可以分解为三部分：</p>
+  <div class="math-block">
+    $$R_{\text{total}} = \underbrace{R_{\text{spot}}}_{\text{现货涨跌}} + \underbrace{R_{\text{roll}}}_{\text{展期收益}} + \underbrace{R_{\text{collateral}}}_{\text{抵押品收益（T-bills）}}$$
+  </div>
+
+  <div class="insight">AQR 的研究表明，长期来看商品期货的收益主要来自 roll yield 和 collateral，而非现货价格变动。这是其系统化策略的基础。</div>
+
+  <h3>期货 vs 远期（Futures vs Forward）</h3>
+  <table>
+    <tr><th></th><th>Futures</th><th>Forward</th></tr>
+    <tr><td>交易场所</td><td>交易所（CME、ICE 等）</td><td>OTC（场外）</td></tr>
+    <tr><td>标准化</td><td>是（合约大小、交割日固定）</td><td>否（灵活定制）</td></tr>
+    <tr><td>每日结算</td><td>是（mark-to-market，日盈亏）</td><td>否（到期结算）</td></tr>
+    <tr><td>对手方风险</td><td>低（清算所担保）</td><td>高（信用风险）</td></tr>
+    <tr><td>流动性</td><td>高</td><td>低</td></tr>
+  </table>
+</div>
+
+<!-- ══════════ 定价 ══════════ -->
+<div class="section" id="pricing">
+  <div class="section-label">04 — 定价理论</div>
+  <h2>期货定价与基差</h2>
+
+  <h3>持仓成本模型（Cost of Carry）</h3>
+  <p>对于可储存商品（如黄金）：$F = S \cdot e^{(r+u)T}$；对于不可储存商品或有便利收益的情形（如原油），便利收益 $y$ 反映了持有现货的非货币价值（供应保证、生产灵活性）。</p>
+
+  <div class="qbox">
+    <div class="qbox-q">为什么原油期货有时 backwardation，有时 contango？</div>
+    <div class="qbox-a">关键在于<strong>便利收益（convenience yield）$y$</strong> 的大小。当市场预期近期供应紧张（低库存），$y$ 高，持有现货价值大，$F < S$（backwardation）。当库存充裕、储存压力大，$u$ 高而 $y$ 低，$F > S$（contango）。本质上，曲线形状是市场对供需预期的反映。</div>
+  </div>
+
+  <h3>基差（Basis）</h3>
+  <div class="math-block">
+    $$\text{Basis} = S_t - F_{t,T}$$
+  </div>
+  <p>基差随时间收敛到 0（交割日 $S_T = F_{T,T}$）。基差风险（basis risk）是套保中无法消除的残余风险——现货与期货的价格差异变化。</p>
+
+  <h3>Normal Backwardation Theory（Keynes）</h3>
+  <p>Keynes 认为商品生产商（如农民）天然是空头（需要卖出对冲），因此他们愿意以低于预期现货价格的期货价格成交，给多头（投机者）提供风险溢价。即期货价格 $< $ 预期未来现货价格。这是商品期货长期正收益的传统解释之一。</p>
+</div>
+
+<!-- ══════════ 远期曲线 ══════════ -->
+<div class="section" id="curve">
+  <div class="section-label">05 — 市场结构</div>
+  <h2>远期曲线结构 Forward Curve</h2>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">Contango（正向市场）</div>
+      <p style="font-size:13px">远期价格 $>$ 近期价格，曲线向上倾斜。多头展期时卖出低价近月、买入高价远月，产生<strong>负 roll yield</strong>。常见于储存成本高、供应充裕时（如天然气淡季）。</p>
+    </div>
+    <div class="card">
+      <div class="card-title">Backwardation（反向市场）</div>
+      <p style="font-size:13px">远期价格 $<$ 近期价格，曲线向下倾斜。多头展期时卖出高价近月、买入低价远月，产生<strong>正 roll yield</strong>。常见于供应紧张、高便利收益时（如原油供应中断）。</p>
+    </div>
+  </div>
+
+  <div class="math-block">
+    $$\text{Roll Yield} \approx -\frac{\partial F}{\partial T} \cdot \Delta t = \frac{F_{\text{near}} - F_{\text{far}}}{F_{\text{near}}} \cdot \frac{1}{\Delta T}$$
+  </div>
+
+  <div class="warning">
+    面试 key point：Managed futures 策略在设计时必须考虑 roll yield 的影响，否则会出现"现货涨了但期货头寸亏损"的情况（强 contango 市场）。AQR 在选择哪个到期月份持仓时会优化 roll 成本。
+  </div>
+
+  <h3>各商品典型曲线特征</h3>
+  <table>
+    <tr><th>商品</th><th>典型状态</th><th>主要驱动</th></tr>
+    <tr><td>原油（WTI/Brent）</td><td>随库存周期切换</td><td>OPEC 政策、地缘政治、库存水平</td></tr>
+    <tr><td>天然气</td><td>季节性 contango（冬季 backwardation）</td><td>取暖需求、储气水平</td></tr>
+    <tr><td>黄金</td><td>通常 contango（储存成本 + 利率）</td><td>实际利率、美元、避险需求</td></tr>
+    <tr><td>农产品（大豆、玉米）</td><td>收割季 contango，歉收时 backwardation</td><td>供需季节性、天气</td></tr>
+    <tr><td>铜</td><td>随全球工业周期</td><td>中国需求、矿产供应</td></tr>
+  </table>
+</div>
+
+<div class="divider"></div>
+
+<!-- ══════════ 商品市场 ══════════ -->
+<div class="section" id="commodities">
+  <div class="section-label">06 — 商品市场</div>
+  <h2>大宗商品市场概览</h2>
+
+  <h3>主要商品板块</h3>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">能源（Energy）</div>
+      <p style="font-size:13px"><strong>原油（WTI、Brent）</strong>：全球最大期货市场。OPEC+ 政策、美国页岩油产量、地缘政治主导价格。两者基差（Brent premium）反映运输成本差异。</p>
+      <p style="font-size:13px"><strong>天然气（Henry Hub）</strong>：极高季节性波动，储气水平是核心指标。LNG 出口使其与全球市场联动加强。</p>
+    </div>
+    <div class="card">
+      <div class="card-title">金属（Metals）</div>
+      <p style="font-size:13px"><strong>黄金</strong>：储备资产，与实际利率高度负相关（$\Delta \text{Gold} \approx -\Delta r_{\text{real}}$）。非美央行购金需求近年上升。</p>
+      <p style="font-size:13px"><strong>铜</strong>："Doctor Copper"——领先经济指标。中国工业化、电动车（电池用铜）是长期需求驱动。</p>
+    </div>
+    <div class="card">
+      <div class="card-title">农产品（Agri）</div>
+      <p style="font-size:13px">大豆、玉米、小麦。天气（厄尔尼诺）、种植面积、出口禁令是主要风险因素。中国是大豆最大进口国。</p>
+    </div>
+    <div class="card">
+      <div class="card-title">软商品 &amp; 其他</div>
+      <p style="font-size:13px">咖啡、糖、棉花等。流动性较低，但在商品指数（BCOM、S&P GSCI）中有权重。</p>
+    </div>
+  </div>
+
+  <h3>商品的宏观角色</h3>
+  <p>在宏观组合中，商品的核心价值：</p>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">①</div>
+      <div><strong>通胀对冲：</strong>商品价格是 CPI 的直接组成部分，与通胀高度相关（尤其能源）。股票债券在意外通胀下均承压，商品可提供保护。</div>
+    </div>
+    <div class="step">
+      <div class="step-num">②</div>
+      <div><strong>低相关性：</strong>与股票、债券的相关性较低（尤其在非危机时期），提升组合 Sharpe ratio。</div>
+    </div>
+    <div class="step">
+      <div class="step-num">③</div>
+      <div><strong>地缘政治风险暴露：</strong>原油、黄金在地缘冲突中表现突出，提供尾部风险对冲。</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ Roll Yield ══════════ -->
+<div class="section" id="roll">
+  <div class="section-label">07 — Roll 机制</div>
+  <h2>Roll Yield 与展期成本</h2>
+
+  <p>持有期货仓位不能持有至交割（大多数系统化策略），必须定期"展期（roll）"——卖出即将到期合约，买入更远到期合约。</p>
+
+  <div class="math-block">
+    $$\text{Roll Return} = \ln\left(\frac{F_{\text{near},t}}{F_{\text{far},t}}\right)$$
+  </div>
+
+  <p>若 $F_{\text{near}} > F_{\text{far}}$（backwardation），roll return $> 0$（做多有利）；若 $F_{\text{near}} < F_{\text{far}}$（contango），roll return $< 0$（做多不利）。</p>
+
+  <h3>Roll Yield 作为 Carry 因子</h3>
+  <p>AQR 的 Carry 因子在商品中的定义正是 roll yield：</p>
+  <div class="math-block">
+    $$\text{Commodity Carry} = \frac{F_{1M} - F_{12M}}{F_{1M}}$$
+  </div>
+  <p>做多 high carry 商品（backwardation）、做空 low carry 商品（contango）——这是 AQR Carry 策略的商品分支。研究（"Carry" 2018）显示这个因子有显著的夏普比率。</p>
+
+  <div class="qbox">
+    <div class="qbox-q">如何区分 spot return 和 roll return 对商品期货收益的贡献？</div>
+    <div class="qbox-a">
+      总期货收益 = 现货收益 + roll 收益 + 抵押品收益。可以通过比较近月期货价格变化（包含 roll 成本）和现货指数价格变化来分离。实证上，AQR 的研究发现 1990-2019 年间商品期货的正超额收益几乎完全来自 roll yield，而非现货涨价。这意味着 backwardation 的商品系统性地提供风险溢价（与 Keynes 的 normal backwardation 理论一致）。
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ 商品因子 ══════════ -->
+<div class="section" id="factors">
+  <div class="section-label">08 — 因子研究</div>
+  <h2>商品因子 Commodity Factors</h2>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">📈 Momentum（动量）</div>
+      <p style="font-size:13px">12-1 月动量：过去 12 个月（跳过最近 1 个月）表现好的商品继续表现好。在商品中同样显著。趋势跟踪策略本质上是动量的 time-series 版本。</p>
+    </div>
+    <div class="card">
+      <div class="card-title">💰 Carry（展期收益率）</div>
+      <p style="font-size:13px">roll yield 即商品 carry。做多 backwardation 商品，做空 contango 商品。与利率 carry（短长期利差）、外汇 carry（息差）同属一类因子。</p>
+    </div>
+    <div class="card">
+      <div class="card-title">📊 Value（价值）</div>
+      <p style="font-size:13px">商品 value = 当前价格相对于长期均值（5年移动均值）的偏离程度。价格显著低于历史均值时做多。与股票 P/B value 类比。</p>
+    </div>
+    <div class="card">
+      <div class="card-title">🛡 Defensive / Low Vol</div>
+      <p style="font-size:13px">低波动率商品的超额收益（与股票类似的 low-beta anomaly）。在商品中效果相对较弱，但仍作为多因子组合的组成部分。</p>
+    </div>
+  </div>
+
+  <div class="insight">AQR 面试核心：能否解释"为什么"这些因子存在？Momentum = 缓慢信息扩散 + 行为追涨；Carry = 对通胀/供给冲击的风险溢价；Value = 均值回归 + 过度悲观修正。每个因子都要有经济学解释。</div>
+
+  <h3>与波动率因子的联系（关联你的 Millennium 经验）</h3>
+  <p>商品波动率研究：</p>
+  <table>
+    <tr><th>因子</th><th>含义</th><th>与股票 vol 类比</th></tr>
+    <tr><td>Vol term structure</td><td>近月 vol - 远月 vol，类比期权 vol 曲线斜率</td><td>VIX term structure</td></tr>
+    <tr><td>Vol carry</td><td>隐含 vol - 已实现 vol，做空波动率的收益</td><td>方差风险溢价（VRP）</td></tr>
+    <tr><td>Skew</td><td>商品 put/call 偏度，供给冲击的尾部保护溢价</td><td>股票 put skew</td></tr>
+    <tr><td>Vol-of-vol</td><td>二阶波动率，用于 regime 识别</td><td>VVIX</td></tr>
+  </table>
+</div>
+
+<div class="divider"></div>
+
+<!-- ══════════ Trend Following ══════════ -->
+<div class="section" id="trend">
+  <div class="section-label">09 — 策略</div>
+  <h2>Trend Following / CTA 策略</h2>
+
+  <p>Managed Futures 最经典的策略。核心思想：资产价格存在时间序列动量，近期趋势倾向于延续。</p>
+
+  <h3>基本信号</h3>
+  <div class="math-block">
+    $$\text{Signal}_t = \text{sign}\left(\sum_{k} w_k \cdot r_{t-k}\right) \quad \text{或} \quad \text{Signal}_t = \frac{P_t - \text{MA}(P, L)}{|\sigma_t|}$$
+  </div>
+
+  <p>常见实现：MACD（移动平均收敛散度）、Breakout 信号、Time-series momentum（TSMOM）。</p>
+
+  <h3>为什么趋势跟踪有效？</h3>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">①</div>
+      <div><strong>央行政策惯性：</strong>利率政策调整有持续性（加息周期、降息周期），导致债券/外汇趋势。</div>
+    </div>
+    <div class="step">
+      <div class="step-num">②</div>
+      <div><strong>商品供需调整滞后：</strong>新矿山建设、农作物种植等需要时间响应价格信号，导致价格趋势延续。</div>
+    </div>
+    <div class="step">
+      <div class="step-num">③</div>
+      <div><strong>行为因素：</strong>锚定偏差（anchoring）、处置效应导致价格对基本面调整缓慢，形成趋势。</div>
+    </div>
+    <div class="step">
+      <div class="step-num">④</div>
+      <div><strong>风险溢价：</strong>趋势策略在股市危机（左尾事件）中表现良好（convex payoff），投资者为此放弃部分正常期间收益。</div>
+    </div>
+  </div>
+
+  <h3>Trend Following 的 Payoff 特征</h3>
+  <p>趋势跟踪的一个关键特性是其 <strong>convex payoff</strong>（类期权性）：在大行情（无论方向）中盈利，在震荡市中亏损。这与股票的 concave 特性互补，使其在股市危机中成为良好的对冲工具。</p>
+  <div class="math-block">
+    $$\text{CTA payoff} \sim \text{long straddle} \approx \text{long volatility of trends}$$
+  </div>
+
+  <div class="qbox">
+    <div class="qbox-q">2022 年 CTA 策略为什么表现特别好？</div>
+    <div class="qbox-a">2022 年股债双杀，传统 60/40 组合大幅亏损。但 CTA 在多个资产类别中捕捉到了持续趋势：做空债券（加息周期）、做多能源（俄乌冲突后原油上涨）、做空股指。能源、利率、外汇同时出现强趋势，且趋势方向明确——是 CTA 的理想环境。Societe Generale CTA Index 2022 年约 +25%。</div>
+  </div>
+</div>
+
+<!-- ══════════ Carry ══════════ -->
+<div class="section" id="carry">
+  <div class="section-label">10 — 策略</div>
+  <h2>Carry 策略</h2>
+
+  <p>Carry = 在价格不变假设下持有资产的预期收益。各资产类别的 carry 定义：</p>
+
+  <table>
+    <tr><th>资产类别</th><th>Carry 定义</th><th>来源</th></tr>
+    <tr><td>商品期货</td><td>Roll yield（backwardation 程度）</td><td>便利收益、季节性</td></tr>
+    <tr><td>固收（债券）</td><td>Yield - 融资成本（carry and roll-down）</td><td>期限溢价</td></tr>
+    <tr><td>外汇</td><td>高息货币 - 低息货币（利差）</td><td>UIP 失效</td></tr>
+    <tr><td>股票</td><td>股息率 - 融资成本</td><td>股权风险溢价</td></tr>
+  </table>
+
+  <div class="insight">AQR Carry 论文（Koijen et al. 2018）的核心发现：跨所有资产类别的 carry 因子均有显著正收益，且相关性低，组合后 Sharpe ratio 大幅提升。这是 AQR 多资产策略的理论基础之一。</div>
+
+  <h3>商品 Carry vs Trend 的结合</h3>
+  <p>Carry 和 Trend 在商品中往往存在一定正相关（趋势向上 → 近月涨更多 → backwardation），但并非总是一致。Carry 是截面信号（哪个商品 carry 更高），Trend 是时间序列信号（价格趋势方向）。AQR 的多因子策略将两者结合以提高稳定性。</p>
+</div>
+
+<!-- ══════════ 风险管理 ══════════ -->
+<div class="section" id="risk">
+  <div class="section-label">11 — 风险管理</div>
+  <h2>风险管理 Risk Management</h2>
+
+  <h3>仓位规模（Position Sizing）</h3>
+  <p>系统化策略中最常用的方法是<strong>波动率目标化（vol-targeting）</strong>：</p>
+  <div class="math-block">
+    $$w_i = \frac{\text{Signal}_i \cdot \sigma_{\text{target}}}{\hat{\sigma}_i}$$
+  </div>
+  <p>每个资产的名义仓位与其波动率成反比，确保各资产对组合风险的贡献均等。$\hat{\sigma}_i$ 通常用 EWMA 估计。</p>
+
+  <h3>商品特有风险</h3>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">流动性风险</div>
+      <p style="font-size:13px">小品种（如 lumber、orange juice）流动性有限，大规模资金进出会产生显著市场冲击。AQR 会对流动性加权。</p>
+    </div>
+    <div class="card">
+      <div class="card-title">Delivery / Squeeze 风险</div>
+      <p style="font-size:13px">近月合约接近到期时，如果持有量大，可能面临 short squeeze（2021 年天然气事件）。需要在到期前足够早展期。</p>
+    </div>
+    <div class="card">
+      <div class="card-title">相关性突变（Regime Change）</div>
+      <p style="font-size:13px">商品内部相关性在宏观冲击时（如 COVID 2020）可能急剧上升，造成分散化失效。需要 stress testing。</p>
+    </div>
+    <div class="card">
+      <div class="card-title">季节性调整</div>
+      <p style="font-size:13px">农产品、能源存在强季节性，信号需要去季节化处理，否则会在特定时期系统性过买/过卖。</p>
+    </div>
+  </div>
+
+  <h3>风险度量</h3>
+  <div class="math-block">
+    $$\text{VaR}_{95\%} = -\mu_P - 1.645\sigma_P \quad \text{（正态假设下）}$$
+    $$\text{CVaR} = \mathbb{E}[\text{Loss} \mid \text{Loss} > \text{VaR}]$$
+  </div>
+  <p>商品收益分布往往有<strong>厚尾和正偏态</strong>（大涨但很少大跌对于做多策略），正态假设低估尾部风险，需要历史模拟或 EVT（Extreme Value Theory）补充。</p>
+</div>
+
+<div class="divider"></div>
+
+<!-- ══════════ 技术问题 ══════════ -->
+<div class="section" id="technical">
+  <div class="section-label">12 — 面试题</div>
+  <h2>技术问题 Technical Questions</h2>
+
+  <div class="qbox">
+    <div class="qbox-q">解释 contango 和 backwardation 的区别，并说明对持仓 P&L 的影响。</div>
+    <div class="qbox-a">Contango：远月价格 > 近月，做多期货展期时卖低买高，产生负 roll yield，侵蚀多头收益。Backwardation：远月价格 < 近月，展期时卖高买低，产生正 roll yield，多头额外受益。实际例子：2020 年原油 super contango（WTI 五月合约变负），USO 等 ETF 因 roll 成本大幅跑输现货。</div>
+  </div>
+
+  <div class="qbox">
+    <div class="qbox-q">如何构建一个简单的商品 momentum 因子？</div>
+    <div class="qbox-a">（1）收集 N 个商品期货的月度收益率序列；（2）计算每个商品过去 12 个月（跳过最近 1 个月）的累积收益；（3）按该信号排序，做多排名前 1/3，做空排名后 1/3；（4）用波动率归一化仓位确保风险均等；（5）每月再平衡。需要注意：使用近月合约的连续收益（考虑 roll），去除 roll 日期附近的噪音，以及交易成本调整。</div>
+  </div>
+
+  <div class="qbox">
+    <div class="qbox-q">商品期货的黄金定价：假设黄金现货 $2000，无风险利率 5%，储存成本 0.2%/年，无便利收益，1年期期货价格是多少？</div>
+    <div class="qbox-a">$F = S \cdot e^{(r+u)T} = 2000 \cdot e^{(0.05 + 0.002) \times 1} = 2000 \cdot e^{0.052} \approx 2000 \times 1.0534 \approx \$2106.8$。若市场报价显著低于此，存在套利机会（借钱买现货，卖空期货，到期交割获利）。</div>
+  </div>
+
+  <div class="qbox">
+    <div class="qbox-q">如何分离商品期货收益中的 spot return 和 roll return？</div>
+    <div class="qbox-a">
+      方法一：直接计算。近月期货价格变化 = 现货变化 + roll 变化。可以用商品现货指数（S&P GSCI Spot Index）和全收益指数（Total Return Index）之差来度量 roll yield。<br>
+      方法二：对同一商品的不同到期合约价格建模，用曲线斜率估计每日 roll 成本：daily roll ≈ $(F_{\text{near}} - F_{\text{next}}) / F_{\text{near}} \times$ (1/到期天数差)。
+    </div>
+  </div>
+
+  <div class="qbox">
+    <div class="qbox-q">为什么在风险平价（Risk Parity）组合中加入商品？</div>
+    <div class="qbox-a">
+      （1）<strong>通胀对冲</strong>：股票债券在意外通胀下均亏损（实际利率上升压低 P/E 和债券价格），商品价格本身就是通胀的来源之一，正相关对冲；
+      （2）<strong>低相关性</strong>：商品与股票/债券历史相关性接近 0，加入后降低整体波动而不降低预期收益，提升 Sharpe；
+      （3）<strong>独立风险溢价来源</strong>：roll yield / carry 来自于供需市场的结构性特征，与股权风险溢价、期限溢价来源不同，提供真正的多元化。
+    </div>
+  </div>
+
+  <div class="qbox">
+    <div class="qbox-q">如果你来设计一个原油期货的 alpha 信号，你会考虑哪些因子？</div>
+    <div class="qbox-a">
+      <strong>基本面类：</strong>EIA 库存周报数据（周度公布，包含 crude/gasoline/distillate），OPEC 产量数据，钻井平台数（Baker Hughes rig count），炼厂开工率（crack spread），全球船运数据（实时库存代理）。<br>
+      <strong>技术/量化类：</strong>Time-series momentum（过去 3/6/12 月收益），曲线斜率（carry），vol term structure（隐含 vol 差），COT 持仓报告（商业对冲者 vs 投机者净仓位）。<br>
+      <strong>宏观类：</strong>美元指数（原油以美元计价，负相关），中国 PMI（需求预期），全球风险情绪（VIX）。<br>
+      <strong>事件类：</strong>OPEC 会议日期、EIA 报告日期前后的异常波动模式。
+    </div>
+  </div>
+
+  <div class="qbox">
+    <div class="qbox-q">如何检验一个商品 alpha 信号是否有 data mining 问题？</div>
+    <div class="qbox-a">
+      （1）<strong>Out-of-sample 检验</strong>：在 in-sample 之外的时间段验证（AQR 极度重视此点）；
+      （2）<strong>经济学直觉</strong>：信号必须有"为什么"的解释，而不只是 curve fitting；
+      （3）<strong>跨资产泛化</strong>：同样的信号在其他商品、其他资产类别是否也有效（"Value and Momentum Everywhere"的精神）；
+      （4）<strong>t统计量修正</strong>：考虑多重假设检验，Bonferroni 校正或 Harvey-Liu-Zhu (2016) 的 t-ratio 阈值（应 > 3.0 而非 2.0）；
+      （5）<strong>交易成本现实性</strong>：扣除合理交易成本后仍有 alpha。
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ Behavioral ══════════ -->
+<div class="section" id="behavioral">
+  <div class="section-label">13 — 经历准备</div>
+  <h2>经历 &amp; Behavioral 问题</h2>
+
+  <h3>如何将你的经历与这个职位联系</h3>
+
+  <div class="card">
+    <div class="card-title">Millennium 股票波动率研究 → 商品波动率因子</div>
+    <p style="font-size:13px">在 Millennium 的 equity volatility systematic team 中，你构建了 vol surface features 并设计了基于 Sharpe ratio 的动态组合模型。这与商品的 vol term structure、vol carry 因子在方法论上高度一致。可以说：<em>"我在股票波动率领域做的 feature engineering 和信号组合框架，直接可以迁移到商品波动率因子的研究中。"</em></p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">HFT Execution（U Chicago）→ Market Microstructure</div>
+    <p style="font-size:13px">商品期货的 microstructure 研究同样重要：order imbalance、spread、price impact 在原油等流动性较强的商品中也有研究价值。Markov chain 状态转换模型可以用于商品 regime（contango/backwardation 转换）建模。</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Zhixin 商品策略研究 → 直接相关</div>
+    <p style="font-size:13px">你在志信做过商品 timing 策略研究（volume and price based factors，TA-Lib，期货回测）。这是直接的商品研究经验，务必准备好具体案例：你找到了什么 pattern，IC 是多少，策略表现如何。</p>
+  </div>
+
+  <h3>常见 Behavioral 问题</h3>
+
+  <div class="qbox">
+    <div class="qbox-q">为什么对 managed futures / commodities 感兴趣？</div>
+    <div class="qbox-a">真实答案方向：对系统化策略跨资产类别应用感兴趣；商品市场连接实体经济（物理供需）与金融市场，研究维度丰富；AQR 的学术驱动文化与你的研究风格契合；Millennium 的经验让你看到了 vol 因子跨资产迁移的机会，想在商品/宏观领域深化。</div>
+  </div>
+
+  <div class="qbox">
+    <div class="qbox-q">讲一个你发现 alpha 信号的经历。</div>
+    <div class="qbox-a">准备：Millennium 的 vol surface features → 用两种 earnings date event vol 剥离方法构建清洁 vol surface → 预测 3M ATM 期权价格。重点讲：问题定义、数据处理的难点、信号逻辑（为什么 work）、evaluation 方法（Sharpe-based combining）、最终结果（net Sharpe > 2，deployed）。</div>
+  </div>
+
+  <div class="qbox">
+    <div class="qbox-q">你如何处理 data snooping 和 overfitting 风险？</div>
+    <div class="qbox-a">（1）先有经济学假设，再验证；（2）严格 out-of-sample 测试；（3）信号要能解释"为什么"，不只是 curve fit；（4）在 Millennium 时会用 Sharpe-based dynamic combining 而非手工优化参数，减少过拟合；（5）关注参数稳定性（走一走 sensitivity table）。</div>
+  </div>
+</div>
+
+<!-- ══════════ AQR 专项 ══════════ -->
+<div class="section" id="aqr-specific">
+  <div class="section-label">14 — AQR 专项</div>
+  <h2>AQR 专项问题 &amp; 文化准备</h2>
+
+  <div class="aqr-box">
+    <h4>AQR 文化关键词</h4>
+    <ul>
+      <li><strong>学术严谨（Academic Rigor）</strong>：每个策略都要有学术论文支撑，能回答"为什么"</li>
+      <li><strong>系统化（Systematic）</strong>：规则驱动，减少主观判断，依赖稳健的统计证据</li>
+      <li><strong>跨资产（Multi-Asset）</strong>：相同因子在不同市场的泛化是核心竞争力</li>
+      <li><strong>透明度</strong>：AQR 大量公开研究，对 factor investing 的普及贡献很大</li>
+      <li><strong>长期主义</strong>：因子可能有多年 drawdown，但长期超额收益来自风险溢价</li>
+    </ul>
+  </div>
+
+  <div class="qbox">
+    <div class="qbox-q">你了解 AQR 的哪些研究或策略？</div>
+    <div class="qbox-a">可以提到：（1）"Value and Momentum Everywhere"——因子跨资产的普遍性；（2）"Carry"（2018）——商品 carry = roll yield；（3）"Time Series Momentum"——趋势跟踪的系统性证据；（4）AQR 的 Risk Parity 理念（Bridgewater All Weather 之外的另一领军）；（5）最近的研究：2022 年后 AQR 表现逆转，value factor rebound。</div>
+  </div>
+
+  <div class="qbox">
+    <div class="qbox-q">Value factor 在 2018-2020 年经历了巨大 drawdown，你如何看待这个现象？</div>
+    <div class="qbox-a">这正是 AQR 经历的挑战（Cliff Asness 有多篇文章讨论）。解释：（1）低利率环境下，成长股估值扩张超出历史正常范围；（2）市场结构变化（科技公司无形资产不在 book value 中体现）；（3）但这不意味着 value factor 失效——它意味着 value spread（便宜与贵的估值差异）扩大到历史极值，长期反转概率更高（2022 年后 value 大幅反弹印证了这一点）。AQR 的立场：坚持因子，管理心理承受。</div>
+  </div>
+
+  <div class="qbox">
+    <div class="qbox-q">你最感兴趣的是什么研究方向？如果你来 AQR 的 MF&C 团队，你想做什么？</div>
+    <div class="qbox-a">准备方向：（1）商品波动率因子——利用我在 Millennium 的经验，将 equity vol surface 的技术迁移到商品 vol 曲线（ATM vol、vol term structure、vol carry）的 alpha 研究；（2）商品信号与宏观状态的交互——在不同通胀/增长 regime 下，carry/momentum 信号的条件有效性；（3）高频微观结构数据在商品中的应用——结合我在 U Chicago 的 Markov chain 研究，探索商品 regime 的日内预测。</div>
+  </div>
+
+  <h3>你需要准备的问题（问 James）</h3>
+  <div class="card">
+    <p style="font-size:13px;margin-bottom:8px">▸ The managed futures team's current research focus — are you exploring new commodity sub-asset classes or signals?</p>
+    <p style="font-size:13px;margin-bottom:8px">▸ How does the MF&C team interact with the multi-strategy fund? Is it standalone signals or integrated factor exposure?</p>
+    <p style="font-size:13px;margin-bottom:8px">▸ What's the balance between carry-based and momentum-based signals in current commodity allocations?</p>
+    <p style="font-size:13px;margin-bottom:0">▸ How do you think about commodity vol factors — is there overlap with the equity vol work happening elsewhere in AQR?</p>
+  </div>
+
+  <div class="warning">
+    最后提醒：面试是 30-45 分钟的 introductory call，James 会 assess fit，而不是纯技术深挖。重点是：展现对 systematic/factor research 的理解，将自己的 Millennium vol experience 清晰联系到商品，并表现出对 AQR 研究文化的真诚兴趣。准备 2-3 个你的项目的 "STAR" 故事，以及 2-3 个有见解的问题。
+  </div>
+</div>
+
+<div style="border-top:2px solid var(--border);padding-top:28px;margin-top:40px;display:flex;justify-content:space-between;align-items:center">
+  <div style="font-family:var(--mono);font-size:10px;color:var(--text-light)">
+    AQR Managed Futures &amp; Commodities — Interview Prep &nbsp;·&nbsp; Princeton MFin
+  </div>
+  <div style="font-family:var(--mono);font-size:10px;color:var(--accent);letter-spacing:0.1em">GOOD LUCK TOMORROW</div>
+</div>
+
+</div>
+
+<script>
+const sections = document.querySelectorAll('.section[id]');
+const links = document.querySelectorAll('#sidebar a');
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      links.forEach(l => l.classList.remove('active'));
+      const a = document.querySelector(`#sidebar a[href="#${e.target.id}"]`);
+      if (a) a.classList.add('active');
+    }
+  });
+}, { threshold: 0.25 });
+sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>

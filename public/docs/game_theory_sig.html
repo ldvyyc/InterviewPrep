@@ -1,0 +1,1418 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>博弈论 · SIG QR 面试速查</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=DM+Serif+Display:ital@0;1&family=Noto+Serif+SC:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:       #0d0f14;
+    --bg2:      #13161e;
+    --bg3:      #1a1e2a;
+    --border:   #252a38;
+    --gold:     #d4a843;
+    --gold2:    #e8c46a;
+    --green:    #4ade80;
+    --red:      #f87171;
+    --blue:     #60a5fa;
+    --purple:   #c084fc;
+    --text:     #e2e4ec;
+    --muted:    #8891a8;
+    --accent:   #d4a843;
+    --sidebar-w: 270px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Serif SC', serif;
+    line-height: 1.75;
+    display: flex;
+    min-height: 100vh;
+  }
+
+  /* ── SIDEBAR ── */
+  #sidebar {
+    width: var(--sidebar-w);
+    min-height: 100vh;
+    background: var(--bg2);
+    border-right: 1px solid var(--border);
+    position: fixed;
+    top: 0; left: 0;
+    overflow-y: auto;
+    z-index: 100;
+    padding-bottom: 40px;
+  }
+
+  .sb-header {
+    padding: 28px 22px 18px;
+    border-bottom: 1px solid var(--border);
+  }
+  .sb-header .logo {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--gold);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .sb-header h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 19px;
+    color: var(--text);
+    line-height: 1.3;
+  }
+  .sb-header .sub {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 6px;
+    letter-spacing: 1px;
+  }
+
+  .sb-section { margin-top: 10px; }
+  .sb-section-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 12px 22px 4px;
+  }
+  .sb-section a {
+    display: block;
+    padding: 7px 22px 7px 28px;
+    font-size: 13px;
+    color: #9aa0b4;
+    text-decoration: none;
+    border-left: 2px solid transparent;
+    transition: all 0.15s;
+    line-height: 1.4;
+  }
+  .sb-section a:hover,
+  .sb-section a.active {
+    color: var(--gold2);
+    border-left-color: var(--gold);
+    background: rgba(212,168,67,0.06);
+  }
+  .sb-section a .tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    padding: 1px 5px;
+    border-radius: 3px;
+    margin-left: 5px;
+    vertical-align: middle;
+  }
+  .tag-sig { background: rgba(212,168,67,0.2); color: var(--gold); }
+  .tag-key { background: rgba(96,165,250,0.2); color: var(--blue); }
+
+  /* ── MAIN ── */
+  #main {
+    margin-left: var(--sidebar-w);
+    flex: 1;
+    padding: 60px 56px 120px;
+    max-width: 980px;
+  }
+
+  /* ── TOP BANNER ── */
+  .banner {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: linear-gradient(135deg, #1a1e2a 0%, #0f1420 100%);
+    padding: 36px 40px;
+    margin-bottom: 56px;
+    position: relative;
+    overflow: hidden;
+  }
+  .banner::before {
+    content: 'GAME THEORY';
+    position: absolute;
+    right: -10px; top: 50%;
+    transform: translateY(-50%);
+    font-family: 'DM Serif Display', serif;
+    font-size: 90px;
+    color: rgba(212,168,67,0.04);
+    white-space: nowrap;
+    pointer-events: none;
+  }
+  .banner .eyebrow {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .banner h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 32px;
+    color: var(--text);
+    margin-bottom: 12px;
+  }
+  .banner p { font-size: 14px; color: var(--muted); max-width: 600px; }
+
+  /* ── SECTION HEADERS ── */
+  .section { margin-bottom: 70px; }
+  .section-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 26px;
+    color: var(--text);
+    margin-bottom: 6px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-title span {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--gold);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  /* ── CONCEPT CARDS ── */
+  .card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px 28px;
+    margin-bottom: 20px;
+  }
+  .card-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--gold2);
+    margin-bottom: 10px;
+    letter-spacing: 0.5px;
+  }
+  .card p { font-size: 14px; margin-bottom: 8px; }
+  .card p:last-child { margin-bottom: 0; }
+
+  .def-box {
+    background: var(--bg3);
+    border-left: 3px solid var(--gold);
+    padding: 14px 18px;
+    border-radius: 0 6px 6px 0;
+    margin: 12px 0;
+    font-size: 14px;
+  }
+
+  /* ── PAYOFF MATRIX ── */
+  .matrix-wrap { overflow-x: auto; margin: 16px 0; }
+  table.matrix {
+    border-collapse: separate;
+    border-spacing: 0;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    margin: 0 auto;
+  }
+  table.matrix th {
+    padding: 10px 22px;
+    background: var(--bg3);
+    color: var(--gold);
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    border: 1px solid var(--border);
+  }
+  table.matrix td {
+    padding: 12px 22px;
+    border: 1px solid var(--border);
+    background: var(--bg2);
+    text-align: center;
+    min-width: 110px;
+  }
+  table.matrix td.nash {
+    background: rgba(212,168,67,0.12);
+    color: var(--gold2);
+    font-weight: 600;
+  }
+  table.matrix td.highlight-g {
+    background: rgba(74,222,128,0.08);
+    color: var(--green);
+  }
+  table.matrix td.row-label {
+    background: var(--bg3);
+    color: var(--gold);
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+
+  /* ── Q&A BLOCKS ── */
+  .qa-block {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 16px;
+    overflow: hidden;
+  }
+  .qa-q {
+    background: var(--bg3);
+    padding: 14px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    user-select: none;
+  }
+  .qa-q::after {
+    content: '▸';
+    font-family: monospace;
+    color: var(--gold);
+    transition: transform 0.2s;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .qa-q.open::after { transform: rotate(90deg); }
+  .qa-a {
+    padding: 0 20px;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.35s ease, padding 0.25s;
+    font-size: 14px;
+    background: var(--bg2);
+  }
+  .qa-a.open { max-height: 800px; padding: 16px 20px; }
+
+  /* ── MATH ── */
+  .math {
+    font-family: 'IBM Plex Mono', monospace;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 12px 16px;
+    font-size: 13px;
+    color: var(--blue);
+    margin: 10px 0;
+    white-space: pre-wrap;
+    overflow-x: auto;
+  }
+
+  /* ── CHIPS / TAGS ── */
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+  .chip {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 4px;
+    letter-spacing: 0.5px;
+  }
+  .chip-gold { background: rgba(212,168,67,0.15); color: var(--gold2); border: 1px solid rgba(212,168,67,0.3); }
+  .chip-blue { background: rgba(96,165,250,0.15); color: var(--blue); border: 1px solid rgba(96,165,250,0.3); }
+  .chip-green { background: rgba(74,222,128,0.15); color: var(--green); border: 1px solid rgba(74,222,128,0.3); }
+  .chip-red { background: rgba(248,113,113,0.15); color: var(--red); border: 1px solid rgba(248,113,113,0.3); }
+  .chip-purple { background: rgba(192,132,252,0.15); color: var(--purple); border: 1px solid rgba(192,132,252,0.3); }
+
+  /* ── TIMELINE / TREE ── */
+  .tree { margin: 16px 0; padding-left: 20px; }
+  .tree li {
+    margin-bottom: 8px;
+    font-size: 14px;
+    list-style: none;
+    position: relative;
+    padding-left: 18px;
+  }
+  .tree li::before {
+    content: '◆';
+    position: absolute; left: 0;
+    color: var(--gold);
+    font-size: 8px;
+    top: 6px;
+  }
+
+  /* ── ALERT ── */
+  .alert {
+    border-radius: 6px;
+    padding: 12px 18px;
+    font-size: 13px;
+    margin: 14px 0;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .alert-gold { background: rgba(212,168,67,0.1); border: 1px solid rgba(212,168,67,0.25); color: var(--gold2); }
+  .alert-blue { background: rgba(96,165,250,0.1); border: 1px solid rgba(96,165,250,0.25); color: #93c5fd; }
+  .alert-red  { background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.25); color: #fca5a5; }
+  .alert-green { background: rgba(74,222,128,0.1); border: 1px solid rgba(74,222,128,0.25); color: #86efac; }
+  .alert-icon { font-size: 16px; line-height: 1.4; flex-shrink: 0; }
+
+  /* ── SIG BADGE ── */
+  .sig-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(212,168,67,0.12);
+    border: 1px solid rgba(212,168,67,0.3);
+    color: var(--gold2);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1px;
+    padding: 3px 10px;
+    border-radius: 4px;
+    margin-bottom: 14px;
+  }
+
+  /* ── STEP ── */
+  .steps { counter-reset: step; }
+  .step {
+    counter-increment: step;
+    display: flex;
+    gap: 16px;
+    margin-bottom: 14px;
+    font-size: 14px;
+  }
+  .step::before {
+    content: counter(step);
+    background: var(--gold);
+    color: var(--bg);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    min-width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  /* ── DIVIDER ── */
+  hr { border: none; border-top: 1px solid var(--border); margin: 30px 0; }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: #3a4158; }
+
+  /* responsive */
+  @media (max-width: 900px) {
+    #sidebar { width: 220px; }
+    #main { margin-left: 220px; padding: 40px 24px 80px; }
+  }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 700px) { .two-col { grid-template-columns: 1fr; } }
+
+  strong { color: var(--gold2); }
+  em { color: var(--blue); font-style: normal; font-family: 'IBM Plex Mono', monospace; font-size: 0.9em; }
+</style>
+</head>
+<body>
+
+<!-- ════════════════════ SIDEBAR ════════════════════ -->
+<nav id="sidebar">
+  <div class="sb-header">
+    <div class="logo">QR Interview Prep</div>
+    <h1>博弈论<br>Game Theory</h1>
+    <div class="sub">SIG · Quant Research / Trader</div>
+  </div>
+
+  <div class="sb-section">
+    <div class="sb-section-title">基础框架</div>
+    <a href="#s1">博弈基本概念</a>
+    <a href="#s2">占优策略</a>
+    <a href="#s3">纳什均衡（纯策略）</a>
+    <a href="#s4">混合策略均衡 <span class="tag tag-key">KEY</span></a>
+  </div>
+
+  <div class="sb-section">
+    <div class="sb-section-title">经典博弈</div>
+    <a href="#s5">囚徒困境</a>
+    <a href="#s6">猎鹿博弈 · 协调博弈</a>
+    <a href="#s7">胆小鬼博弈 · Chicken</a>
+    <a href="#s8">性别之战</a>
+  </div>
+
+  <div class="sb-section">
+    <div class="sb-section-title">动态博弈</div>
+    <a href="#s9">序贯博弈 · 逆向归纳 <span class="tag tag-key">KEY</span></a>
+    <a href="#s10">重复博弈 · 触发策略</a>
+  </div>
+
+  <div class="sb-section">
+    <div class="sb-section-title">SIG 高频考点</div>
+    <a href="#s11">拍卖理论 <span class="tag tag-sig">SIG★</span></a>
+    <a href="#s12">做市商博弈 <span class="tag tag-sig">SIG★</span></a>
+    <a href="#s13">扑克与Bluffing <span class="tag tag-sig">SIG★</span></a>
+    <a href="#s14">贝叶斯博弈 · 不完全信息</a>
+  </div>
+
+  <div class="sb-section">
+    <div class="sb-section-title">面试例题汇总</div>
+    <a href="#s15">经典脑筋急转弯题 <span class="tag tag-sig">SIG★</span></a>
+  </div>
+</nav>
+
+<!-- ════════════════════ MAIN ════════════════════ -->
+<main id="main">
+
+  <div class="banner">
+    <div class="eyebrow">Susquehanna International Group · QR Interview</div>
+    <h2>博弈论 速查手册</h2>
+    <p>覆盖SIG量化研究员/交易员面试中的博弈论核心考点，含完整例题与解析。重点关注：拍卖、做市、混合策略、逆向归纳。</p>
+  </div>
+
+  <!-- ══ S1 基础概念 ══ -->
+  <section class="section" id="s1">
+    <h2 class="section-title"><span>01 · FUNDAMENTALS</span>博弈基本概念</h2>
+
+    <div class="card">
+      <div class="card-title">博弈的三要素</div>
+      <ul class="tree">
+        <li><strong>参与者 (Players)</strong>：理性决策者，目标是最大化自身收益</li>
+        <li><strong>策略 (Strategies)</strong>：每个参与者的行动空间 S<sub>i</sub></li>
+        <li><strong>收益 (Payoffs)</strong>：函数 u<sub>i</sub>(s<sub>1</sub>, s<sub>2</sub>, …) 描述策略组合下的效用</li>
+      </ul>
+    </div>
+
+    <div class="two-col">
+      <div class="card">
+        <div class="card-title">静态博弈 vs 动态博弈</div>
+        <p><strong>静态</strong>：同时行动，信息同步（Normal Form，收益矩阵）</p>
+        <p><strong>动态</strong>：先后行动，后者可观察前者（Extensive Form，博弈树）</p>
+      </div>
+      <div class="card">
+        <div class="card-title">完全信息 vs 不完全信息</div>
+        <p><strong>完全信息</strong>：所有收益函数是公开知识（common knowledge）</p>
+        <p><strong>不完全信息</strong>：部分私有信息（类型 type），引入 Bayes-Nash 均衡</p>
+      </div>
+    </div>
+
+    <div class="alert alert-blue">
+      <span class="alert-icon">ℹ</span>
+      <span>SIG 面试中几乎所有题目默认<strong>理性人假设</strong> + <strong>共同知识</strong>。若题目给出不对称信息，要立刻识别为 Bayesian game。</span>
+    </div>
+  </section>
+
+  <!-- ══ S2 占优策略 ══ -->
+  <section class="section" id="s2">
+    <h2 class="section-title"><span>02 · DOMINANCE</span>占优策略</h2>
+
+    <div class="card">
+      <div class="card-title">严格占优 (Strict Dominance)</div>
+      <div class="def-box">
+        策略 s<sub>i</sub> 严格占优于 s<sub>i</sub>′，若对所有对手策略组合 s<sub>-i</sub>：<br>
+        u<sub>i</sub>(s<sub>i</sub>, s<sub>-i</sub>) &gt; u<sub>i</sub>(s<sub>i</sub>′, s<sub>-i</sub>)
+      </div>
+      <p>理性人永远不会选择被严格占优的策略 → 可<strong>迭代删除</strong>（IESDS）。</p>
+    </div>
+
+    <div class="qa-block">
+      <div class="qa-q">📘 例题：两家公司广告博弈 — 找出占优策略</div>
+      <div class="qa-a">
+        <p>设A、B两家公司各自选择投放广告(Advertise)或不投放(No Ad)：</p>
+        <div class="matrix-wrap">
+          <table class="matrix">
+            <tr>
+              <th></th><th>B: Advertise</th><th>B: No Ad</th>
+            </tr>
+            <tr>
+              <td class="row-label">A: Advertise</td>
+              <td class="nash">(3, 3)</td>
+              <td class="highlight-g">(5, 1)</td>
+            </tr>
+            <tr>
+              <td class="row-label">A: No Ad</td>
+              <td>(1, 5)</td>
+              <td>(4, 4)</td>
+            </tr>
+          </table>
+        </div>
+        <p style="margin-top:12px">对A：无论B选什么，Advertise ≥ No Ad（3>1 且 5>4）→ <strong>Advertise 严格占优</strong></p>
+        <p>对B：同理，Advertise 严格占优</p>
+        <p><strong>结论</strong>：均衡 (Advertise, Advertise)，收益 (3,3)——典型<strong>囚徒困境结构</strong>。合作(No Ad, No Ad)可以给双方更高收益(4,4)，但均衡是次优的。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ S3 纯策略纳什均衡 ══ -->
+  <section class="section" id="s3">
+    <h2 class="section-title"><span>03 · NASH EQUILIBRIUM</span>纳什均衡（纯策略）</h2>
+
+    <div class="card">
+      <div class="card-title">定义</div>
+      <div class="def-box">
+        策略组合 (s₁*, s₂*, …, sₙ*) 是纳什均衡，当且仅当对每个参与者 i：<br><br>
+        u<sub>i</sub>(s<sub>i</sub>*, s<sub>-i</sub>*) ≥ u<sub>i</sub>(s<sub>i</sub>, s<sub>-i</sub>*)  ∀ s<sub>i</sub> ∈ S<sub>i</sub>
+      </div>
+      <p style="margin-top:8px">即：<strong>在对手策略不变的前提下，没有人有单独偏离的动机。</strong></p>
+    </div>
+
+    <div class="alert alert-gold">
+      <span class="alert-icon">⚡</span>
+      <span><strong>面试快速寻找方法</strong>：在收益矩阵中，对每列找行最大值画圈(Row player BR)，对每行找列最大值画方块(Col player BR)。同时被圈又被框的格子就是纯策略NE。</span>
+    </div>
+
+    <div class="qa-block">
+      <div class="qa-q">📘 例题：以下矩阵有几个纯策略纳什均衡？</div>
+      <div class="qa-a">
+        <div class="matrix-wrap">
+          <table class="matrix">
+            <tr><th></th><th>B: Left</th><th>B: Right</th></tr>
+            <tr>
+              <td class="row-label">A: Up</td>
+              <td>(2, 1)</td>
+              <td>(0, 0)</td>
+            </tr>
+            <tr>
+              <td class="row-label">A: Down</td>
+              <td>(0, 0)</td>
+              <td class="nash">(1, 2)</td>
+            </tr>
+          </table>
+        </div>
+        <p style="margin-top:10px">• A的最优反应：B选Left → A选Up（2>0）；B选Right → A选Down（1>0）</p>
+        <p>• B的最优反应：A选Up → B选Left（1>0）；A选Down → B选Right（2>0）</p>
+        <p><strong>纯策略NE</strong>：(Up, Left) 和 (Down, Right) —— 两个均衡，是典型协调博弈。</p>
+        <p>注意：还存在一个<strong>混合策略NE</strong>（见Section 4）。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ S4 混合策略 ══ -->
+  <section class="section" id="s4">
+    <h2 class="section-title"><span>04 · MIXED STRATEGIES</span>混合策略均衡</h2>
+
+    <div class="card">
+      <div class="card-title">核心原理：无差异条件</div>
+      <div class="def-box">
+        在混合策略均衡中，参与者对其<strong>支撑集内的每个纯策略无差异</strong>（expected payoff相等），否则会去掉差的策略。
+      </div>
+    </div>
+
+    <div class="qa-block">
+      <div class="qa-q">📘 例题（经典）：猜硬币游戏 — 求混合策略均衡</div>
+      <div class="qa-a">
+        <p>A选正/反，B猜正/反。猜对B赢1元，猜错A赢1元（零和博弈）：</p>
+        <div class="matrix-wrap">
+          <table class="matrix">
+            <tr><th></th><th>B: 猜正</th><th>B: 猜反</th></tr>
+            <tr><td class="row-label">A: 正</td><td>(-1, +1)</td><td>(+1, -1)</td></tr>
+            <tr><td class="row-label">A: 反</td><td>(+1, -1)</td><td>(-1, +1)</td></tr>
+          </table>
+        </div>
+        <p style="margin-top:10px">无纯策略NE（无论哪个格，某方想偏离）。</p>
+        <p><strong>求混合NE</strong>：设 A 以概率 p 出正；B 以概率 q 猜正。</p>
+        <div class="math">B的无差异条件（对猜正/猜反期望相等）：
+A出正让B猜正期望 = p·(+1) + (1-p)·(-1) = 2p - 1
+A出正让B猜反期望 = p·(-1) + (1-p)·(+1) = 1 - 2p
+令 2p-1 = 1-2p  →  p = 1/2
+
+A的无差异条件（对称）：q = 1/2</div>
+        <p><strong>均衡</strong>：双方各以 1/2 随机选择，期望收益均为 0。</p>
+      </div>
+    </div>
+
+    <div class="qa-block">
+      <div class="qa-q">📘 例题：非对称收益矩阵的混合策略（SIG常考类型）</div>
+      <div class="qa-a">
+        <div class="matrix-wrap">
+          <table class="matrix">
+            <tr><th></th><th>B: Left</th><th>B: Right</th></tr>
+            <tr><td class="row-label">A: Up</td><td>(4, 2)</td><td>(0, 3)</td></tr>
+            <tr><td class="row-label">A: Down</td><td>(3, 0)</td><td>(1, 4)</td></tr>
+          </table>
+        </div>
+        <p style="margin-top:12px">无纯策略NE（请验证：每格都有人想偏离）。</p>
+        <p><strong>求 A 的混合策略</strong>：让 B 对 Left/Right 无差异。设 A 以概率 p 选 Up：</p>
+        <div class="math">B选Left的期望：  2p + 0·(1-p) = 2p
+B选Right的期望： 3p + 4·(1-p) = 4 - p
+令 2p = 4 - p  →  3p = 4  →  p = 4/3 ??</div>
+        <p>Wait: 让 <em>B</em> 无差异需要调整 <em>A</em> 的混合。重新：</p>
+        <div class="math">B选Left期望 = 2p + 0·(1-p) = 2p
+B选Right期望 = 3p + 4(1-p) = 4 - p
+2p = 4 - p  →  p = 4/3  （>1，不合法）</div>
+        <p>这说明矩阵中 B 实际上有<strong>占优策略</strong>：Right 弱占优（2 vs 3, 3 vs 4），等等——</p>
+        <div class="math">检查 B：Left vs Right
+  A=Up:   B(Left)=2, B(Right)=3  → Right 更好
+  A=Down: B(Left)=0, B(Right)=4  → Right 更好
+B 的严格占优策略：Right！</div>
+        <p>删除 B:Left，A 在 (Up:0, Down:1) 中选 <strong>Down</strong>。</p>
+        <p><strong>唯一纯策略NE = (Down, Right)，收益 (1,4)</strong>。这说明先用 IESDS 再找NE 更高效。</p>
+        <div class="alert alert-gold" style="margin-top:12px">
+          <span class="alert-icon">★</span>
+          <span>面试技巧：求混合NE前先检查有无占优策略/IESDS，能大幅简化。</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="qa-block">
+      <div class="qa-q">📘 例题：Battle of Sexes 的三个均衡</div>
+      <div class="qa-a">
+        <p>夫妻二人选择看足球(F)或看歌剧(O)：</p>
+        <div class="matrix-wrap">
+          <table class="matrix">
+            <tr><th></th><th>B: 足球(F)</th><th>B: 歌剧(O)</th></tr>
+            <tr><td class="row-label">A: 足球(F)</td><td class="nash">(2, 1)</td><td>(0, 0)</td></tr>
+            <tr><td class="row-label">A: 歌剧(O)</td><td>(0, 0)</td><td class="nash">(1, 2)</td></tr>
+          </table>
+        </div>
+        <p style="margin-top:10px"><strong>纯策略NE</strong>：(F,F) 和 (O,O)。</p>
+        <p><strong>混合策略NE</strong>：设 A 以概率 p 选 F，B 以概率 q 选 F：</p>
+        <div class="math">让 B 无差异：
+  B选F期望 = 1·p + 0·(1-p) = p
+  B选O期望 = 0·p + 2·(1-p) = 2-2p
+  p = 2-2p → p = 2/3
+
+让 A 无差异：
+  A选F期望 = 2q + 0(1-q) = 2q
+  A选O期望 = 0·q + 1·(1-q) = 1-q
+  2q = 1-q → q = 1/3
+
+混合NE：A选F概率=2/3，B选F概率=1/3
+期望收益：A = 2·(1/3) = 2/3，B = 1·(2/3) = 2/3</div>
+        <p><strong>总结：3个均衡</strong> — (F,F), (O,O), 和混合策略(2/3, 1/3)。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ S5 囚徒困境 ══ -->
+  <section class="section" id="s5">
+    <h2 class="section-title"><span>05 · CLASSIC GAMES</span>囚徒困境</h2>
+
+    <div class="card">
+      <div class="card-title">收益矩阵（经典形式）</div>
+      <div class="matrix-wrap">
+        <table class="matrix">
+          <tr><th></th><th>B: 合作(C)</th><th>B: 背叛(D)</th></tr>
+          <tr><td class="row-label">A: 合作(C)</td><td>(R, R) = (3,3)</td><td>(S, T) = (0,5)</td></tr>
+          <tr><td class="row-label">A: 背叛(D)</td><td>(T, S) = (5,0)</td><td class="nash">(P, P) = (1,1)</td></tr>
+        </table>
+      </div>
+      <p style="margin-top:12px">参数条件：T > R > P > S，且 2R > T + S（合作总和更优）</p>
+    </div>
+
+    <div class="alert alert-red">
+      <span class="alert-icon">⚠</span>
+      <span><strong>核心悖论</strong>：背叛 D 是严格占优策略，但均衡 (D,D) 对双方都比 (C,C) 差。个人理性 ≠ 集体最优。</span>
+    </div>
+
+    <div class="chips">
+      <span class="chip chip-gold">寡头定价</span>
+      <span class="chip chip-blue">军备竞赛</span>
+      <span class="chip chip-green">公地悲剧</span>
+      <span class="chip chip-purple">双边报价扩张</span>
+    </div>
+
+    <div class="qa-block">
+      <div class="qa-q">📘 SIG 面试口头题：为什么市场上买卖价差不会被竞争压缩到零？</div>
+      <div class="qa-a">
+        <p>做市商之间存在囚徒困境结构：若所有做市商都把 spread 缩到极小，利润极低（类似 P,P）；若某人保持较宽 spread 其他人缩小，后者抢走订单（T vs S）。</p>
+        <p>但在<strong>重复博弈</strong>中（每天持续交易），触发策略（Grim Trigger）可维持合作——若有人压缩 spread，其他人立刻报复，使压缩者长期收益下降。因此现实中 spread 保持在某个有利润的水平，不会竞争到零。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ S6 协调博弈 ══ -->
+  <section class="section" id="s6">
+    <h2 class="section-title"><span>06 · COORDINATION</span>猎鹿博弈 · 协调博弈</h2>
+
+    <div class="matrix-wrap" style="margin-bottom:16px">
+      <table class="matrix">
+        <tr><th></th><th>B: 猎鹿(S)</th><th>B: 猎兔(H)</th></tr>
+        <tr><td class="row-label">A: 猎鹿(S)</td><td class="nash">(4, 4)</td><td>(0, 3)</td></tr>
+        <tr><td class="row-label">A: 猎兔(H)</td><td>(3, 0)</td><td class="nash">(3, 3)</td></tr>
+      </table>
+    </div>
+
+    <div class="two-col">
+      <div class="card">
+        <div class="card-title">两个纯策略NE</div>
+        <p><strong>(S,S)</strong>：帕累托最优均衡，但需要信任对方合作</p>
+        <p><strong>(H,H)</strong>：风险占优均衡，更"安全"（guaranteed 3）</p>
+      </div>
+      <div class="card">
+        <div class="card-title">均衡选择问题</div>
+        <p>Pareto Dominant NE vs Risk Dominant NE：</p>
+        <p>现实中协调失败 → 陷入次优均衡，需沟通/承诺机制</p>
+      </div>
+    </div>
+
+    <div class="alert alert-blue">
+      <span class="alert-icon">💡</span>
+      <span>金融应用：市场标准（clearing协议、合约格式）的形成是协调博弈——一旦某标准成为焦点（Schelling focal point），即使存在更优标准也难以迁移。</span>
+    </div>
+  </section>
+
+  <!-- ══ S7 Chicken ══ -->
+  <section class="section" id="s7">
+    <h2 class="section-title"><span>07 · ANTI-COORDINATION</span>胆小鬼博弈 · Chicken Game</h2>
+
+    <div class="matrix-wrap" style="margin-bottom:16px">
+      <table class="matrix">
+        <tr><th></th><th>B: 直行(D)</th><th>B: 转向(C)</th></tr>
+        <tr><td class="row-label">A: 直行(D)</td><td class="highlight-g" style="background:rgba(248,113,113,0.12);color:var(--red)">(-10,-10) 撞车</td><td class="nash">(+1, -1)</td></tr>
+        <tr><td class="row-label">A: 转向(C)</td><td class="nash">(-1, +1)</td><td>(0, 0)</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">关键特征</div>
+      <ul class="tree">
+        <li>两个纯策略NE，均为<strong>反协调</strong>：(D,C) 和 (C,D)</li>
+        <li>存在混合策略NE：设对称，令对手无差异</li>
+        <li><strong>先承诺优势</strong>（First-mover advantage）：先公开宣布"我不会转向"可获得优势</li>
+        <li>金融应用：双寡头价格战、银行救助博弈（谁先认亏）</li>
+      </ul>
+    </div>
+
+    <div class="qa-block">
+      <div class="qa-q">📘 求 Chicken Game 的混合策略NE</div>
+      <div class="qa-a">
+        <p>设 A 以概率 p 选直行(D)，让 B 对 D/C 无差异：</p>
+        <div class="math">B选直行(D)期望 = -10p + 1·(1-p) = 1 - 11p
+B选转向(C)期望 = -1·p + 0·(1-p) = -p
+
+令 1-11p = -p  →  1 = 10p  →  p = 1/10</div>
+        <p>由对称性 q = 1/10。<strong>混合NE：双方各以1/10概率直行，9/10概率转向。</strong></p>
+        <p>期望收益：B = -1/10 = -0.1（小负数，但好过撞车）</p>
+        <div class="alert alert-red" style="margin-top:10px">
+          <span class="alert-icon">⚠</span>
+          <span>混合NE下撞车概率 = p·q = 1/100 = 1%，不为零！相互威慑中存在真实事故风险。</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ S8 BoS ══ -->
+  <section class="section" id="s8">
+    <h2 class="section-title"><span>08 · CLASSIC GAMES</span>性别之战 Battle of Sexes</h2>
+    <div class="card">
+      <p>已在 Section 4 混合策略部分详细讲解。核心要点：</p>
+      <ul class="tree">
+        <li>两个纯策略NE + 一个混合策略NE（共3个）</li>
+        <li>混合NE期望收益 = 2/3 &lt; 纯策略NE（1或2），混合NE <strong>帕累托劣于</strong>纯NE</li>
+        <li>如何协调？→ 先行承诺、沟通机制、重复博弈中的惯例形成</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ══ S9 逆向归纳 ══ -->
+  <section class="section" id="s9">
+    <h2 class="section-title"><span>09 · DYNAMIC GAMES</span>序贯博弈 · 逆向归纳</h2>
+
+    <div class="card">
+      <div class="card-title">子博弈精炼纳什均衡 (SPNE)</div>
+      <div class="def-box">
+        在每一个子博弈中构成NE的策略组合。消除了非可信威胁（non-credible threats）。
+        求法：从博弈树末端向前逆推（Backward Induction）。
+      </div>
+    </div>
+
+    <div class="qa-block">
+      <div class="qa-q">📘 例题：进入博弈 (Entry Game)</div>
+      <div class="qa-a">
+        <p>在位者(I) vs 进入者(E)：E 先决定进入(In)或不进(Out)，I 然后决定对抗(F)或默许(A)。</p>
+        <div class="math">博弈树：
+E选In → I选Fight: (E=-1, I=-1)
+E选In → I选Accommodate: (E=+1, I=+1)
+E选Out: (E=0, I=+3)</div>
+        <p><strong>逆向归纳</strong>：</p>
+        <div class="steps">
+          <div class="step">若 E 选了 In，I 面临 Fight(-1) vs Accommodate(+1) → I 选 <strong>Accommodate</strong></div>
+          <div class="step">E 预判 I 会 Accommodate → In 得 +1 > Out 得 0 → E 选 <strong>In</strong></div>
+        </div>
+        <p style="margin-top:10px"><strong>SPNE = (In, Accommodate)，收益 (1, 1)</strong></p>
+        <p>注意：I 威胁"你进来我就打"是<strong>不可信威胁</strong>，因为真进来后 I 自己也受损，不会执行。SPNE 消除了这种威胁。</p>
+      </div>
+    </div>
+
+    <div class="qa-block">
+      <div class="qa-q">📘 例题：三层 Centipede Game（蜈蚣博弈）</div>
+      <div class="qa-a">
+        <p>A和B轮流决定：在自己回合选 Stop(S) 或 Pass(P)。每轮 Pass 使总收益增长但分配给下一个人更多。</p>
+        <div class="math">回合1(A行动): S→(2,0); P→回合2
+回合2(B行动): S→(1,3); P→回合3
+回合3(A行动): S→(4,2); P→(3,5)</div>
+        <p><strong>逆向归纳</strong>：</p>
+        <div class="steps">
+          <div class="step">回合3: A选S(4)>P(3) → A选Stop，A得4，B得2</div>
+          <div class="step">回合2: B预判回合3 A选S → B现在 S(3) vs P(B得2) → B选Stop，B得3，A得1</div>
+          <div class="step">回合1: A预判回合2 B选S → A现在 S(2) vs P(A得1) → A选Stop，A得2，B得0</div>
+        </div>
+        <p style="margin-top:10px"><strong>SPNE：A 在第一回合就 Stop</strong>，收益(2,0)。</p>
+        <div class="alert alert-red">
+          <span class="alert-icon">⚠</span>
+          <span>实验中人们不会在第一回合就停，这挑战了理性人假设。蜈蚣博弈常被用来讨论有限理性、利他主义、以及理性的共同知识失效。</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="qa-block">
+      <div class="qa-q">📘 例题：先动优势 vs 后动优势</div>
+      <div class="qa-a">
+        <p><strong>Stackelberg 领导者博弈</strong>（产量竞争）：</p>
+        <p>Leader 先设产量 q₁，Follower 观察后设 q₂。市场价格 P = 100 - q₁ - q₂，零成本。</p>
+        <div class="math">Follower 的 BR（给定 q₁）：
+  max q₂(100 - q₁ - q₂) → q₂* = (100 - q₁)/2
+
+Leader 逆向归纳代入：
+  π₁ = q₁(100 - q₁ - (100-q₁)/2) = q₁(50 - q₁/2)
+  d/dq₁: 50 - q₁ = 0 → q₁* = 50
+  q₂* = (100-50)/2 = 25
+
+收益：π₁ = 50×25 = 1250，π₂ = 25×25 = 625</div>
+        <p>Cournot（同时）均衡：q₁=q₂=100/3≈33.3，各得约1111。</p>
+        <p><strong>先动优势</strong>：Leader 收益 1250 > Cournot 1111，先行承诺有利。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ S10 重复博弈 ══ -->
+  <section class="section" id="s10">
+    <h2 class="section-title"><span>10 · REPEATED GAMES</span>重复博弈 · 触发策略</h2>
+
+    <div class="two-col">
+      <div class="card">
+        <div class="card-title">有限重复博弈</div>
+        <p>若有限次重复，逆向归纳推回：每轮均衡是单次博弈均衡。<strong>合作无法维持。</strong></p>
+        <p>（除非有多个均衡，或者存在信誉效应）</p>
+      </div>
+      <div class="card">
+        <div class="card-title">无限重复博弈</div>
+        <p>贴现因子 δ∈(0,1)，当 δ 足够大（玩家足够有耐心），合作均衡可以用触发策略支撑。</p>
+      </div>
+    </div>
+
+    <div class="qa-block">
+      <div class="qa-q">📘 例题：Grim Trigger 维持合作的条件</div>
+      <div class="qa-a">
+        <p>无限重复囚徒困境，收益：合作(C,C)得 R=3，背叛得 T=5，惩罚得 P=1。</p>
+        <p><strong>Grim Trigger 策略</strong>：从合作开始，一旦有人背叛，永远背叛。</p>
+        <div class="math">合作收益（折现求和）：
+  V(Cooperate) = R + δR + δ²R + ... = R/(1-δ) = 3/(1-δ)
+
+背叛收益：
+  V(Deviate) = T + δP + δ²P + ... = T + δP/(1-δ) = 5 + δ·1/(1-δ)
+
+合作优于背叛的条件：
+  3/(1-δ) ≥ 5 + δ/(1-δ)
+  3 ≥ 5(1-δ) + δ
+  3 ≥ 5 - 5δ + δ
+  3 ≥ 5 - 4δ
+  4δ ≥ 2
+  δ ≥ 1/2</div>
+        <p><strong>结论</strong>：当贴现因子 δ ≥ 1/2（即玩家足够有耐心），Grim Trigger 可维持合作均衡。</p>
+        <div class="alert alert-blue">
+          <span class="alert-icon">💡</span>
+          <span>Folk 定理：在无限重复博弈中，只要δ足够大，几乎任何帕累托改进均衡都可以被支撑。这解释了为什么长期关系中合作更容易出现。</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ S11 拍卖 ══ -->
+  <section class="section" id="s11">
+    <h2 class="section-title"><span>11 · AUCTIONS</span>拍卖理论</h2>
+
+    <div class="sig-badge">★ SIG 高频考点 — 拍卖是 SIG 文化核心</div>
+
+    <div class="two-col">
+      <div class="card">
+        <div class="card-title">一价密封拍卖 (First-Price Sealed Bid)</div>
+        <p>最高出价者获胜，支付自己报价。</p>
+        <p>策略：<strong>低报</strong>（shading）— 报价低于真实估值以获取正剩余</p>
+        <div class="math">n个对称bidder，估值v~U[0,1]：
+最优报价 b(v) = v·(n-1)/n
+
+n=2时：b(v) = v/2
+n=3时：b(v) = 2v/3</div>
+      </div>
+      <div class="card">
+        <div class="card-title">二价密封拍卖 (Second-Price / Vickrey)</div>
+        <p>最高出价者获胜，支付<strong>第二高</strong>出价。</p>
+        <p>策略：<strong>如实出价</strong>（dominant strategy）</p>
+        <div class="math">为什么如实出价是占优策略？
+设真实估值 v，对手最高报价 b*：
+
+情形1：v > b*（赢得有利）
+  诚实出价v → 赢，净收益 v-b* > 0 ✓
+  低报 < b* → 输，净收益 0 ✗
+
+情形2：v < b*（赢了亏损）
+  诚实出价v → 输，净收益 0 ✓
+  高报 > b* → 赢，净收益 v-b* < 0 ✗</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">收益等价定理 (Revenue Equivalence Theorem)</div>
+      <div class="def-box">
+        在标准条件下（独立私人价值、对称、风险中性），所有标准拍卖（英式、荷式、一价、二价）给卖家带来<strong>相同期望收益</strong>。
+      </div>
+      <p style="margin-top:8px">直觉：虽然一价拍卖出价低但更经常赢，二价出价高但少赢，期望收益抵消。</p>
+    </div>
+
+    <div class="qa-block">
+      <div class="qa-q">📘 例题：两人一价密封拍卖，估值 U[0,100]，最优出价策略？</div>
+      <div class="qa-a">
+        <p>n=2，v~U[0,100]，最优报价公式：</p>
+        <div class="math">b(v) = v·(n-1)/n = v·1/2 = v/2</div>
+        <p>即：出自己估值的一半。</p>
+        <p><strong>验证</strong>：对手报价 b' = v'/2，v'~U[0,100]，期望收益：</p>
+        <div class="math">期望收益 = (b > b') × (v - b)
+最优化 FOC → b(v) = v/2</div>
+        <p>卖家期望收益 = E[第二高估值] = E[min(v₁,v₂)] = 100/3 ≈ 33.3</p>
+        <p>（与二价拍卖等价，验证RET）</p>
+      </div>
+    </div>
+
+    <div class="qa-block">
+      <div class="qa-q">📘 例题（SIG 真题风格）：Winner's Curse — 共同价值拍卖</div>
+      <div class="qa-a">
+        <p><strong>场景</strong>：石油开采权拍卖，真实价值 V 对所有人相同但未知。每个竞标者得到含噪声的信号 sᵢ = V + εᵢ，其中 εᵢ~N(0,σ²) 独立。</p>
+        <p><strong>Winner's Curse</strong>：赢得拍卖意味着你的信号是<strong>最高的</strong>，而最高信号往往高估了真实价值。</p>
+        <div class="math">E[V | 赢得拍卖] = E[V | sᵢ = max(s₁,...,sₙ)]
+                        < E[V | sᵢ]
+
+理性出价：应对信号做下调，b(sᵢ) < E[V | sᵢ]</div>
+        <p><strong>金融中的 Winner's Curse</strong>：</p>
+        <ul class="tree">
+          <li>IPO 认购：机构对热门 IPO 的分配往往意味着机构不想要该股票（逆向选择）</li>
+          <li>并购溢价：收购成功往往意味着你出价最高，可能高估了协同效应</li>
+          <li>做市商：成交说明对方有信息优势（Adverse Selection）</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ S12 做市商 ══ -->
+  <section class="section" id="s12">
+    <h2 class="section-title"><span>12 · MARKET MAKING</span>做市商博弈</h2>
+
+    <div class="sig-badge">★ SIG 课堂级考点 — 面试现场可能真实做市</div>
+
+    <div class="card">
+      <div class="card-title">做市商基础模型</div>
+      <ul class="tree">
+        <li><strong>Bid</strong>（买价）：做市商愿意买入的价格</li>
+        <li><strong>Ask/Offer</strong>（卖价）：做市商愿意卖出的价格</li>
+        <li><strong>Spread</strong> = Ask - Bid：做市商利润来源</li>
+        <li>做市商面临：<strong>逆向选择风险</strong>（对方知道真实价值）+ 库存风险</li>
+      </ul>
+    </div>
+
+    <div class="qa-block">
+      <div class="qa-q">📘 例题：Kyle (1985) 内幕交易模型的直觉</div>
+      <div class="qa-a">
+        <p>参与者：知情交易者(Insider)、噪声交易者(Noise Traders)、做市商(MM)。</p>
+        <p><strong>均衡性质</strong>：</p>
+        <ul class="tree">
+          <li>内幕交易者<strong>分散</strong>交易（不一次性全押），以免价格过快反映信息</li>
+          <li>做市商根据观察到的总订单流（知情+噪声）推断信息，调整价格</li>
+          <li>均衡价格线性：P = μ + λ·Q（λ = 市场冲击系数，Kyle's Lambda）</li>
+        </ul>
+        <div class="math">λ = σᵥ / (2σᵤ)
+其中 σᵥ = 资产价值标准差（信息量）
+     σᵤ = 噪声交易量标准差（流动性）
+
+λ↑：流动性低，信息冲击大，价格更敏感</div>
+      </div>
+    </div>
+
+    <div class="qa-block">
+      <div class="qa-q">📘 面试场景题：你是做市商，骰子1-6，如何报价？</div>
+      <div class="qa-a">
+        <p>资产价值 = 掷一个公平骰子的点数，真实期望 = (1+2+3+4+5+6)/6 = 3.5。</p>
+        <p><strong>基础报价</strong>：Bid = 3.0，Ask = 4.0（spread = 1）</p>
+        <p><strong>追问：对手下注方向有信息时如何调整？</strong></p>
+        <ul class="tree">
+          <li>若对方<strong>反复买</strong>（Ask方向），可能他知道点数高 → <strong>上调 Bid/Ask</strong></li>
+          <li>若对方<strong>反复卖</strong>（Bid方向），可能他知道点数低 → <strong>下调 Bid/Ask</strong></li>
+          <li>贝叶斯更新：若有人买，P(点数≥4|买) > 0.5 → 提升中心估计</li>
+        </ul>
+        <div class="alert alert-gold" style="margin-top:10px">
+          <span class="alert-icon">★</span>
+          <span>SIG 面试现场会真实进行多轮做市游戏。要保持 spread 合理，根据成交流更新中心价格，不要被对手的大手笔单方向交易骗走大量仓位。</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="qa-block">
+      <div class="qa-q">📘 例题：逆向选择与最优 spread（Glosten-Milgrom模型）</div>
+      <div class="qa-a">
+        <p>假设：以概率 μ 遇到知情交易者，以概率 1-μ 遇到噪声交易者。</p>
+        <p>资产真实值：高概率时为 V_H，低概率时为 V_L，先验期望 E[V] = V₀。</p>
+        <div class="math">做市商零利润条件：
+
+Ask(A) 满足：
+  (1-μ)/2·(A-V₀) = μ/2·(V_H - A)
+  → A = V₀ + μ(V_H - V₀) / (1 - μ/2 + μ/2)... 
+  简化近似：A ≈ V₀ + μ(V_H - V₀)
+
+Bid(B) 类似：B ≈ V₀ - μ(V₀ - V_L)
+
+Spread ≈ μ(V_H - V_L)（正比于信息不对称程度）</div>
+        <p><strong>关键结论</strong>：逆向选择越严重（μ↑）或资产不确定性越大（V_H-V_L↑），最优spread越宽。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ S13 扑克 ══ -->
+  <section class="section" id="s13">
+    <h2 class="section-title"><span>13 · POKER & BLUFFING</span>扑克与 Bluffing 博弈</h2>
+
+    <div class="sig-badge">★ SIG 核心文化 — 扑克思维与期望值计算</div>
+
+    <div class="card">
+      <div class="card-title">扑克的博弈论本质</div>
+      <ul class="tree">
+        <li>不完全信息博弈 (Incomplete Information)：不知道对手牌</li>
+        <li>Mixed strategy 的自然应用：需要以一定频率 Bluff，否则对手会 fold 所有 Bluff</li>
+        <li>最优 Bluff 频率：由底池赔率（Pot Odds）决定</li>
+      </ul>
+    </div>
+
+    <div class="qa-block">
+      <div class="qa-q">📘 例题：最优 Bluff 频率</div>
+      <div class="qa-a">
+        <p>River bet：底池100，你下注50（总底池变150）。</p>
+        <p>对手视角的底池赔率：call 50 赢 150，需要胜率 ≥ 50/150 = 1/3。</p>
+        <p>即对手在你 Bluff 概率 > 1/3 时应该 call；≤1/3 时 fold 是正确的。</p>
+        <div class="math">你的最优策略（让对手无差异）：
+  Bluff 频率 = 下注额 / (下注额 + 底池)
+             = 50 / (50 + 100) = 1/3
+
+即：每3次下注中，2次有货(Value bet)，1次是Bluff。
+这样对手无论 call 还是 fold 期望收益均为0，是混合NE。</div>
+        <div class="alert alert-gold" style="margin-top:10px">
+          <span class="alert-icon">★</span>
+          <span>这就是混合策略均衡的完美应用：最优 Bluff 频率让对手恰好无差异，不能利用你。</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="qa-block">
+      <div class="qa-q">📘 例题：简化扑克（SIG 面试真实题型）</div>
+      <div class="qa-a">
+        <p>2人，各有1张牌，J/Q/K等概率各1/3。下注规则：可 Bet 1 或 Check。只有一轮下注。</p>
+        <p>高牌赢1元。问：<strong>持有Q的玩家应以多大概率 Bet？</strong></p>
+        <div class="math">持K者（强牌）：永远 Bet（Value bet）
+持J者（弱牌）：有时 Bluff，频率设为 b
+持Q者（中间牌）：需要计算
+
+Q持有者 Bet 的期望：
+  对手有K：输（K > Q），-1
+  对手有J：赢（Q > J），+1
+  期望 = 0（对称）
+
+Q持有者 Check 的期望：
+  对手会Check back（J不敢Bet），双方摊牌 → 取决于J的Bluff频率
+
+最优解：Q应 Check（作为"bluff catcher"，让K的value bet和J的bluff
+         都打进来，然后再决定 call/fold）</div>
+        <p>这类题的关键不在精确计算，而在于展示<strong>博弈论思维</strong>：识别强/弱/中间手牌的不同策略角色，用混合NE分析最优频率。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ S14 贝叶斯博弈 ══ -->
+  <section class="section" id="s14">
+    <h2 class="section-title"><span>14 · BAYESIAN GAMES</span>贝叶斯博弈 · 不完全信息</h2>
+
+    <div class="card">
+      <div class="card-title">Bayes-Nash 均衡</div>
+      <div class="def-box">
+        每个参与者的策略是其<strong>类型（type）</strong>的函数，且在给定信念（Belief）和对手策略下，每种类型下各自最优化期望收益。信念需与均衡策略<strong>贝叶斯一致</strong>。
+      </div>
+    </div>
+
+    <div class="qa-block">
+      <div class="qa-q">📘 例题：两类型买家的出价博弈</div>
+      <div class="qa-a">
+        <p>卖家拍卖物品，买家估值 v ∈ {高:10, 低:5}，各概率1/2，私有信息。一价密封拍卖，两个买家。</p>
+        <div class="math">对称BNE：
+高类型出价 b_H，低类型出价 b_L，b_H > b_L
+
+高类型期望收益：
+  P(赢) × (v_H - b_H)
+  = P(对手出价 < b_H) × (10 - b_H)
+  = [1/2·I(b_L<b_H) + 1/2·I(b_H<b_H)] × (10-b_H)
+  当 b_H > b_L：= 1/2 × (10 - b_H)  [只赢低类型]
+
+最优化：max_{b_H} 1/2(10-b_H)·1 → b_H 不影响胜率？
+
+更精细分析（连续类型近似）：
+  b(v) = v/2（标准公式n=2），
+  b_H = 10/2 = 5，b_L = 5/2 = 2.5</div>
+        <p>BNE = {高类型出5，低类型出2.5}。</p>
+      </div>
+    </div>
+
+    <div class="qa-block">
+      <div class="qa-q">📘 例题：啤酒-奶酪博弈（信号博弈 Signaling Game）</div>
+      <div class="qa-a">
+        <p>强类型(S)和弱类型(W)求职者，以概率0.5各出现。发信号：大学学历(E)或不上学(N)，教育本身无生产价值。雇主决定高薪(H)或低薪(L)：</p>
+        <div class="math">收益矩阵：
+  强类型真实产出 = 3，弱类型 = 1
+  高薪 = 2，低薪 = 1
+  教育成本：强类型 c_S=1，弱类型 c_W=3
+
+分离均衡 (Separating Equilibrium)：
+  强类型选E，弱类型选N
+  → 雇主看到E → 判断是强类型 → 给高薪(2>1)
+  → 雇主看到N → 判断是弱类型 → 给低薪
+
+强类型读书激励：2-1=1 > 1（不读书低薪）✓
+弱类型读书激励：2-3=-1 < 1（不读书低薪）✓ （弱类型不愿模仿）
+
+→ 分离均衡存在！教育作为信号有效，尽管本身无价值。</div>
+        <p><strong>Spence 信号博弈</strong>的核心洞见：成本优势使得高类型能通过"昂贵信号"与低类型区分。</p>
+        <div class="alert alert-blue">
+          <span class="alert-icon">💡</span>
+          <span>金融应用：公司分红（分红是昂贵信号，质量差的公司负担不起），承销商信誉背书，IPO定价中的承销商筛选。</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ S15 经典脑筋急转弯 ══ -->
+  <section class="section" id="s15">
+    <h2 class="section-title"><span>15 · SIG CLASSICS</span>经典脑筋急转弯 / 快问快答</h2>
+
+    <div class="sig-badge">★ SIG 面试题风格汇总</div>
+
+    <div class="qa-block">
+      <div class="qa-q">💡 美女博弈 (Beauty Contest Game / Keynesian Game)</div>
+      <div class="qa-a">
+        <p>100人各猜0-100的整数，猜中所有人猜测平均值<strong>2/3</strong>的获胜。你猜多少？</p>
+        <div class="math">Level 0（非理性）：均匀分布 → 均值 50
+Level 1（猜Level 0理性）：2/3 × 50 = 33
+Level 2：2/3 × 33 = 22
+Level 3：2/3 × 22 = 15
+...
+Nash均衡：反复迭代 → 0</div>
+        <p><strong>实验结果</strong>：大多数人在 Level 2-3，答案在 22-33 区间。纳什均衡是0，但实际人不到那个层次。</p>
+        <p><strong>金融应用</strong>："股票价格不是资产真实价值，而是市场对他人预期的预期。"（Keynes 选美理论）→ 动量、泡沫形成的理论基础。</p>
+      </div>
+    </div>
+
+    <div class="qa-block">
+      <div class="qa-q">💡 100个海盗分金币（Pirate Game）</div>
+      <div class="qa-a">
+        <p>100个按级别排序的海盗分1000枚金币。最高级提方案，严格多数通过则执行，否则他被扔海里，下一个提。问：第1个海盗怎么提才能存活并最多得金币？</p>
+        <div class="math">逆向归纳：
+2人：海盗2提 1000:0，自己投赞成 → 通过，自得1000
+3人：海盗3需要另外1票。海盗1在2人情况得0，现在给1枚就投赞成
+     → 海盗3提 (1, 0, 999) → 通过
+4人：海盗4需另外1票。海盗2在3人情况得0，给1枚 → (0, 1, 0, 999)
+5人：海盗5需另外2票。1和3在4人情况各得0，各给1枚
+     → (1, 0, 1, 0, 998)
+
+规律：第1个海盗（即第一级）提出方案：
+  偶数海盗（2,4,6...）得0
+  奇数海盗（1,3,5...，排在后面但在5人局中处于弱势）得1
+  自己得 1000 - 49 = 951（给排名2,4,...,98的各1枚）
+</div>
+        <p><strong>答案</strong>：海盗1提 (1,0,1,0,...,1,0,951)，给所有偶数位置各1枚，自己拿951。</p>
+        <p>关键：逆向归纳 + 每人只需要刚好超过半数的票。</p>
+      </div>
+    </div>
+
+    <div class="qa-block">
+      <div class="qa-q">💡 三人决斗 (Truel) — 最弱者生存概率最高</div>
+      <div class="qa-a">
+        <p>A命中率=100%，B=75%，C=50%。轮流射击，先被击中的出局。问：C的最优策略？</p>
+        <div class="math">C的最优策略：第一枪故意打空！
+
+分析：
+• 若C射A：B(75%)会先射A，C剩1v1对B → C生存 = 50%/(50%+75%) ≈ 40%
+• 若C射B：A(100%)会先射B，C剩1v1对A → C生存 = 50%/(50%+100%) ≈ 33%
+• 若C打空：A和B先互打，因为他们是对方的更大威胁。
+  B死于A手（概率 100%/175%）→ C对A：50%/(50%+100%) ≈ 33%
+  A死于B手（概率 75%/175%）→ C对B：50%/(50%+75%) ≈ 40%
+
+C打空后生存概率 ≈ (100/175)×33% + (75/175)×40% ≈ 19%+17% = 36%
+
+但有更精确分析：A优先射B，B优先射A
+打空后期望生存率 > 直接出手，故打空是最优策略。</div>
+        <p><strong>教训</strong>：在多方博弈中，最弱者通过"让强者先互斗"可以提高生存率。</p>
+      </div>
+    </div>
+
+    <div class="qa-block">
+      <div class="qa-q">💡 价格猜测博弈：卖方与买方信息不对称</div>
+      <div class="qa-a">
+        <p>二手车市场（Lemons Problem，Akerlof 1970）：</p>
+        <ul class="tree">
+          <li>好车价值8000，坏车(lemon)价值4000，各占50%</li>
+          <li>买家不能区分，愿意出均值 = 6000</li>
+          <li>好车卖家知道自己车好，6000 &lt; 8000 → <strong>不卖</strong></li>
+          <li>市场上只剩坏车 → 买家调低期望到4000 → 好车进一步退出</li>
+          <li><strong>市场失灵</strong>：逆向选择导致好车无法在市场上交易</li>
+        </ul>
+        <p><strong>解决方案</strong>：信号（保修、车检）、担保机制（信誉）、第三方认证</p>
+      </div>
+    </div>
+
+    <div class="qa-block">
+      <div class="qa-q">💡 Schelling 焦点 (Focal Point) — 无沟通协调</div>
+      <div class="qa-a">
+        <p>你和陌生人需要在纽约市见面，但无法联系。你们会在哪里？什么时间？</p>
+        <p><strong>经典答案</strong>：中央车站，正午12:00。</p>
+        <p>这就是 Schelling Point：在没有沟通的情况下，理性人会选择"显著"的答案，因为他们预期对方也会选它。</p>
+        <div class="alert alert-blue">
+          <span class="alert-icon">💡</span>
+          <span>金融应用：整数价格关卡（100, 1000 等）作为支撑/阻力位；市场对话语权极强的分析师预测的自我实现；资产泡沫中的"显著"价格点。</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="qa-block">
+      <div class="qa-q">💡 All-Pay 拍卖 — 每人都付出竞争成本</div>
+      <div class="qa-a">
+        <p>所有参与者都支付自己的出价，只有最高出价者获奖。（如选举广告、研发竞赛、诉讼）</p>
+        <div class="math">两人对称均衡（v~U[0,1]）：
+  b(v) = v²/2（而非一价拍卖的v/2）
+
+期望总支付 = E[v₁²/2] + E[v₂²/2] = 2·∫₀¹ v²/2 dv = 2·(1/6) = 1/3
+
+一价拍卖卖家收益：E[第二高估值] = 1/3
+
+RET 成立：All-Pay 与一价拍卖收益相同！</div>
+        <p><strong>直觉</strong>：all-pay 下每人出价更保守（知道必须付钱），恰好抵消了输家也付钱的额外收益，期望总付款不变。</p>
+      </div>
+    </div>
+
+    <div class="qa-block">
+      <div class="qa-q">💡 正确推理题：100个等级信封</div>
+      <div class="qa-a">
+        <p>你面前有两个信封，一个金额是另一个的2倍。你打开一个，里面是100元。要不要换？</p>
+        <div class="math">直觉谬误：另一个要么50要么200，期望=125>100，换！
+
+正确分析（信封悖论）：
+  这是一个概率模型设定问题。
+  若金额分布是均匀的，"另一个是50还是200"不能都有50%概率
+  ——因为不存在(0,∞)上的均匀分布。
+
+  正确模型：事先确定两个信封金额(x, 2x)，x由某分布决定。
+  打开后看到100，则x=50(概率p)或x=100(概率1-p)
+  若 p > 2/3：期望换后 < 100，不换
+  若 p < 2/3：换
+  
+  没有额外信息时，两种情况概率各半是不一致的先验！</div>
+        <p>面试中展示对悖论的清醒认识比"换"或"不换"更重要。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── SUMMARY TABLE ── -->
+  <section class="section" id="summary">
+    <h2 class="section-title"><span>SUMMARY</span>博弈类型快速对照</h2>
+    <div class="matrix-wrap">
+      <table class="matrix" style="width:100%">
+        <tr>
+          <th>博弈类型</th>
+          <th>经典例子</th>
+          <th>NE特征</th>
+          <th>SIG相关性</th>
+        </tr>
+        <tr>
+          <td style="color:var(--gold2);font-family:'IBM Plex Mono',monospace;font-size:12px">囚徒困境</td>
+          <td>价格战、广告竞争</td>
+          <td>社会次优，背叛占优</td>
+          <td style="color:var(--green)">做市 spread 竞争</td>
+        </tr>
+        <tr>
+          <td style="color:var(--gold2);font-family:'IBM Plex Mono',monospace;font-size:12px">协调博弈</td>
+          <td>猎鹿、市场标准</td>
+          <td>多个NE，协调问题</td>
+          <td style="color:var(--green)">市场惯例形成</td>
+        </tr>
+        <tr>
+          <td style="color:var(--gold2);font-family:'IBM Plex Mono',monospace;font-size:12px">反协调博弈</td>
+          <td>Chicken，产品差异化</td>
+          <td>多个NE，混合NE</td>
+          <td style="color:var(--green)">做市策略差异化</td>
+        </tr>
+        <tr>
+          <td style="color:var(--gold2);font-family:'IBM Plex Mono',monospace;font-size:12px">序贯博弈</td>
+          <td>进入博弈，Stackelberg</td>
+          <td>SPNE，逆向归纳</td>
+          <td style="color:var(--green)">先动/后动优势分析</td>
+        </tr>
+        <tr>
+          <td style="color:var(--gold2);font-family:'IBM Plex Mono',monospace;font-size:12px">重复博弈</td>
+          <td>长期合作关系</td>
+          <td>δ≥阈值时合作</td>
+          <td style="color:var(--green)">长期客户关系</td>
+        </tr>
+        <tr>
+          <td style="color:var(--gold2);font-family:'IBM Plex Mono',monospace;font-size:12px">一价拍卖</td>
+          <td>政府采购</td>
+          <td>低报，b=v(n-1)/n</td>
+          <td style="color:var(--gold)">★ 高频考点</td>
+        </tr>
+        <tr>
+          <td style="color:var(--gold2);font-family:'IBM Plex Mono',monospace;font-size:12px">二价拍卖</td>
+          <td>eBay, Google AdWords</td>
+          <td>如实出价占优</td>
+          <td style="color:var(--gold)">★ 高频考点</td>
+        </tr>
+        <tr>
+          <td style="color:var(--gold2);font-family:'IBM Plex Mono',monospace;font-size:12px">信号博弈</td>
+          <td>教育、分红、信誉</td>
+          <td>分离/混同均衡</td>
+          <td style="color:var(--green)">IPO承销，逆向选择</td>
+        </tr>
+        <tr>
+          <td style="color:var(--gold2);font-family:'IBM Plex Mono',monospace;font-size:12px">做市博弈</td>
+          <td>Kyle模型，GM模型</td>
+          <td>最优spread，贝叶斯更新</td>
+          <td style="color:var(--gold)">★★ SIG核心</td>
+        </tr>
+      </table>
+    </div>
+  </section>
+
+</main>
+
+<script>
+  // Accordion
+  document.querySelectorAll('.qa-q').forEach(q => {
+    q.addEventListener('click', () => {
+      const a = q.nextElementSibling;
+      const isOpen = q.classList.contains('open');
+      document.querySelectorAll('.qa-q.open').forEach(oq => {
+        oq.classList.remove('open');
+        oq.nextElementSibling.classList.remove('open');
+      });
+      if (!isOpen) {
+        q.classList.add('open');
+        a.classList.add('open');
+      }
+    });
+  });
+
+  // Active sidebar link on scroll
+  const sections = document.querySelectorAll('section[id]');
+  const links = document.querySelectorAll('#sidebar a');
+  function onScroll() {
+    let current = '';
+    sections.forEach(s => {
+      if (window.scrollY >= s.offsetTop - 120) current = s.id;
+    });
+    links.forEach(l => {
+      l.classList.toggle('active', l.getAttribute('href') === '#' + current);
+    });
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+</script>
+</body>
+</html>

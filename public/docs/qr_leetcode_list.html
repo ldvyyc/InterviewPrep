@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>QR 面试 LeetCode 题单</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Noto+Serif+SC:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0d0d;
+    --surface: #141414;
+    --border: #2a2a2a;
+    --accent: #c8ff00;
+    --accent2: #ff6b35;
+    --text: #e8e8e0;
+    --muted: #666;
+    --easy: #4ade80;
+    --med: #facc15;
+    --hard: #f87171;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'IBM Plex Mono', monospace;
+    min-height: 100vh;
+    padding: 40px 24px;
+  }
+  header {
+    max-width: 900px;
+    margin: 0 auto 48px;
+    border-left: 3px solid var(--accent);
+    padding-left: 20px;
+  }
+  header h1 {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 2rem;
+    color: var(--accent);
+    letter-spacing: 0.02em;
+    line-height: 1.2;
+  }
+  header p {
+    color: var(--muted);
+    font-size: 0.8rem;
+    margin-top: 8px;
+  }
+  .container { max-width: 900px; margin: 0 auto; }
+  .section {
+    margin-bottom: 36px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    background: #1a1a1a;
+  }
+  .section-num {
+    font-size: 0.65rem;
+    color: var(--accent);
+    background: rgba(200,255,0,0.08);
+    border: 1px solid rgba(200,255,0,0.3);
+    padding: 2px 8px;
+    border-radius: 2px;
+  }
+  .section-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .section-note {
+    margin-left: auto;
+    font-size: 0.7rem;
+    color: var(--muted);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8rem;
+  }
+  thead tr {
+    border-bottom: 1px solid var(--border);
+  }
+  th {
+    padding: 10px 20px;
+    text-align: left;
+    color: var(--muted);
+    font-weight: 400;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  td {
+    padding: 11px 20px;
+    border-bottom: 1px solid #1e1e1e;
+    vertical-align: middle;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #1c1c1c; }
+  .num { color: var(--muted); font-size: 0.75rem; width: 60px; }
+  .name { font-weight: 600; }
+  .tag {
+    display: inline-block;
+    font-size: 0.65rem;
+    padding: 2px 7px;
+    border-radius: 2px;
+    margin-right: 4px;
+    margin-bottom: 2px;
+  }
+  .diff {
+    font-size: 0.72rem;
+    font-weight: 600;
+    width: 60px;
+  }
+  .easy { color: var(--easy); }
+  .med { color: var(--med); }
+  .hard { color: var(--hard); }
+  .star { color: var(--accent2); font-size: 0.9rem; }
+  .note-cell { color: var(--muted); font-size: 0.72rem; max-width: 240px; line-height: 1.5; }
+  .tag-array { background: rgba(74,222,128,0.1); color: var(--easy); border: 1px solid rgba(74,222,128,0.2); }
+  .tag-dp { background: rgba(250,204,21,0.1); color: var(--med); border: 1px solid rgba(250,204,21,0.2); }
+  .tag-math { background: rgba(200,255,0,0.08); color: var(--accent); border: 1px solid rgba(200,255,0,0.2); }
+  .tag-graph { background: rgba(167,139,250,0.1); color: #a78bfa; border: 1px solid rgba(167,139,250,0.2); }
+  .tag-str { background: rgba(248,113,113,0.1); color: var(--hard); border: 1px solid rgba(248,113,113,0.2); }
+  .tag-tree { background: rgba(96,165,250,0.1); color: #60a5fa; border: 1px solid rgba(96,165,250,0.2); }
+  .legend {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 24px;
+    font-size: 0.72rem;
+    color: var(--muted);
+    align-items: center;
+  }
+  .legend span { display: flex; align-items: center; gap: 6px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>QR 面试 · LeetCode 高频题单</h1>
+  <p>Quant Research / Quant Dev 面试常考算法题 · 按类型分类 · ★ 为最高频必刷</p>
+</header>
+<div class="container">
+  <div class="legend">
+    <span><b class="easy">●</b> Easy</span>
+    <span><b class="med">●</b> Medium</span>
+    <span><b class="hard">●</b> Hard</span>
+    <span><b class="star">★</b> 必刷高频</span>
+  </div>
+
+  <!-- 数组 & 双指针 -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">01</span>
+      <span class="section-title">数组 / 双指针 / 滑动窗口</span>
+      <span class="section-note">最基础，必须无脑AC</span>
+    </div>
+    <table>
+      <thead><tr><th>编号</th><th>题目</th><th>类型</th><th>难度</th><th>考察点</th></tr></thead>
+      <tbody>
+        <tr><td class="num">1</td><td class="name">Two Sum <span class="star">★</span></td><td><span class="tag tag-array">Array</span><span class="tag tag-math">HashMap</span></td><td class="diff med">Medium</td><td class="note-cell">HashMap，O(n) 解法</td></tr>
+        <tr><td class="num">15</td><td class="name">3Sum <span class="star">★</span></td><td><span class="tag tag-array">Array</span></td><td class="diff med">Medium</td><td class="note-cell">排序+双指针，去重逻辑</td></tr>
+        <tr><td class="num">42</td><td class="name">Trapping Rain Water <span class="star">★</span></td><td><span class="tag tag-array">Array</span></td><td class="diff hard">Hard</td><td class="note-cell">双指针/单调栈，经典</td></tr>
+        <tr><td class="num">53</td><td class="name">Maximum Subarray <span class="star">★</span></td><td><span class="tag tag-dp">DP</span></td><td class="diff med">Medium</td><td class="note-cell">Kadane算法，变体超多</td></tr>
+        <tr><td class="num">121</td><td class="name">Best Time to Buy and Sell Stock <span class="star">★</span></td><td><span class="tag tag-array">Array</span></td><td class="diff easy">Easy</td><td class="note-cell">QR必考，还要会 123/188</td></tr>
+        <tr><td class="num">123</td><td class="name">Best Time to Buy/Sell Stock III</td><td><span class="tag tag-dp">DP</span></td><td class="diff hard">Hard</td><td class="note-cell">状态机DP，最多2笔交易</td></tr>
+        <tr><td class="num">76</td><td class="name">Minimum Window Substring</td><td><span class="tag tag-str">Sliding Window</span></td><td class="diff hard">Hard</td><td class="note-cell">滑窗模板题</td></tr>
+        <tr><td class="num">560</td><td class="name">Subarray Sum Equals K <span class="star">★</span></td><td><span class="tag tag-array">Array</span><span class="tag tag-math">PrefixSum</span></td><td class="diff med">Medium</td><td class="note-cell">前缀和+HashMap</td></tr>
+        <tr><td class="num">239</td><td class="name">Sliding Window Maximum</td><td><span class="tag tag-array">Deque</span></td><td class="diff hard">Hard</td><td class="note-cell">单调双端队列</td></tr>
+        <tr><td class="num">238</td><td class="name">Product of Array Except Self</td><td><span class="tag tag-array">Array</span></td><td class="diff med">Medium</td><td class="note-cell">前后缀积，不用除法</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 动态规划 -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">02</span>
+      <span class="section-title">动态规划 (DP)</span>
+      <span class="section-note">QR 面试最爱</span>
+    </div>
+    <table>
+      <thead><tr><th>编号</th><th>题目</th><th>类型</th><th>难度</th><th>考察点</th></tr></thead>
+      <tbody>
+        <tr><td class="num">70</td><td class="name">Climbing Stairs <span class="star">★</span></td><td><span class="tag tag-dp">DP</span></td><td class="diff easy">Easy</td><td class="note-cell">入门，Fibonacci变体</td></tr>
+        <tr><td class="num">322</td><td class="name">Coin Change <span class="star">★</span></td><td><span class="tag tag-dp">DP</span></td><td class="diff med">Medium</td><td class="note-cell">完全背包，经典</td></tr>
+        <tr><td class="num">300</td><td class="name">Longest Increasing Subsequence <span class="star">★</span></td><td><span class="tag tag-dp">DP</span></td><td class="diff med">Medium</td><td class="note-cell">O(nlogn) 二分优化要会</td></tr>
+        <tr><td class="num">72</td><td class="name">Edit Distance</td><td><span class="tag tag-dp">DP</span></td><td class="diff med">Medium</td><td class="note-cell">字符串DP经典</td></tr>
+        <tr><td class="num">312</td><td class="name">Burst Balloons</td><td><span class="tag tag-dp">DP</span></td><td class="diff hard">Hard</td><td class="note-cell">区间DP，思维难</td></tr>
+        <tr><td class="num">10</td><td class="name">Regular Expression Matching</td><td><span class="tag tag-dp">DP</span></td><td class="diff hard">Hard</td><td class="note-cell">高频难题</td></tr>
+        <tr><td class="num">174</td><td class="name">Dungeon Game</td><td><span class="tag tag-dp">DP</span></td><td class="diff hard">Hard</td><td class="note-cell">反向DP思路</td></tr>
+        <tr><td class="num">188</td><td class="name">Best Time to Buy/Sell Stock IV <span class="star">★</span></td><td><span class="tag tag-dp">DP</span></td><td class="diff hard">Hard</td><td class="note-cell">状态机DP，最多k笔</td></tr>
+        <tr><td class="num">152</td><td class="name">Maximum Product Subarray</td><td><span class="tag tag-dp">DP</span></td><td class="diff med">Medium</td><td class="note-cell">维护最大最小值</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 数学 & 概率 -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">03</span>
+      <span class="section-title">数学 / 概率 / 位运算</span>
+      <span class="section-note">QR 特色高频</span>
+    </div>
+    <table>
+      <thead><tr><th>编号</th><th>题目</th><th>类型</th><th>难度</th><th>考察点</th></tr></thead>
+      <tbody>
+        <tr><td class="num">470</td><td class="name">Implement Rand10 Using Rand7 <span class="star">★</span></td><td><span class="tag tag-math">Probability</span></td><td class="diff med">Medium</td><td class="note-cell">拒绝采样，QR必考</td></tr>
+        <tr><td class="num">398</td><td class="name">Random Pick Index <span class="star">★</span></td><td><span class="tag tag-math">Reservoir</span></td><td class="diff med">Medium</td><td class="note-cell">水库抽样</td></tr>
+        <tr><td class="num">382</td><td class="name">Linked List Random Node</td><td><span class="tag tag-math">Reservoir</span></td><td class="diff med">Medium</td><td class="note-cell">水库抽样变体</td></tr>
+        <tr><td class="num">50</td><td class="name">Pow(x, n) <span class="star">★</span></td><td><span class="tag tag-math">Math</span></td><td class="diff med">Medium</td><td class="note-cell">快速幂，处理负数</td></tr>
+        <tr><td class="num">149</td><td class="name">Max Points on a Line</td><td><span class="tag tag-math">Math</span></td><td class="diff hard">Hard</td><td class="note-cell">斜率，精度处理</td></tr>
+        <tr><td class="num">191</td><td class="name">Number of 1 Bits</td><td><span class="tag tag-math">Bit</span></td><td class="diff easy">Easy</td><td class="note-cell">位运算基础</td></tr>
+        <tr><td class="num">136</td><td class="name">Single Number</td><td><span class="tag tag-math">Bit</span></td><td class="diff easy">Easy</td><td class="note-cell">XOR技巧</td></tr>
+        <tr><td class="num">268</td><td class="name">Missing Number</td><td><span class="tag tag-math">Math</span></td><td class="diff easy">Easy</td><td class="note-cell">多种解法</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 树 & 图 -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">04</span>
+      <span class="section-title">树 / 图 / BFS & DFS</span>
+      <span class="section-note">数据结构基础</span>
+    </div>
+    <table>
+      <thead><tr><th>编号</th><th>题目</th><th>类型</th><th>难度</th><th>考察点</th></tr></thead>
+      <tbody>
+        <tr><td class="num">200</td><td class="name">Number of Islands <span class="star">★</span></td><td><span class="tag tag-graph">Graph</span></td><td class="diff med">Medium</td><td class="note-cell">BFS/DFS/Union Find</td></tr>
+        <tr><td class="num">207</td><td class="name">Course Schedule <span class="star">★</span></td><td><span class="tag tag-graph">Graph</span></td><td class="diff med">Medium</td><td class="note-cell">拓扑排序，检测环</td></tr>
+        <tr><td class="num">124</td><td class="name">Binary Tree Maximum Path Sum</td><td><span class="tag tag-tree">Tree</span></td><td class="diff hard">Hard</td><td class="note-cell">后序遍历</td></tr>
+        <tr><td class="num">236</td><td class="name">Lowest Common Ancestor</td><td><span class="tag tag-tree">Tree</span></td><td class="diff med">Medium</td><td class="note-cell">经典递归</td></tr>
+        <tr><td class="num">297</td><td class="name">Serialize and Deserialize Binary Tree</td><td><span class="tag tag-tree">Tree</span></td><td class="diff hard">Hard</td><td class="note-cell">BFS序列化</td></tr>
+        <tr><td class="num">127</td><td class="name">Word Ladder</td><td><span class="tag tag-graph">BFS</span></td><td class="diff hard">Hard</td><td class="note-cell">最短路径BFS</td></tr>
+        <tr><td class="num">399</td><td class="name">Evaluate Division</td><td><span class="tag tag-graph">Graph</span></td><td class="diff med">Medium</td><td class="note-cell">带权Union Find</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 堆 & 设计 -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">05</span>
+      <span class="section-title">堆 / 优先队列 / 系统设计题</span>
+      <span class="section-note">数据流处理，QR常见场景</span>
+    </div>
+    <table>
+      <thead><tr><th>编号</th><th>题目</th><th>类型</th><th>难度</th><th>考察点</th></tr></thead>
+      <tbody>
+        <tr><td class="num">295</td><td class="name">Find Median from Data Stream <span class="star">★</span></td><td><span class="tag tag-dp">Heap</span></td><td class="diff hard">Hard</td><td class="note-cell">双堆，QR数据流场景</td></tr>
+        <tr><td class="num">23</td><td class="name">Merge k Sorted Lists <span class="star">★</span></td><td><span class="tag tag-dp">Heap</span></td><td class="diff hard">Hard</td><td class="note-cell">优先队列</td></tr>
+        <tr><td class="num">218</td><td class="name">The Skyline Problem</td><td><span class="tag tag-dp">Heap</span></td><td class="diff hard">Hard</td><td class="note-cell">扫描线+堆</td></tr>
+        <tr><td class="num">146</td><td class="name">LRU Cache <span class="star">★</span></td><td><span class="tag tag-str">Design</span></td><td class="diff med">Medium</td><td class="note-cell">HashMap+双向链表</td></tr>
+        <tr><td class="num">460</td><td class="name">LFU Cache</td><td><span class="tag tag-str">Design</span></td><td class="diff hard">Hard</td><td class="note-cell">LRU进阶</td></tr>
+        <tr><td class="num">347</td><td class="name">Top K Frequent Elements <span class="star">★</span></td><td><span class="tag tag-dp">Heap</span></td><td class="diff med">Medium</td><td class="note-cell">桶排序/堆</td></tr>
+        <tr><td class="num">373</td><td class="name">Find K Pairs with Smallest Sums</td><td><span class="tag tag-dp">Heap</span></td><td class="diff med">Medium</td><td class="note-cell">多路归并</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 字符串 & 回溯 -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">06</span>
+      <span class="section-title">字符串 / 回溯 / 排列组合</span>
+      <span class="section-note">暴力枚举基本功</span>
+    </div>
+    <table>
+      <thead><tr><th>编号</th><th>题目</th><th>类型</th><th>难度</th><th>考察点</th></tr></thead>
+      <tbody>
+        <tr><td class="num">46</td><td class="name">Permutations <span class="star">★</span></td><td><span class="tag tag-str">Backtrack</span></td><td class="diff med">Medium</td><td class="note-cell">全排列模板</td></tr>
+        <tr><td class="num">78</td><td class="name">Subsets</td><td><span class="tag tag-str">Backtrack</span></td><td class="diff med">Medium</td><td class="note-cell">子集枚举</td></tr>
+        <tr><td class="num">22</td><td class="name">Generate Parentheses <span class="star">★</span></td><td><span class="tag tag-str">Backtrack</span></td><td class="diff med">Medium</td><td class="note-cell">括号合法性</td></tr>
+        <tr><td class="num">5</td><td class="name">Longest Palindromic Substring</td><td><span class="tag tag-str">String</span></td><td class="diff med">Medium</td><td class="note-cell">中心扩展/Manacher</td></tr>
+        <tr><td class="num">438</td><td class="name">Find All Anagrams in a String</td><td><span class="tag tag-str">Sliding Window</span></td><td class="diff med">Medium</td><td class="note-cell">滑窗+频率表</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 二分搜索 -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">07</span>
+      <span class="section-title">二分搜索</span>
+      <span class="section-note">QR 对数复杂度敏感</span>
+    </div>
+    <table>
+      <thead><tr><th>编号</th><th>题目</th><th>类型</th><th>难度</th><th>考察点</th></tr></thead>
+      <tbody>
+        <tr><td class="num">33</td><td class="name">Search in Rotated Sorted Array <span class="star">★</span></td><td><span class="tag tag-math">Binary Search</span></td><td class="diff med">Medium</td><td class="note-cell">变体很多</td></tr>
+        <tr><td class="num">4</td><td class="name">Median of Two Sorted Arrays <span class="star">★</span></td><td><span class="tag tag-math">Binary Search</span></td><td class="diff hard">Hard</td><td class="note-cell">O(log(m+n))，经典难题</td></tr>
+        <tr><td class="num">378</td><td class="name">Kth Smallest in a Sorted Matrix</td><td><span class="tag tag-math">Binary Search</span></td><td class="diff med">Medium</td><td class="note-cell">值域二分</td></tr>
+        <tr><td class="num">410</td><td class="name">Split Array Largest Sum</td><td><span class="tag tag-math">Binary Search</span></td><td class="diff hard">Hard</td><td class="note-cell">最小化最大值，二分答案</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+</body>
+</html>

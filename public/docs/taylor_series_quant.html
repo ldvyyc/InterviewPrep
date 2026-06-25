@@ -1,0 +1,1189 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Taylor Series — Quant Study Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<style>
+  :root {
+    --bg: #0e0e0f;
+    --bg2: #161618;
+    --bg3: #1e1e21;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.13);
+    --text: #e8e6e1;
+    --muted: #888780;
+    --accent: #9f8fff;
+    --accent2: #5dcaa5;
+    --accent3: #f0997b;
+    --accent4: #fabd6a;
+    --heading: #f5f3ee;
+    --tag-bg: rgba(159,143,255,0.12);
+    --tag-text: #c4b8ff;
+    --code-bg: #1a1a1d;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+    display: flex;
+    min-height: 100vh;
+  }
+
+  /* Sidebar */
+  .sidebar {
+    width: 220px;
+    min-height: 100vh;
+    background: var(--bg2);
+    border-right: 0.5px solid var(--border);
+    padding: 2rem 0;
+    position: fixed;
+    top: 0; left: 0;
+    overflow-y: auto;
+    z-index: 10;
+  }
+
+  .sidebar-logo {
+    font-family: 'DM Serif Display', serif;
+    font-size: 17px;
+    color: var(--heading);
+    padding: 0 1.25rem 1.5rem;
+    border-bottom: 0.5px solid var(--border);
+    margin-bottom: 1rem;
+    letter-spacing: -0.02em;
+  }
+
+  .sidebar-logo span {
+    color: var(--accent);
+  }
+
+  .nav-section {
+    padding: 0.25rem 0 0.75rem;
+  }
+
+  .nav-label {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 0 1.25rem 0.4rem;
+    display: block;
+  }
+
+  .nav-item {
+    display: block;
+    padding: 0.45rem 1.25rem;
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 13.5px;
+    font-weight: 400;
+    transition: color 0.15s, background 0.15s;
+    cursor: pointer;
+    border-left: 2px solid transparent;
+  }
+
+  .nav-item:hover, .nav-item.active {
+    color: var(--heading);
+    background: rgba(255,255,255,0.04);
+    border-left-color: var(--accent);
+  }
+
+  /* Main content */
+  .main {
+    margin-left: 220px;
+    flex: 1;
+    padding: 3rem 3.5rem;
+    max-width: 900px;
+  }
+
+  .section {
+    margin-bottom: 4rem;
+    scroll-margin-top: 2rem;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    margin-bottom: 1.75rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 0.5px solid var(--border);
+  }
+
+  .section-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 26px;
+    color: var(--heading);
+    letter-spacing: -0.03em;
+  }
+
+  .section-tag {
+    font-size: 11px;
+    background: var(--tag-bg);
+    color: var(--tag-text);
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-weight: 500;
+    letter-spacing: 0.03em;
+  }
+
+  .subsection-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--accent2);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin: 2rem 0 0.75rem;
+  }
+
+  p {
+    color: var(--text);
+    margin-bottom: 0.9rem;
+    font-weight: 300;
+  }
+
+  /* Formula boxes */
+  .formula-box {
+    background: var(--bg3);
+    border: 0.5px solid var(--border2);
+    border-radius: 10px;
+    padding: 1.25rem 1.5rem;
+    margin: 1.25rem 0;
+    overflow-x: auto;
+  }
+
+  .formula-box.accent {
+    border-left: 3px solid var(--accent);
+  }
+
+  .formula-box.accent2 {
+    border-left: 3px solid var(--accent2);
+  }
+
+  .formula-box.accent3 {
+    border-left: 3px solid var(--accent3);
+  }
+
+  .formula-label {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 0.6rem;
+    font-family: 'DM Mono', monospace;
+  }
+
+  /* Grid of formulas */
+  .formula-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin: 1.25rem 0;
+  }
+
+  .formula-card {
+    background: var(--bg3);
+    border: 0.5px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    overflow-x: auto;
+  }
+
+  .formula-card .name {
+    font-size: 12px;
+    color: var(--accent4);
+    font-family: 'DM Mono', monospace;
+    margin-bottom: 0.5rem;
+  }
+
+  .formula-card .domain {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 0.5rem;
+  }
+
+  /* Interview Q&A */
+  .qa-item {
+    background: var(--bg2);
+    border: 0.5px solid var(--border);
+    border-radius: 10px;
+    margin: 1rem 0;
+    overflow: hidden;
+  }
+
+  .qa-question {
+    padding: 1rem 1.25rem;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    user-select: none;
+    transition: background 0.15s;
+  }
+
+  .qa-question:hover {
+    background: rgba(255,255,255,0.03);
+  }
+
+  .qa-question-text {
+    font-weight: 500;
+    font-size: 14px;
+    color: var(--heading);
+  }
+
+  .qa-firm {
+    font-size: 11px;
+    background: rgba(93,202,165,0.12);
+    color: var(--accent2);
+    padding: 2px 9px;
+    border-radius: 20px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .qa-chevron {
+    color: var(--muted);
+    font-size: 12px;
+    transition: transform 0.2s;
+    flex-shrink: 0;
+  }
+
+  .qa-item.open .qa-chevron {
+    transform: rotate(180deg);
+  }
+
+  .qa-answer {
+    display: none;
+    padding: 0 1.25rem 1.25rem;
+    border-top: 0.5px solid var(--border);
+  }
+
+  .qa-item.open .qa-answer {
+    display: block;
+  }
+
+  .qa-answer p {
+    font-size: 14px;
+    margin-top: 0.9rem;
+    font-weight: 300;
+  }
+
+  .qa-answer .formula-box {
+    margin: 0.75rem 0;
+    padding: 0.9rem 1.1rem;
+  }
+
+  /* Derivation steps */
+  .steps {
+    counter-reset: step;
+    margin: 1.25rem 0;
+  }
+
+  .step {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+    align-items: flex-start;
+  }
+
+  .step-num {
+    counter-increment: step;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--tag-bg);
+    color: var(--tag-text);
+    font-size: 12px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 2px;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .step-content {
+    flex: 1;
+  }
+
+  .step-content p {
+    margin-bottom: 0.5rem;
+    font-size: 14px;
+  }
+
+  /* Comparison table */
+  .compare-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.25rem 0;
+    font-size: 13.5px;
+  }
+
+  .compare-table th {
+    background: var(--bg3);
+    color: var(--heading);
+    font-weight: 500;
+    padding: 0.7rem 1rem;
+    text-align: left;
+    border-bottom: 0.5px solid var(--border2);
+  }
+
+  .compare-table td {
+    padding: 0.65rem 1rem;
+    border-bottom: 0.5px solid var(--border);
+    color: var(--text);
+    font-weight: 300;
+  }
+
+  .compare-table tr:last-child td { border-bottom: none; }
+  .compare-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+  code {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    background: var(--code-bg);
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: var(--accent4);
+  }
+
+  .highlight {
+    color: var(--accent);
+    font-weight: 500;
+  }
+
+  .note-box {
+    background: rgba(250,189,106,0.07);
+    border: 0.5px solid rgba(250,189,106,0.2);
+    border-radius: 8px;
+    padding: 0.9rem 1.1rem;
+    margin: 1rem 0;
+    font-size: 13.5px;
+    color: #f0d090;
+  }
+
+  .note-box strong {
+    color: var(--accent4);
+    font-weight: 500;
+  }
+
+  /* Interactive approximation demo */
+  .demo-container {
+    background: var(--bg3);
+    border: 0.5px solid var(--border2);
+    border-radius: 10px;
+    padding: 1.25rem 1.5rem;
+    margin: 1.5rem 0;
+  }
+
+  .demo-controls {
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+  }
+
+  .demo-control-group {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .demo-control-group label {
+    font-size: 13px;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  .demo-control-group input[type=range] {
+    width: 120px;
+    accent-color: var(--accent);
+  }
+
+  .demo-control-group select {
+    background: var(--bg2);
+    border: 0.5px solid var(--border2);
+    color: var(--text);
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .demo-value {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    color: var(--accent);
+    min-width: 30px;
+  }
+
+  canvas {
+    width: 100%;
+    height: 200px;
+    display: block;
+    border-radius: 6px;
+  }
+
+  .demo-stats {
+    display: flex;
+    gap: 2rem;
+    margin-top: 1rem;
+    font-size: 13px;
+  }
+
+  .demo-stat label { color: var(--muted); }
+  .demo-stat .val {
+    font-family: 'DM Mono', monospace;
+    color: var(--heading);
+    margin-left: 0.4rem;
+  }
+
+  @media (max-width: 768px) {
+    .sidebar { display: none; }
+    .main { margin-left: 0; padding: 1.5rem; }
+    .formula-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="sidebar">
+  <div class="sidebar-logo">Taylor <span>&</span> Maclaurin</div>
+  <div class="nav-section">
+    <span class="nav-label">理论基础</span>
+    <a class="nav-item active" onclick="scrollTo('basics')">Taylor 公式</a>
+    <a class="nav-item" onclick="scrollTo('maclaurin')">Maclaurin 级数</a>
+    <a class="nav-item" onclick="scrollTo('common')">常见展开表</a>
+    <a class="nav-item" onclick="scrollTo('power-sums')">幂级数求和技巧</a>
+    <a class="nav-item" onclick="scrollTo('derivation')">推导：ln(1+x)</a>
+    <a class="nav-item" onclick="scrollTo('convergence')">收敛性</a>
+  </div>
+  <div class="nav-section">
+    <span class="nav-label">Quant 应用</span>
+    <a class="nav-item" onclick="scrollTo('finance')">金融中的应用</a>
+    <a class="nav-item" onclick="scrollTo('prob')">概率题应用</a>
+    <a class="nav-item" onclick="scrollTo('interview')">面试题库</a>
+  </div>
+  <div class="nav-section">
+    <span class="nav-label">工具</span>
+    <a class="nav-item" onclick="scrollTo('demo')">交互演示</a>
+  </div>
+</nav>
+
+<main class="main">
+
+  <!-- Section 1: Taylor Formula -->
+  <div class="section" id="basics">
+    <div class="section-header">
+      <h2 class="section-title">Taylor 公式</h2>
+      <span class="section-tag">核心定义</span>
+    </div>
+
+    <p>函数 $f(x)$ 在 $x = a$ 处的 Taylor 展开：</p>
+
+    <div class="formula-box accent">
+      <div class="formula-label">Taylor 公式（一般形式）</div>
+      $$f(x) = \sum_{n=0}^{\infty} \frac{f^{(n)}(a)}{n!}(x-a)^n = f(a) + f'(a)(x-a) + \frac{f''(a)}{2!}(x-a)^2 + \cdots$$
+    </div>
+
+    <p>其中 $f^{(n)}(a)$ 是 $f$ 在 $a$ 处的第 $n$ 阶导数。这是一个精确等式（无穷级数在收敛域内），不是近似。</p>
+
+    <div class="subsection-title">带余项的有限展开</div>
+    <p>实际应用中常取前 $n$ 项，余项 $R_n(x)$ 由 Lagrange 余项给出：</p>
+
+    <div class="formula-box">
+      $$f(x) = \sum_{k=0}^{n} \frac{f^{(k)}(a)}{k!}(x-a)^k + R_n(x), \quad R_n(x) = \frac{f^{(n+1)}(\xi)}{(n+1)!}(x-a)^{n+1}$$
+    </div>
+
+    <p>其中 $\xi$ 在 $a$ 与 $x$ 之间（存在但不一定能显式给出）。</p>
+  </div>
+
+  <!-- Section 2: Maclaurin -->
+  <div class="section" id="maclaurin">
+    <div class="section-header">
+      <h2 class="section-title">Maclaurin 级数</h2>
+      <span class="section-tag">$a=0$ 的特例</span>
+    </div>
+
+    <p>Maclaurin 级数是 $a = 0$ 时的 Taylor 展开，也是最常用的形式：</p>
+
+    <div class="formula-box accent2">
+      <div class="formula-label">Maclaurin 级数</div>
+      $$f(x) = \sum_{n=0}^{\infty} \frac{f^{(n)}(0)}{n!} x^n = f(0) + f'(0)x + \frac{f''(0)}{2!}x^2 + \frac{f'''(0)}{3!}x^3 + \cdots$$
+    </div>
+
+    <div class="note-box">
+      <strong>记忆口诀：</strong>系数 = 第 $n$ 阶导数在 0 处的值 ÷ $n!$
+    </div>
+  </div>
+
+  <!-- Section 3: Common Series -->
+  <div class="section" id="common">
+    <div class="section-header">
+      <h2 class="section-title">常见展开表</h2>
+      <span class="section-tag">必背</span>
+    </div>
+
+    <div class="formula-grid">
+      <div class="formula-card">
+        <div class="name">e^x</div>
+        $$e^x = \sum_{n=0}^{\infty} \frac{x^n}{n!}$$
+        $$= 1 + x + \frac{x^2}{2} + \frac{x^3}{6} + \frac{x^4}{24} + \cdots$$
+        <div class="domain">收敛域：所有 $x \in \mathbb{R}$ &nbsp;·&nbsp; $R=\infty$</div>
+      </div>
+      <div class="formula-card">
+        <div class="name">e^{-x}</div>
+        $$e^{-x} = \sum_{n=0}^{\infty} \frac{(-1)^n x^n}{n!}$$
+        $$= 1 - x + \frac{x^2}{2} - \frac{x^3}{6} + \frac{x^4}{24} - \cdots$$
+        <div class="domain">收敛域：所有 $x \in \mathbb{R}$</div>
+      </div>
+      <div class="formula-card">
+        <div class="name">ln(1+x)</div>
+        $$\ln(1+x) = \sum_{n=1}^{\infty} \frac{(-1)^{n+1}x^n}{n}$$
+        $$= x - \frac{x^2}{2} + \frac{x^3}{3} - \frac{x^4}{4} + \cdots$$
+        <div class="domain">收敛域：$-1 < x \leq 1$ &nbsp;·&nbsp; $R=1$</div>
+      </div>
+      <div class="formula-card">
+        <div class="name">-ln(1-x)</div>
+        $$-\ln(1-x) = \sum_{n=1}^{\infty} \frac{x^n}{n}$$
+        $$= x + \frac{x^2}{2} + \frac{x^3}{3} + \frac{x^4}{4} + \cdots$$
+        <div class="domain">收敛域：$|x| < 1$ &nbsp;·&nbsp; $R=1$</div>
+      </div>
+      <div class="formula-card">
+        <div class="name">几何级数 $\frac{1}{1-x}$</div>
+        $$\frac{1}{1-x} = \sum_{n=0}^{\infty} x^n$$
+        $$= 1 + x + x^2 + x^3 + x^4 + \cdots$$
+        <div class="domain">收敛域：$|x| < 1$ &nbsp;·&nbsp; $R=1$</div>
+      </div>
+      <div class="formula-card">
+        <div class="name">$\frac{1}{1+x}$</div>
+        $$\frac{1}{1+x} = \sum_{n=0}^{\infty} (-1)^n x^n$$
+        $$= 1 - x + x^2 - x^3 + x^4 - \cdots$$
+        <div class="domain">收敛域：$|x| < 1$ &nbsp;·&nbsp; $R=1$</div>
+      </div>
+      <div class="formula-card">
+        <div class="name">sin x</div>
+        $$\sin x = \sum_{n=0}^{\infty} \frac{(-1)^n x^{2n+1}}{(2n+1)!}$$
+        $$= x - \frac{x^3}{6} + \frac{x^5}{120} - \frac{x^7}{5040} + \cdots$$
+        <div class="domain">收敛域：所有 $x \in \mathbb{R}$ &nbsp;·&nbsp; $R=\infty$</div>
+      </div>
+      <div class="formula-card">
+        <div class="name">cos x</div>
+        $$\cos x = \sum_{n=0}^{\infty} \frac{(-1)^n x^{2n}}{(2n)!}$$
+        $$= 1 - \frac{x^2}{2} + \frac{x^4}{24} - \frac{x^6}{720} + \cdots$$
+        <div class="domain">收敛域：所有 $x \in \mathbb{R}$ &nbsp;·&nbsp; $R=\infty$</div>
+      </div>
+      <div class="formula-card">
+        <div class="name">二项式 $(1+x)^\alpha$</div>
+        $$(1+x)^\alpha = \sum_{n=0}^{\infty} \binom{\alpha}{n} x^n$$
+        $$= 1 + \alpha x + \frac{\alpha(\alpha-1)}{2}x^2 + \frac{\alpha(\alpha-1)(\alpha-2)}{6}x^3 + \cdots$$
+        <div class="domain">收敛域：$|x| < 1$（$\alpha \notin \mathbb{N}$）</div>
+      </div>
+      <div class="formula-card">
+        <div class="name">arctan x</div>
+        $$\arctan x = \sum_{n=0}^{\infty} \frac{(-1)^n x^{2n+1}}{2n+1}$$
+        $$= x - \frac{x^3}{3} + \frac{x^5}{5} - \frac{x^7}{7} + \cdots$$
+        <div class="domain">收敛域：$|x| \leq 1$ &nbsp;·&nbsp; $R=1$</div>
+      </div>
+      <div class="formula-card">
+        <div class="name">sinh x</div>
+        $$\sinh x = \sum_{n=0}^{\infty} \frac{x^{2n+1}}{(2n+1)!}$$
+        $$= x + \frac{x^3}{6} + \frac{x^5}{120} + \frac{x^7}{5040} + \cdots$$
+        <div class="domain">收敛域：所有 $x \in \mathbb{R}$（$\sinh x = \frac{e^x - e^{-x}}{2}$）</div>
+      </div>
+      <div class="formula-card">
+        <div class="name">cosh x</div>
+        $$\cosh x = \sum_{n=0}^{\infty} \frac{x^{2n}}{(2n)!}$$
+        $$= 1 + \frac{x^2}{2} + \frac{x^4}{24} + \frac{x^6}{720} + \cdots$$
+        <div class="domain">收敛域：所有 $x \in \mathbb{R}$（$\cosh x = \frac{e^x + e^{-x}}{2}$）</div>
+      </div>
+    </div>
+
+    <div class="subsection-title">一阶近似（面试最常用）</div>
+    <p>当 $x \to 0$ 时，保留到一阶项：</p>
+    <div class="formula-box">
+      $$e^x \approx 1+x \quad \ln(1+x) \approx x \quad (1+x)^\alpha \approx 1+\alpha x \quad \sin x \approx x \quad \cos x \approx 1 - \frac{x^2}{2}$$
+    </div>
+
+    <div class="subsection-title">二阶近似（常用于方差/凸性分析）</div>
+    <div class="formula-box accent2">
+      $$e^x \approx 1+x+\frac{x^2}{2} \qquad \ln(1+x) \approx x - \frac{x^2}{2} \qquad (1+x)^\alpha \approx 1+\alpha x + \frac{\alpha(\alpha-1)}{2}x^2$$
+    </div>
+  </div>
+
+  <!-- Section NEW: Power Series Summation Tricks -->
+  <div class="section" id="power-sums">
+    <div class="section-header">
+      <h2 class="section-title">幂级数求和技巧</h2>
+      <span class="section-tag">微分·积分·移位变换</span>
+    </div>
+
+    <p>从几何级数出发，通过<strong>求导</strong>、<strong>积分</strong>、<strong>乘以 $x$</strong> 等操作，可以系统生成一族重要的幂级数。这些级数在 Quant 面试中（期望计算、MGF、Poisson 均值/方差推导）高频出现。</p>
+
+    <div class="formula-box accent">
+      <div class="formula-label">母级数（起点）</div>
+      $$S(x) = \frac{1}{1-x} = \sum_{n=0}^{\infty} x^n = 1 + x + x^2 + x^3 + \cdots, \quad |x| < 1$$
+    </div>
+
+    <div class="subsection-title">① 对 $x$ 求导 → $\sum n x^{n-1}$</div>
+    <div class="formula-box">
+      <div class="formula-label">两边对 x 求导</div>
+      $$S'(x) = \frac{1}{(1-x)^2} = \sum_{n=1}^{\infty} n\,x^{n-1} = 1 + 2x + 3x^2 + 4x^3 + 5x^4 + \cdots, \quad |x| < 1$$
+    </div>
+    <p style="font-size:13px;color:var(--muted)">应用：Geometric 分布均值推导中，$\sum_{k=1}^\infty k q^{k-1} = \frac{1}{(1-q)^2} = \frac{1}{p^2}$。</p>
+
+    <div class="subsection-title">② 乘以 $x$ → $\sum n x^n$</div>
+    <div class="formula-box accent2">
+      <div class="formula-label">上式 × x</div>
+      $$\frac{x}{(1-x)^2} = \sum_{n=1}^{\infty} n\,x^n = x + 2x^2 + 3x^3 + 4x^4 + 5x^5 + \cdots, \quad |x| < 1$$
+    </div>
+    <p style="font-size:13px;color:var(--muted)">应用：Geometric 分布 $E[X] = \sum_{k=1}^\infty k (1-p)^{k-1} p$；NB 分布均值；任何"加权几何"期望。</p>
+
+    <div class="subsection-title">③ 再求导 → $\sum n(n-1) x^{n-2}$（二阶矩用）</div>
+    <div class="formula-box">
+      <div class="formula-label">对 S'(x) 再求导</div>
+      $$S''(x) = \frac{2}{(1-x)^3} = \sum_{n=2}^{\infty} n(n-1)\,x^{n-2} = 2 + 6x + 12x^2 + 20x^3 + \cdots$$
+    </div>
+    <p style="font-size:13px;color:var(--muted)">应用：$E[X(X-1)] = \sum k(k-1) p^k$ 型求和，配合 $\text{Var}(X) = E[X^2]-E[X]^2$ 求 Geometric/NB 方差。</p>
+
+    <div class="subsection-title">④ 乘以 $x^2$ → $\sum n(n-1) x^n$</div>
+    <div class="formula-box">
+      <div class="formula-label">S''(x) × x²</div>
+      $$\frac{2x^2}{(1-x)^3} = \sum_{n=2}^{\infty} n(n-1)\,x^n = 2x^2 + 6x^3 + 12x^4 + 20x^5 + \cdots$$
+    </div>
+
+    <div class="subsection-title">⑤ $\sum n^2 x^n$（方差推导）</div>
+    <div class="formula-box accent3">
+      <div class="formula-label">利用 n² = n(n-1) + n</div>
+      $$\sum_{n=1}^{\infty} n^2 x^n = \sum_{n=2}^\infty n(n-1)x^n + \sum_{n=1}^\infty n x^n = \frac{2x^2}{(1-x)^3} + \frac{x}{(1-x)^2} = \frac{x(1+x)}{(1-x)^3}$$
+      $$= x + 4x^2 + 9x^3 + 16x^4 + 25x^5 + \cdots$$
+    </div>
+    <p style="font-size:13px;color:var(--muted)">应用：Geometric 分布 $E[X^2]$，进而求 $\text{Var}(X)$。</p>
+
+    <div class="subsection-title">⑥ 对 $\sum x^n / n$ 和 $\ln$ 族求导/积分</div>
+    <div class="formula-box">
+      <div class="formula-label">从 -ln(1-x) 出发</div>
+      $$-\ln(1-x) = \sum_{n=1}^{\infty} \frac{x^n}{n} = x + \frac{x^2}{2} + \frac{x^3}{3} + \cdots$$
+      <div style="margin-top:0.8rem"></div>
+      $$\text{对 }x\text{ 求导：} \quad \frac{1}{1-x} = \sum_{n=1}^{\infty} x^{n-1} \quad \checkmark \text{（回到母级数）}$$
+      <div style="margin-top:0.5rem"></div>
+      $$\text{乘以 }x\text{ 再求导：} \quad \frac{d}{dx}\left[x\cdot(-\ln(1-x))\right] = \frac{d}{dx}\sum_{n=1}^\infty \frac{x^{n+1}}{n} = \sum_{n=1}^\infty \frac{(n+1)x^n}{n}$$
+    </div>
+
+    <div class="subsection-title">⑦ $e^x$ 族：$\sum n x^{n-1}/n!$ 和 $\sum n^2 x^n / n!$</div>
+    <div class="formula-box accent2">
+      <div class="formula-label">从 e^x 出发（Poisson 系列）</div>
+      $$e^x = \sum_{n=0}^{\infty} \frac{x^n}{n!} \quad \xrightarrow{\times x} \quad x e^x = \sum_{n=0}^{\infty} \frac{x^{n+1}}{n!} = \sum_{n=1}^{\infty} \frac{x^n}{(n-1)!}$$
+      <div style="margin-top:0.75rem"></div>
+      $$\textbf{Poisson 均值：} \quad \sum_{n=0}^{\infty} n \cdot \frac{\lambda^n e^{-\lambda}}{n!} = e^{-\lambda} \cdot \lambda e^{\lambda} = \lambda$$
+      <div style="margin-top:0.75rem"></div>
+      $$\textbf{下降矩：} \quad \sum_{n=0}^{\infty} n(n-1)\frac{\lambda^n}{n!} = \lambda^2 e^{\lambda} \;\Rightarrow\; E[X(X-1)] = \lambda^2 \;\Rightarrow\; \text{Var}(X)=\lambda$$
+    </div>
+
+    <div class="subsection-title">完整速查表</div>
+    <table class="compare-table">
+      <thead>
+        <tr><th>级数</th><th>闭合形式</th><th>前几项</th><th>来源</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>$\displaystyle\sum_{n=0}^{\infty} x^n$</td>
+          <td>$\dfrac{1}{1-x}$</td>
+          <td>$1+x+x^2+x^3+\cdots$</td>
+          <td>几何级数（母）</td>
+        </tr>
+        <tr>
+          <td>$\displaystyle\sum_{n=1}^{\infty} n x^{n-1}$</td>
+          <td>$\dfrac{1}{(1-x)^2}$</td>
+          <td>$1+2x+3x^2+4x^3+\cdots$</td>
+          <td>对母级数求导</td>
+        </tr>
+        <tr>
+          <td>$\displaystyle\sum_{n=1}^{\infty} n x^n$</td>
+          <td>$\dfrac{x}{(1-x)^2}$</td>
+          <td>$x+2x^2+3x^3+4x^4+\cdots$</td>
+          <td>上式 $\times x$</td>
+        </tr>
+        <tr>
+          <td>$\displaystyle\sum_{n=2}^{\infty} n(n-1) x^{n-2}$</td>
+          <td>$\dfrac{2}{(1-x)^3}$</td>
+          <td>$2+6x+12x^2+20x^3+\cdots$</td>
+          <td>二阶导</td>
+        </tr>
+        <tr>
+          <td>$\displaystyle\sum_{n=2}^{\infty} n(n-1) x^n$</td>
+          <td>$\dfrac{2x^2}{(1-x)^3}$</td>
+          <td>$2x^2+6x^3+12x^4+\cdots$</td>
+          <td>二阶导 $\times x^2$</td>
+        </tr>
+        <tr>
+          <td>$\displaystyle\sum_{n=1}^{\infty} n^2 x^n$</td>
+          <td>$\dfrac{x(1+x)}{(1-x)^3}$</td>
+          <td>$x+4x^2+9x^3+16x^4+\cdots$</td>
+          <td>$n^2=n(n-1)+n$</td>
+        </tr>
+        <tr>
+          <td>$\displaystyle\sum_{n=1}^{\infty} \frac{x^n}{n}$</td>
+          <td>$-\ln(1-x)$</td>
+          <td>$x+\tfrac{x^2}{2}+\tfrac{x^3}{3}+\cdots$</td>
+          <td>母级数积分</td>
+        </tr>
+        <tr>
+          <td>$\displaystyle\sum_{n=0}^{\infty} \frac{x^n}{n!}$</td>
+          <td>$e^x$</td>
+          <td>$1+x+\tfrac{x^2}{2}+\tfrac{x^3}{6}+\cdots$</td>
+          <td>指数函数展开</td>
+        </tr>
+        <tr>
+          <td>$\displaystyle\sum_{n=0}^{\infty} \frac{n\,x^n}{n!}$</td>
+          <td>$x e^x$</td>
+          <td>$0+x+x^2+\tfrac{x^3}{2}+\cdots$</td>
+          <td>$e^x \times x$（Poisson 均值）</td>
+        </tr>
+        <tr>
+          <td>$\displaystyle\sum_{n=0}^{\infty} \frac{n^2\,x^n}{n!}$</td>
+          <td>$x(1+x)e^x$</td>
+          <td>$0+x+2x^2+\tfrac{3x^3}{2}+\cdots$</td>
+          <td>$n^2=n(n-1)+n$（Poisson 方差）</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="note-box">
+      <strong>面试口诀：</strong>求导降次升系数，乘 $x$ 升次保系数，积分升次除系数。遇到 $\sum k \cdot(\text{东西})^k$ 型求和，第一反应是把它写成 $x \cdot S'(x)$ 的形式。
+    </div>
+  </div>
+  <div class="section" id="derivation">
+    <div class="section-header">
+      <h2 class="section-title">推导：$-\ln(1-x)$</h2>
+      <span class="section-tag">面试高频</span>
+    </div>
+
+    <p>这个展开在 Quant 面试中经常用到（骰子期望、对数收益率等），推导如下：</p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <p>从等比级数出发（精确等式）：</p>
+          <div class="formula-box">$$\frac{1}{1-x} = \sum_{n=0}^{\infty} x^n = 1 + x + x^2 + \cdots, \quad |x| < 1$$</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <p>两边从 0 到 $x$ 积分（幂级数在收敛域内可逐项积分）：</p>
+          <div class="formula-box">$$\int_0^x \frac{1}{1-t}\,dt = \int_0^x \sum_{n=0}^{\infty} t^n\,dt$$</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <p>左边求值：</p>
+          <div class="formula-box">$$\Big[-\ln(1-t)\Big]_0^x = -\ln(1-x)$$</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <p>右边逐项积分：</p>
+          <div class="formula-box">$$\sum_{n=0}^{\infty} \frac{x^{n+1}}{n+1} = x + \frac{x^2}{2} + \frac{x^3}{3} + \cdots = \sum_{n=1}^{\infty} \frac{x^n}{n}$$</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">5</div>
+        <div class="step-content">
+          <p>结论（精确等式，非近似）：</p>
+          <div class="formula-box accent">$$-\ln(1-x) = \sum_{n=1}^{\infty} \frac{x^n}{n}, \quad |x| < 1$$</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 5: Convergence -->
+  <div class="section" id="convergence">
+    <div class="section-header">
+      <h2 class="section-title">收敛性</h2>
+      <span class="section-tag">理论</span>
+    </div>
+
+    <table class="compare-table">
+      <thead>
+        <tr><th>级数</th><th>收敛半径</th><th>端点行为</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>$e^x$</td><td>$R = \infty$</td><td>全实数收敛</td></tr>
+        <tr><td>$\sin x, \cos x$</td><td>$R = \infty$</td><td>全实数收敛</td></tr>
+        <tr><td>$\frac{1}{1-x}$</td><td>$R = 1$</td><td>端点均发散</td></tr>
+        <tr><td>$-\ln(1-x)$</td><td>$R = 1$</td><td>$x=-1$ 收敛，$x=1$ 发散（调和级数）</td></tr>
+        <tr><td>$\ln(1+x)$</td><td>$R = 1$</td><td>$x=1$ 收敛（交错调和），$x=-1$ 发散</td></tr>
+        <tr><td>$(1+x)^\alpha$</td><td>$R = 1$</td><td>取决于 $\alpha$</td></tr>
+      </tbody>
+    </table>
+
+    <div class="note-box">
+      <strong>收敛半径公式：</strong> $R = \lim_{n\to\infty} \left|\frac{a_n}{a_{n+1}}\right|$（比值法），或 $R = 1/\limsup |a_n|^{1/n}$（根值法）
+    </div>
+  </div>
+
+  <!-- Section 6: Finance Applications -->
+  <div class="section" id="finance">
+    <div class="section-header">
+      <h2 class="section-title">金融中的应用</h2>
+      <span class="section-tag">Quant 核心</span>
+    </div>
+
+    <div class="subsection-title">1. 连续复利与离散复利</div>
+    <p>$(1 + r/n)^n \to e^r$ 当 $n\to\infty$。用 $e^x$ 展开验证：</p>
+    <div class="formula-box accent2">
+      $$e^r = 1 + r + \frac{r^2}{2} + \cdots \approx 1 + r \quad \text{（小 }r\text{ 时）}$$
+    </div>
+
+    <div class="subsection-title">2. 对数收益率</div>
+    <p>$\ln(1+r) \approx r$ 对小 $r$ 成立，这是对数收益率可加性的理论基础：</p>
+    <div class="formula-box">
+      $$\ln(1+r) = r - \frac{r^2}{2} + \frac{r^3}{3} - \cdots$$
+    </div>
+
+    <div class="subsection-title">3. Black-Scholes Greeks（Delta-Gamma 近似）</div>
+    <p>期权价格 $V(S)$ 关于 $S$ 的 Taylor 展开，取到二阶：</p>
+    <div class="formula-box accent3">
+      $$\Delta V \approx \Delta \cdot \Delta S + \frac{1}{2}\Gamma \cdot (\Delta S)^2$$
+    </div>
+    <p>其中 $\Delta = \partial V/\partial S$，$\Gamma = \partial^2 V/\partial S^2$。Delta-hedged P&amp;L 的 $\frac{1}{2}\Gamma S^2(\sigma_{RV}^2 - \sigma_{IV}^2)dt$ 正是这个二阶项的来源。</p>
+
+    <div class="subsection-title">4. 债券久期与凸性</div>
+    <div class="formula-box">
+      $$\frac{\Delta P}{P} \approx -D \cdot \Delta y + \frac{1}{2}C \cdot (\Delta y)^2$$
+    </div>
+    <p>久期 $D$ 是一阶项，凸性 $C$ 是二阶项，本质上是债券价格对收益率的 Taylor 展开。</p>
+
+    <div class="subsection-title">5. Kelly Criterion 推导</div>
+    <p>最大化 $E[\ln W]$，对 $\ln(1 + \text{payoff})$ 展开到二阶得到 Kelly 分数：</p>
+    <div class="formula-box accent2">
+      $$f^* = \frac{\mu}{\sigma^2} \quad \text{（连续版本）}$$
+    </div>
+  </div>
+
+  <!-- Section 7: Prob Applications -->
+  <div class="section" id="prob">
+    <div class="section-header">
+      <h2 class="section-title">概率题中的应用</h2>
+      <span class="section-tag">面试高频</span>
+    </div>
+
+    <div class="subsection-title">骰子期望问题</div>
+    <p>抛骰子，第 $n$ 次抛到6结束，payoff = $1/n$。无限次游戏的期望：</p>
+    <div class="formula-box accent">
+      $$E = \sum_{n=1}^{\infty} \frac{1}{n} \cdot \left(\frac{5}{6}\right)^{n-1} \cdot \frac{1}{6} = \frac{1}{5}\sum_{n=1}^{\infty} \frac{(5/6)^n}{n} = \frac{\ln 6}{5}$$
+    </div>
+    <p>关键：$\sum_{n=1}^{\infty} \frac{x^n}{n} = -\ln(1-x)$，令 $x = 5/6$ 得 $\ln 6$。</p>
+
+    <div class="subsection-title">MGF 与矩</div>
+    <p>矩母函数 $M(t) = E[e^{tX}]$ 的展开：</p>
+    <div class="formula-box">
+      $$M(t) = E[e^{tX}] = \sum_{n=0}^{\infty} \frac{E[X^n]}{n!} t^n$$
+    </div>
+    <p>系数 $E[X^n]/n!$ 正是第 $n$ 阶矩。对 $M(t)$ 在 $t=0$ 处求 $n$ 阶导即得 $E[X^n]$。</p>
+
+    <div class="subsection-title">Poisson 近似</div>
+    <p>$(1 - \lambda/n)^n \to e^{-\lambda}$，用 $e^x$ 展开在 Poisson 极限定理中出现：</p>
+    <div class="formula-box">
+      $$\left(1 - \frac{\lambda}{n}\right)^n = e^{n\ln(1-\lambda/n)} \approx e^{n \cdot (-\lambda/n)} = e^{-\lambda}$$
+    </div>
+  </div>
+
+  <!-- Section 8: Interview Q&A -->
+  <div class="section" id="interview">
+    <div class="section-header">
+      <h2 class="section-title">面试题库</h2>
+      <span class="section-tag">点击展开答案</span>
+    </div>
+
+    <div class="qa-item" onclick="toggle(this)">
+      <div class="qa-question">
+        <span class="qa-question-text">推导 $e^x$ 的 Maclaurin 展开</span>
+        <span class="qa-firm">基础必会</span>
+        <span class="qa-chevron">▼</span>
+      </div>
+      <div class="qa-answer">
+        <p>$f(x) = e^x$，所有阶导数均为 $e^x$，在 $x=0$ 处 $f^{(n)}(0) = 1$。代入 Maclaurin 公式：</p>
+        <div class="formula-box">$$e^x = \sum_{n=0}^{\infty} \frac{1}{n!}x^n = 1 + x + \frac{x^2}{2!} + \frac{x^3}{3!} + \cdots$$</div>
+        <p>收敛半径 $R = \infty$（比值法：$|a_{n+1}/a_n| = |x|/(n+1) \to 0$）。</p>
+      </div>
+    </div>
+
+    <div class="qa-item" onclick="toggle(this)">
+      <div class="qa-question">
+        <span class="qa-question-text">$\sum x^n/n = -\ln(1-x)$ 是近似还是精确等式？</span>
+        <span class="qa-firm">面试陷阱</span>
+        <span class="qa-chevron">▼</span>
+      </div>
+      <div class="qa-answer">
+        <p>精确等式。$|x|&lt;1$ 时无穷级数收敛到 $-\ln(1-x)$，不是近似。</p>
+        <p>推导：对几何级数 $\frac{1}{1-x}=\sum x^n$ 两边积分，幂级数在收敛域内可逐项积分，结果精确成立。"高阶项"是已经全部求和完的，不存在截断误差。</p>
+      </div>
+    </div>
+
+    <div class="qa-item" onclick="toggle(this)">
+      <div class="qa-question">
+        <span class="qa-question-text">Delta-Gamma 近似的 Taylor 展开背景</span>
+        <span class="qa-firm">Vol Trading</span>
+        <span class="qa-chevron">▼</span>
+      </div>
+      <div class="qa-answer">
+        <p>期权价值 $V(S+\Delta S)$ 在 $S$ 处展开到二阶：</p>
+        <div class="formula-box">$$V(S+\Delta S) \approx V(S) + \frac{\partial V}{\partial S}\Delta S + \frac{1}{2}\frac{\partial^2 V}{\partial S^2}(\Delta S)^2 = V(S) + \Delta\cdot\Delta S + \frac{1}{2}\Gamma(\Delta S)^2$$</div>
+        <p>Delta-hedge 后消去一阶项，P&amp;L 由二阶项主导：$\frac{1}{2}\Gamma S^2(\sigma_{RV}^2 - \sigma_{IV}^2)dt$，这是 vol trading 盈亏的核心公式。</p>
+      </div>
+    </div>
+
+    <div class="qa-item" onclick="toggle(this)">
+      <div class="qa-question">
+        <span class="qa-question-text">用 Taylor 展开证明 AM ≥ GM</span>
+        <span class="qa-firm">概率/统计</span>
+        <span class="qa-chevron">▼</span>
+      </div>
+      <div class="qa-answer">
+        <p>$e^x \geq 1 + x$ 对所有 $x$ 成立（$e^x$ 的 Taylor 展开各项非负，高阶项被丢弃后只能更小）。</p>
+        <p>令 $x = a_i/\bar{a} - 1$，则 $e^{a_i/\bar{a}-1} \geq a_i/\bar{a}$，连乘后取对数即得 AM ≥ GM。</p>
+        <p>这也说明为何 Kelly 准则最大化 $E[\ln W]$ 而非 $E[W]$：$\ln W \leq W - 1$，期望增长率与典型路径增长率之差正是被高阶项捕捉的信息。</p>
+      </div>
+    </div>
+
+    <div class="qa-item" onclick="toggle(this)">
+      <div class="qa-question">
+        <span class="qa-question-text">用 MGF 求正态分布的各阶矩</span>
+        <span class="qa-firm">统计</span>
+        <span class="qa-chevron">▼</span>
+      </div>
+      <div class="qa-answer">
+        <p>$X \sim N(0,1)$ 的 MGF：$M(t) = e^{t^2/2}$。展开：</p>
+        <div class="formula-box">$$M(t) = \sum_{n=0}^{\infty} \frac{(t^2/2)^n}{n!} = \sum_{n=0}^{\infty} \frac{t^{2n}}{2^n \cdot n!}$$</div>
+        <p>与 $M(t) = \sum E[X^n]t^n/n!$ 对比：奇数阶矩为0，$E[X^{2n}] = (2n)!/(2^n \cdot n!) = (2n-1)!!$。即 $E[X^2]=1, E[X^4]=3, E[X^6]=15$。</p>
+      </div>
+    </div>
+
+    <div class="qa-item" onclick="toggle(this)">
+      <div class="qa-question">
+        <span class="qa-question-text">$(1+r/n)^n \to e^r$ 的严格推导</span>
+        <span class="qa-firm">基础金融数学</span>
+        <span class="qa-chevron">▼</span>
+      </div>
+      <div class="qa-answer">
+        <p>取对数：$n \cdot \ln(1 + r/n)$。用 $\ln(1+x) \approx x - x^2/2 + \cdots$，令 $x = r/n$：</p>
+        <div class="formula-box">$$n \cdot \ln\left(1 + \frac{r}{n}\right) = n\left(\frac{r}{n} - \frac{r^2}{2n^2} + O(n^{-3})\right) = r - \frac{r^2}{2n} + O(n^{-2}) \to r$$</div>
+        <p>因此 $(1+r/n)^n = e^{n\ln(1+r/n)} \to e^r$。这是连续复利的严格数学基础。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 9: Interactive Demo -->
+  <div class="section" id="demo">
+    <div class="section-header">
+      <h2 class="section-title">交互演示</h2>
+      <span class="section-tag">Taylor 近似可视化</span>
+    </div>
+
+    <p>调整展开阶数，观察 Taylor 近似如何收敛到真实函数：</p>
+
+    <div class="demo-container">
+      <div class="demo-controls">
+        <div class="demo-control-group">
+          <label>函数</label>
+          <select id="funcSelect" onchange="drawChart()">
+            <option value="exp">e^x</option>
+            <option value="sin">sin x</option>
+            <option value="ln">ln(1+x)</option>
+            <option value="cos">cos x</option>
+          </select>
+        </div>
+        <div class="demo-control-group">
+          <label>阶数</label>
+          <input type="range" min="1" max="10" value="3" id="orderSlider" oninput="updateOrder(this.value)">
+          <span class="demo-value" id="orderVal">3</span>
+        </div>
+      </div>
+      <canvas id="demoCanvas"></canvas>
+      <div class="demo-stats">
+        <div class="demo-stat"><label>展开点</label><span class="val">x = 0</span></div>
+        <div class="demo-stat"><label>x=1 真实值</label><span class="val" id="trueVal">—</span></div>
+        <div class="demo-stat"><label>x=1 近似值</label><span class="val" id="approxVal">—</span></div>
+        <div class="demo-stat"><label>误差</label><span class="val" id="errVal">—</span></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+function scrollTo(id) {
+  document.getElementById(id).scrollIntoView({behavior: 'smooth'});
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  event.target.classList.add('active');
+}
+
+function toggle(el) {
+  el.classList.toggle('open');
+}
+
+renderMathInElement(document.body, {
+  delimiters: [
+    {left: '$$', right: '$$', display: true},
+    {left: '$', right: '$', display: false}
+  ],
+  throwOnError: false
+});
+
+// Chart
+const canvas = document.getElementById('demoCanvas');
+const ctx = canvas.getContext('2d');
+
+const funcs = {
+  exp: {
+    f: x => Math.exp(x),
+    terms: n => Array.from({length: n+1}, (_,k) => [k, 1/factorial(k)]),
+    range: [-2, 2.5], yRange: [-1, 8]
+  },
+  sin: {
+    f: x => Math.sin(x),
+    terms: n => {
+      let t = [];
+      for (let k = 0; k <= n; k++) {
+        if (k % 2 === 1) t.push([k, Math.pow(-1, (k-1)/2) / factorial(k)]);
+      }
+      return t;
+    },
+    range: [-Math.PI, Math.PI], yRange: [-1.5, 1.5]
+  },
+  ln: {
+    f: x => Math.log(1+x),
+    terms: n => Array.from({length: n}, (_,k) => [k+1, Math.pow(-1,k)/(k+1)]),
+    range: [-0.9, 1.5], yRange: [-2, 1.5]
+  },
+  cos: {
+    f: x => Math.cos(x),
+    terms: n => {
+      let t = [];
+      for (let k = 0; k <= n; k++) {
+        if (k % 2 === 0) t.push([k, Math.pow(-1, k/2) / factorial(k)]);
+      }
+      return t;
+    },
+    range: [-Math.PI, Math.PI], yRange: [-1.5, 1.5]
+  }
+};
+
+function factorial(n) {
+  if (n <= 1) return 1;
+  return n * factorial(n-1);
+}
+
+function evalTaylor(terms, x) {
+  return terms.reduce((s, [n, c]) => s + c * Math.pow(x, n), 0);
+}
+
+function drawChart() {
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width * dpr;
+  canvas.height = 200 * dpr;
+  ctx.scale(dpr, dpr);
+  const W = rect.width, H = 200;
+
+  const fname = document.getElementById('funcSelect').value;
+  const order = parseInt(document.getElementById('orderSlider').value);
+  const fn = funcs[fname];
+  const terms = fn.terms(order);
+  const [x0, x1] = fn.range;
+  const [y0, y1] = fn.yRange;
+
+  const toPixX = x => (x - x0) / (x1 - x0) * W;
+  const toPixY = y => H - (y - y0) / (y1 - y0) * H;
+
+  ctx.clearRect(0, 0, W, H);
+
+  // Grid lines
+  ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+  ctx.lineWidth = 0.5;
+  for (let y = Math.ceil(y0); y <= Math.floor(y1); y++) {
+    ctx.beginPath();
+    ctx.moveTo(0, toPixY(y));
+    ctx.lineTo(W, toPixY(y));
+    ctx.stroke();
+  }
+  // Axes
+  ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+  ctx.lineWidth = 0.75;
+  ctx.beginPath(); ctx.moveTo(0, toPixY(0)); ctx.lineTo(W, toPixY(0)); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(toPixX(0), 0); ctx.lineTo(toPixX(0), H); ctx.stroke();
+
+  // True function
+  ctx.strokeStyle = '#5dcaa5';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  let first = true;
+  for (let px = 0; px < W; px++) {
+    const x = x0 + (x1 - x0) * px / W;
+    const y = fn.f(x);
+    if (!isFinite(y) || y < y0 - 5 || y > y1 + 5) { first = true; continue; }
+    if (first) { ctx.moveTo(px, toPixY(y)); first = false; }
+    else ctx.lineTo(px, toPixY(y));
+  }
+  ctx.stroke();
+
+  // Taylor approximation
+  ctx.strokeStyle = '#9f8fff';
+  ctx.lineWidth = 1.5;
+  ctx.setLineDash([4, 3]);
+  ctx.beginPath();
+  first = true;
+  for (let px = 0; px < W; px++) {
+    const x = x0 + (x1 - x0) * px / W;
+    const y = evalTaylor(terms, x);
+    if (!isFinite(y) || y < y0 - 5 || y > y1 + 5) { first = true; continue; }
+    if (first) { ctx.moveTo(px, toPixY(y)); first = false; }
+    else ctx.lineTo(px, toPixY(y));
+  }
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Legend
+  ctx.font = '12px DM Mono, monospace';
+  ctx.fillStyle = '#5dcaa5';
+  ctx.fillText('— true', 10, 18);
+  ctx.fillStyle = '#9f8fff';
+  ctx.fillText('— taylor', 70, 18);
+
+  // Stats at x=1
+  const trueAt1 = fn.f(1);
+  const approxAt1 = evalTaylor(terms, 1);
+  document.getElementById('trueVal').textContent = trueAt1.toFixed(4);
+  document.getElementById('approxVal').textContent = approxAt1.toFixed(4);
+  document.getElementById('errVal').textContent = Math.abs(trueAt1 - approxAt1).toFixed(4);
+}
+
+function updateOrder(v) {
+  document.getElementById('orderVal').textContent = v;
+  drawChart();
+}
+
+window.addEventListener('resize', drawChart);
+drawChart();
+</script>
+
+</body>
+</html>

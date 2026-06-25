@@ -8,7 +8,7 @@ import { getChildPagesOf } from '@/lib/getChildPages'
 import { stripChildPages, pageHasRealContent } from '@/lib/stripChildPages'
 import { discoverAllPages } from '@/lib/discoverPages'
 import { getDatabasesInPage, RenderedDatabase } from '@/lib/getDatabases'
-import { config, cardStyles } from '@/lib/config'
+import { config, cardStyles, htmlResourcesForSection } from '@/lib/config'
 import SectionGrid, { CardData, accentForIndex } from '@/components/SectionGrid'
 import DatabaseTable from '@/components/DatabaseTable'
 import { useCopyButtons } from '@/components/useCopyButtons'
@@ -32,7 +32,7 @@ interface PageProps {
 
 export default function NotionPage({ recordMap, title, cards, databases, hasContent }: PageProps) {
   // 给代码块注入复制按钮
-  useCopyButtons([recordMap])
+  // useCopyButtons([recordMap])
 
   if (!recordMap) {
     return (
@@ -59,6 +59,9 @@ export default function NotionPage({ recordMap, title, cards, databases, hasCont
             <span className="nav-dot" />
             {config.siteName}
           </Link>
+          <button onClick={() => history.back()} className="nav-back" style={{ background: 'none', border: 'none', cursor: 'pointer', font: 'inherit' }}>
+            <i className="ti ti-chevron-left" /> Back
+          </button>
           <Link href="/" className="nav-back"><i className="ti ti-arrow-left" /> All sections</Link>
         </nav>
 
@@ -153,6 +156,22 @@ export const getStaticProps: GetStaticProps<PageProps> = async (context) => {
           href: `/${slugify(child.title)}-${child.pageId}/`,
         }
       })
+    }
+
+    // 追加本地 HTML 资料卡(归到当前 section 的)
+    const htmlRes = htmlResourcesForSection(title)
+    if (htmlRes.length > 0) {
+      const baseLen = cards?.length ?? 0
+      const htmlCards: CardData[] = htmlRes.map((r, i) => ({
+        title: r.title,
+        description: r.desc || '',
+        icon: 'file-text',
+        accent: r.accent || accentForIndex(baseLen + i),
+        emoji: null,
+        href: `/docs/${r.file}`,
+        external: true,
+      }))
+      cards = [...(cards || []), ...htmlCards]
     }
 
     // 从正文移除子页面块(改用下方卡片展示),保留其它所有内容

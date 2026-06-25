@@ -1,0 +1,1275 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>假设检验 · 共轭分布 — 完全指南</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;600;700&family=JetBrains+Mono:wght@300;400;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+<style>
+:root {
+  --bg: #0d0f14;
+  --bg2: #13161e;
+  --bg3: #1a1e28;
+  --border: #252a38;
+  --border2: #2e3547;
+  --text: #d4cfc8;
+  --text2: #9a9490;
+  --text3: #6b6660;
+  --accent: #c8a96e;
+  --accent2: #e8c98e;
+  --accent3: #f5e0b0;
+  --red: #e07060;
+  --green: #7ec8a0;
+  --blue: #7ab0d8;
+  --purple: #a88fd0;
+  --teal: #60b8b0;
+  --sidebar-w: 280px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Noto Serif SC', serif;
+  font-weight: 300;
+  font-size: 15px;
+  line-height: 1.85;
+  display: flex;
+  min-height: 100vh;
+}
+
+/* ── SIDEBAR ── */
+#sidebar {
+  width: var(--sidebar-w);
+  min-width: var(--sidebar-w);
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  overflow-y: auto;
+  z-index: 100;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border2) transparent;
+}
+#sidebar::-webkit-scrollbar { width: 4px; }
+#sidebar::-webkit-scrollbar-track { background: transparent; }
+#sidebar::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+.sidebar-header {
+  padding: 28px 22px 20px;
+  border-bottom: 1px solid var(--border);
+}
+.sidebar-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--accent);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.sidebar-sub {
+  font-size: 11px;
+  color: var(--text3);
+  letter-spacing: 0.05em;
+}
+
+.nav-section {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+.nav-section-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text3);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  padding: 8px 22px 4px;
+}
+.nav-link {
+  display: block;
+  padding: 5px 22px 5px 28px;
+  font-size: 12.5px;
+  color: var(--text2);
+  text-decoration: none;
+  transition: color 0.15s, background 0.15s;
+  border-left: 2px solid transparent;
+  margin-left: -2px;
+}
+.nav-link:hover { color: var(--accent2); background: rgba(200,169,110,0.04); }
+.nav-link.active { color: var(--accent); border-left-color: var(--accent); background: rgba(200,169,110,0.06); }
+.nav-link-sub {
+  padding-left: 38px;
+  font-size: 11.5px;
+  color: var(--text3);
+}
+.nav-link-sub:hover { color: var(--text2); }
+
+/* ── MAIN ── */
+#main {
+  margin-left: var(--sidebar-w);
+  flex: 1;
+  max-width: 900px;
+  padding: 56px 64px 100px;
+}
+
+/* ── TYPOGRAPHY ── */
+h1 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 38px;
+  font-weight: 300;
+  color: var(--accent3);
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  margin-bottom: 8px;
+}
+h1 .ch { font-size: 20px; color: var(--text2); font-weight: 300; display: block; margin-bottom: 6px; letter-spacing: 0.2em; }
+h2 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 26px;
+  font-weight: 400;
+  color: var(--accent2);
+  margin: 52px 0 18px;
+  padding-top: 52px;
+  border-top: 1px solid var(--border);
+  letter-spacing: 0.02em;
+}
+h2:first-of-type { margin-top: 32px; }
+h3 {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--accent);
+  margin: 28px 0 10px;
+  letter-spacing: 0.04em;
+}
+h4 {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--teal);
+  margin: 18px 0 6px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+p { margin: 10px 0; }
+strong { color: var(--accent2); font-weight: 600; }
+em { color: var(--text); font-style: italic; }
+
+/* ── DECORATIVE INTRO ── */
+.page-intro {
+  margin: 28px 0 10px;
+  padding: 20px 24px;
+  background: linear-gradient(135deg, rgba(200,169,110,0.06) 0%, rgba(122,176,216,0.04) 100%);
+  border: 1px solid var(--border2);
+  border-left: 3px solid var(--accent);
+  border-radius: 2px;
+  font-size: 13.5px;
+  color: var(--text2);
+  line-height: 1.75;
+}
+
+/* ── MATH BOXES ── */
+.math-block {
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-left: 3px solid var(--blue);
+  border-radius: 2px;
+  padding: 14px 20px;
+  margin: 14px 0;
+  overflow-x: auto;
+  font-size: 14px;
+}
+.math-block.gold { border-left-color: var(--accent); }
+.math-block.red { border-left-color: var(--red); }
+.math-block.green { border-left-color: var(--green); }
+.math-block.purple { border-left-color: var(--purple); }
+.math-block.teal { border-left-color: var(--teal); }
+
+/* ── DEFINITION / THEOREM ── */
+.def-box {
+  background: rgba(122,176,216,0.05);
+  border: 1px solid rgba(122,176,216,0.2);
+  border-radius: 3px;
+  padding: 14px 18px;
+  margin: 14px 0;
+}
+.def-box .def-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--blue);
+  margin-bottom: 6px;
+}
+.thm-box {
+  background: rgba(200,169,110,0.04);
+  border: 1px solid rgba(200,169,110,0.18);
+  border-radius: 3px;
+  padding: 14px 18px;
+  margin: 14px 0;
+}
+.thm-box .thm-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 6px;
+}
+
+/* ── TABLE ── */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin: 16px 0;
+}
+th {
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  padding: 8px 12px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+td {
+  border: 1px solid var(--border);
+  padding: 7px 12px;
+  color: var(--text2);
+  vertical-align: top;
+  line-height: 1.6;
+}
+tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
+tr:hover td { background: rgba(200,169,110,0.025); }
+
+/* ── EXAMPLE BLOCK ── */
+.example {
+  background: rgba(126,200,160,0.04);
+  border: 1px solid rgba(126,200,160,0.18);
+  border-radius: 3px;
+  margin: 20px 0;
+  overflow: hidden;
+}
+.example-header {
+  background: rgba(126,200,160,0.08);
+  padding: 8px 16px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--green);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.example-header::before { content: '▶'; font-size: 9px; }
+.example-body { padding: 14px 16px; font-size: 14px; }
+.example-body p:first-child { margin-top: 0; }
+
+/* ── SOLUTION ── */
+.solution {
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: 3px;
+  margin: 10px 0 0;
+  overflow: hidden;
+}
+.solution-header {
+  padding: 6px 14px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--teal);
+  background: rgba(96,184,176,0.06);
+  cursor: pointer;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.solution-body { padding: 12px 14px; font-size: 13.5px; }
+
+/* ── CODE ── */
+code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  padding: 1px 5px;
+  border-radius: 2px;
+  color: var(--teal);
+}
+
+/* ── TAGS ── */
+.tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 2px;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin: 0 2px;
+}
+.tag-red { background: rgba(224,112,96,0.12); color: var(--red); border: 1px solid rgba(224,112,96,0.25); }
+.tag-green { background: rgba(126,200,160,0.12); color: var(--green); border: 1px solid rgba(126,200,160,0.25); }
+.tag-blue { background: rgba(122,176,216,0.12); color: var(--blue); border: 1px solid rgba(122,176,216,0.25); }
+.tag-gold { background: rgba(200,169,110,0.12); color: var(--accent); border: 1px solid rgba(200,169,110,0.25); }
+
+/* ── TWO-COL ── */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 14px 0; }
+.two-col .math-block { margin: 0; }
+
+/* ── SUMMARY CARD ── */
+.summary-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; margin: 16px 0; }
+.summary-card {
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: 3px;
+  padding: 14px 14px 12px;
+  transition: border-color 0.2s;
+}
+.summary-card:hover { border-color: var(--accent); }
+.summary-card .card-title { font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; }
+.summary-card .card-body { font-size: 12.5px; color: var(--text2); line-height: 1.6; }
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg2); }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+/* ── SECTION ANCHOR OFFSET ── */
+.section-anchor { scroll-margin-top: 24px; }
+
+/* ── PROOF DETAILS ── */
+details { margin: 10px 0; }
+details summary {
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--teal);
+  letter-spacing: 0.08em;
+  padding: 6px 0;
+  user-select: none;
+}
+details summary:hover { color: var(--green); }
+details[open] summary { margin-bottom: 8px; }
+
+/* ── NOTE BOX ── */
+.note {
+  background: rgba(168,143,208,0.05);
+  border-left: 3px solid var(--purple);
+  padding: 10px 14px;
+  margin: 12px 0;
+  font-size: 13px;
+  color: var(--text2);
+}
+
+/* ── WARNING ── */
+.warn {
+  background: rgba(224,112,96,0.05);
+  border-left: 3px solid var(--red);
+  padding: 10px 14px;
+  margin: 12px 0;
+  font-size: 13px;
+  color: var(--text2);
+}
+
+/* ── PROGRESS BAR ── */
+#progress {
+  position: fixed;
+  top: 0; left: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent), var(--blue));
+  z-index: 999;
+  transition: width 0.1s;
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 960px) {
+  #sidebar { transform: translateX(-100%); transition: transform 0.25s; }
+  #sidebar.open { transform: none; }
+  #main { margin-left: 0; padding: 40px 24px 80px; }
+}
+</style>
+</head>
+<body>
+
+<div id="progress"></div>
+
+<!-- SIDEBAR -->
+<nav id="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-title">统计推断</div>
+    <div class="sidebar-sub">假设检验 · 共轭分布 · 例题解析</div>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-label">I · 基础框架</div>
+    <a class="nav-link" href="#s1">检验基本概念</a>
+    <a class="nav-link nav-link-sub" href="#s1-errors">两类错误与功效</a>
+    <a class="nav-link nav-link-sub" href="#s1-pval">p 值与显著性</a>
+    <a class="nav-link nav-link-sub" href="#s1-ci">置信区间对偶</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-label">II · 频率派检验</div>
+    <a class="nav-link" href="#s2-z">Z 检验</a>
+    <a class="nav-link" href="#s2-t">t 检验</a>
+    <a class="nav-link nav-link-sub" href="#s2-t1">单样本 t</a>
+    <a class="nav-link nav-link-sub" href="#s2-t2">双样本 t</a>
+    <a class="nav-link nav-link-sub" href="#s2-paired">配对 t</a>
+    <a class="nav-link" href="#s2-chi">χ² 检验</a>
+    <a class="nav-link" href="#s2-f">F 检验</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-label">III · 似然比与NP引理</div>
+    <a class="nav-link" href="#s3-np">Neyman-Pearson 引理</a>
+    <a class="nav-link" href="#s3-lr">似然比检验</a>
+    <a class="nav-link" href="#s3-ump">UMP 检验</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-label">IV · 共轭先验</div>
+    <a class="nav-link" href="#s4-intro">共轭分布概述</a>
+    <a class="nav-link" href="#s4-bb">Beta–Binomial</a>
+    <a class="nav-link" href="#s4-gp">Gamma–Poisson</a>
+    <a class="nav-link" href="#s4-nn">Normal–Normal</a>
+    <a class="nav-link" href="#s4-ng">Normal–Gamma</a>
+    <a class="nav-link" href="#s4-dm">Dirichlet–Multinomial</a>
+    <a class="nav-link" href="#s4-table">共轭汇总表</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-label">V · 贝叶斯检验</div>
+    <a class="nav-link" href="#s5-bf">贝叶斯因子</a>
+    <a class="nav-link" href="#s5-posterior">后验概率检验</a>
+    <a class="nav-link" href="#s5-credible">可信区间</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-label">VI · 例题</div>
+    <a class="nav-link" href="#ex1">Z/t 检验例题</a>
+    <a class="nav-link" href="#ex2">χ² 检验例题</a>
+    <a class="nav-link" href="#ex3">NP 引理例题</a>
+    <a class="nav-link" href="#ex4">Beta-Binomial 例题</a>
+    <a class="nav-link" href="#ex5">Normal 共轭例题</a>
+    <a class="nav-link" href="#ex6">贝叶斯因子例题</a>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<main id="main">
+
+<!-- ════════════════════════════════════ TITLE -->
+<div>
+  <h1><span class="ch">统计推断完全参考</span>假设检验与共轭分布</h1>
+  <div class="page-intro">
+    本文档系统覆盖 <strong>频率派假设检验</strong>（Z, t, χ², F，及 NP 引理/UMP 检验）与 <strong>贝叶斯共轭体系</strong>（Beta-Binomial, Gamma-Poisson, Normal-Normal/Gamma, Dirichlet-Multinomial），并配有完整推导与例题。适用于量化研究 / 量化交易面试的统计板块备考。
+  </div>
+</div>
+
+<!-- ════════════════════════════════════ SECTION 1 -->
+<h2 id="s1" class="section-anchor">I · 假设检验基本框架</h2>
+
+<p>假设检验的核心逻辑：在<strong>零假设 \(H_0\)</strong> 成立的前提下，计算观测数据或更极端情况出现的概率（p 值），若该概率极小则拒绝 \(H_0\)。</p>
+
+<div class="def-box">
+  <div class="def-label">基本设置</div>
+  <p><strong>零假设 \(H_0\)</strong>：待检验的"默认"命题，通常为"无效应"、"参数等于某值"。</p>
+  <p><strong>备择假设 \(H_1\)</strong>：与 \(H_0\) 对立的命题。</p>
+  <p><strong>检验统计量 \(T\)</strong>：由样本计算的量，其在 \(H_0\) 下的分布已知。</p>
+  <p><strong>拒绝域 \(\mathcal{C}\)</strong>：当 \(T \in \mathcal{C}\) 时拒绝 \(H_0\)。</p>
+</div>
+
+<h3 id="s1-errors">两类错误与检验功效</h3>
+
+<table>
+  <tr><th>决策 \ 真实状态</th><th>\(H_0\) 为真</th><th>\(H_1\) 为真</th></tr>
+  <tr><td>拒绝 \(H_0\)</td><td><span class="tag tag-red">第一类错误 α</span> 虚警</td><td>✓ 正确拒绝（功效 \(1-\beta\)）</td></tr>
+  <tr><td>不拒绝 \(H_0\)</td><td>✓ 正确保留</td><td><span class="tag tag-gold">第二类错误 β</span> 漏警</td></tr>
+</table>
+
+<div class="math-block gold">
+  $$\alpha = P(\text{拒绝} H_0 \mid H_0 \text{ 为真}) \qquad \beta = P(\text{不拒绝} H_0 \mid H_1 \text{ 为真})$$
+  $$\text{检验功效 (Power)} = 1 - \beta = P(\text{拒绝} H_0 \mid H_1 \text{ 为真})$$
+</div>
+
+<div class="thm-box">
+  <div class="thm-label">权衡关系</div>
+  <p>在样本量固定时，降低 α（更严格的显著性水平）会增大 β（降低功效）。提升功效的方法：增大样本量 n、选更优检验统计量、或当备择假设更远离零假设时。</p>
+</div>
+
+<h4>功效函数</h4>
+<p>对参数 \(\theta\) 的假设，功效函数定义为</p>
+<div class="math-block">
+  $$\pi(\theta) = P_\theta(T \in \mathcal{C})$$
+</div>
+<p>当 \(\theta \in H_0\) 时，\(\pi(\theta) \leq \alpha\)；当 \(\theta \in H_1\) 时，\(\pi(\theta)\) 越大越好（趋向 1）。</p>
+
+<h3 id="s1-pval">p 值</h3>
+
+<div class="def-box">
+  <div class="def-label">定义</div>
+  <p>p 值是在 \(H_0\) 成立条件下，观测到当前统计量 \(t_{\text{obs}}\) 或更极端值的概率：</p>
+  <div class="math-block" style="margin-top:8px;">
+    $$p = P_{H_0}(T \geq t_{\text{obs}}) \text{ （单侧右尾）}$$
+    $$p = 2 \cdot P_{H_0}(T \geq |t_{\text{obs}}|) \text{ （双侧）}$$
+  </div>
+  <p style="margin-top:8px;">若 \(p \leq \alpha\)，则在显著性水平 α 下拒绝 \(H_0\)。</p>
+</div>
+
+<div class="warn"><strong>常见误解：</strong> p 值 <em>不是</em> "\(H_0\) 为真的概率"，也不是"效应大小"的度量。它是在 \(H_0\) 下数据的极端程度。</div>
+
+<h3 id="s1-ci">置信区间与检验的对偶性</h3>
+
+<div class="thm-box">
+  <div class="thm-label">对偶定理</div>
+  <p>\(H_0: \theta = \theta_0\) 在显著性水平 α 下被双侧检验拒绝，当且仅当 \(\theta_0\) <strong>不在</strong> θ 的 \((1-\alpha)\times 100\%\) 置信区间内。</p>
+</div>
+
+<div class="math-block">
+  $$\text{CI}_{1-\alpha} = \left[\hat\theta - z_{\alpha/2}\frac{\sigma}{\sqrt n},\; \hat\theta + z_{\alpha/2}\frac{\sigma}{\sqrt n}\right]$$
+</div>
+
+<!-- ════════════════════════════════════ SECTION 2 -->
+<h2 id="s2-z" class="section-anchor">II · 频率派经典检验</h2>
+
+<h3>2.1 Z 检验（总体方差已知）</h3>
+
+<p>用于检验 <strong>正态总体均值</strong>（σ² 已知）或 <strong>大样本均值</strong>（由 CLT）。</p>
+
+<div class="math-block gold">
+  $$Z = \frac{\bar X - \mu_0}{\sigma / \sqrt{n}} \xrightarrow{H_0} \mathcal{N}(0,1)$$
+</div>
+
+<table>
+  <tr><th>检验类型</th><th>备择假设</th><th>拒绝域（显著性 α）</th></tr>
+  <tr><td>双侧</td><td>\(H_1: \mu \neq \mu_0\)</td><td>\(|Z| > z_{\alpha/2}\)</td></tr>
+  <tr><td>右侧</td><td>\(H_1: \mu > \mu_0\)</td><td>\(Z > z_\alpha\)</td></tr>
+  <tr><td>左侧</td><td>\(H_1: \mu < \mu_0\)</td><td>\(Z < -z_\alpha\)</td></tr>
+</table>
+
+<p>其中 \(z_\alpha = \Phi^{-1}(1-\alpha)\)，常用值：\(z_{0.05}=1.645,\; z_{0.025}=1.96,\; z_{0.005}=2.576\)。</p>
+
+<h3 id="s2-t">2.2 t 检验（总体方差未知）</h3>
+
+<h4 id="s2-t1">单样本 t 检验</h4>
+
+<div class="math-block gold">
+  $$t = \frac{\bar X - \mu_0}{S / \sqrt{n}} \xrightarrow{H_0} t(n-1)$$
+  $$\text{其中} \quad S^2 = \frac{1}{n-1}\sum_{i=1}^n (X_i - \bar X)^2$$
+</div>
+
+<details>
+<summary>▸ 为何服从 t 分布？推导</summary>
+<div class="math-block">
+  $$\bar X \sim \mathcal{N}(\mu_0, \sigma^2/n), \quad \frac{(n-1)S^2}{\sigma^2} \sim \chi^2(n-1), \quad \bar X \perp S^2$$
+  $$t = \frac{(\bar X - \mu_0)/(\sigma/\sqrt{n})}{\sqrt{(n-1)S^2/[\sigma^2(n-1)]}} = \frac{Z}{\sqrt{V/(n-1)}} \sim t(n-1)$$
+</div>
+</details>
+
+<h4 id="s2-t2">双样本 t 检验（等方差）</h4>
+
+<p>设 \(X_1,...,X_m \sim \mathcal{N}(\mu_1,\sigma^2)\)，\(Y_1,...,Y_n \sim \mathcal{N}(\mu_2,\sigma^2)\)，检验 \(H_0: \mu_1=\mu_2\)。</p>
+
+<div class="math-block gold">
+  $$t = \frac{\bar X - \bar Y}{S_p\sqrt{1/m+1/n}} \sim t(m+n-2)$$
+  $$S_p^2 = \frac{(m-1)S_X^2 + (n-1)S_Y^2}{m+n-2} \quad \text{（合并方差估计）}$$
+</div>
+
+<h4>Welch t 检验（方差不等）</h4>
+
+<div class="math-block">
+  $$t = \frac{\bar X - \bar Y}{\sqrt{S_X^2/m + S_Y^2/n}} \sim t(\nu)$$
+  $$\nu = \frac{(S_X^2/m + S_Y^2/n)^2}{\dfrac{(S_X^2/m)^2}{m-1} + \dfrac{(S_Y^2/n)^2}{n-1}} \quad \text{（Welch-Satterthwaite 自由度）}$$
+</div>
+
+<h4 id="s2-paired">配对 t 检验</h4>
+
+<p>设 \(D_i = X_i - Y_i\)，检验 \(H_0: \mu_D = 0\)，等价于单样本 t 检验：</p>
+
+<div class="math-block gold">
+  $$t = \frac{\bar D}{S_D/\sqrt{n}} \sim t(n-1)$$
+</div>
+
+<div class="note"><strong>何时用配对？</strong> 当两组观测有自然对应关系（同一被试前后测、同一股票的两个时段），配对设计通过消除个体差异来提升功效。</div>
+
+<h3 id="s2-chi">2.3 χ² 检验</h3>
+
+<h4>方差检验</h4>
+
+<div class="math-block">
+  $$\chi^2 = \frac{(n-1)S^2}{\sigma_0^2} \sim \chi^2(n-1) \quad (H_0: \sigma^2 = \sigma_0^2)$$
+</div>
+
+<h4>拟合优度检验（Goodness of Fit）</h4>
+
+<p>检验 \(k\) 个类别的观测频率是否符合理论分布：</p>
+
+<div class="math-block gold">
+  $$\chi^2 = \sum_{i=1}^k \frac{(O_i - E_i)^2}{E_i} \xrightarrow{H_0} \chi^2(k-1-p)$$
+</div>
+
+<p>其中 \(O_i\) 为观测频数，\(E_i = n p_i\) 为期望频数，\(p\) 为需估计的参数数量。要求 \(E_i \geq 5\)。</p>
+
+<h4>独立性检验（列联表）</h4>
+
+<p>对 \(r \times c\) 列联表，检验行变量与列变量独立：</p>
+
+<div class="math-block gold">
+  $$\chi^2 = \sum_{i=1}^r\sum_{j=1}^c \frac{(O_{ij} - E_{ij})^2}{E_{ij}} \xrightarrow{H_0} \chi^2((r-1)(c-1))$$
+  $$E_{ij} = \frac{R_i \cdot C_j}{n}$$
+</div>
+
+<h3 id="s2-f">2.4 F 检验</h3>
+
+<h4>方差齐性检验</h4>
+
+<div class="math-block gold">
+  $$F = \frac{S_X^2}{S_Y^2} \sim F(m-1, n-1) \quad (H_0: \sigma_X^2 = \sigma_Y^2)$$
+</div>
+
+<h4>方差分析（ANOVA）</h4>
+
+<div class="math-block">
+  $$F = \frac{MS_{\text{Between}}}{MS_{\text{Within}}} = \frac{SS_B/(k-1)}{SS_W/(N-k)} \sim F(k-1, N-k)$$
+  $$SS_B = \sum_{j=1}^k n_j(\bar X_j - \bar X)^2, \quad SS_W = \sum_{j=1}^k \sum_{i=1}^{n_j}(X_{ij}-\bar X_j)^2$$
+</div>
+
+<!-- ════════════════════════════════════ SECTION 3 -->
+<h2 id="s3-np" class="section-anchor">III · 似然比检验与 Neyman-Pearson 理论</h2>
+
+<h3>3.1 Neyman-Pearson 引理（最优简单假设检验）</h3>
+
+<div class="thm-box">
+  <div class="thm-label">Neyman-Pearson 引理</div>
+  <p>检验 <strong>简单</strong> 对 <strong>简单</strong> 假设：\(H_0: \theta = \theta_0\) vs \(H_1: \theta = \theta_1\)。</p>
+  <p>在所有水平为 α 的检验中，以下<strong>似然比检验</strong>是<strong>最大功效的（Most Powerful, MP）</strong>：</p>
+  <div class="math-block" style="margin-top:8px;">
+    $$\phi(\mathbf{x}) = \begin{cases}1 & \text{若 } \Lambda(\mathbf{x}) = \dfrac{L(\theta_1;\mathbf{x})}{L(\theta_0;\mathbf{x})} > k \\ \gamma & \text{若 } \Lambda(\mathbf{x}) = k \\ 0 & \text{若 } \Lambda(\mathbf{x}) < k\end{cases}$$
+  </div>
+  <p style="margin-top:8px;">其中 k 由 \(E_{\theta_0}[\phi(\mathbf{x})] = \alpha\) 确定（γ 为随机化参数，保证精确水平 α）。</p>
+</div>
+
+<details>
+<summary>▸ 直觉理解</summary>
+<p style="padding:8px 0;">似然比 Λ(x) 越大，说明数据在 \(H_1\) 下比在 \(H_0\) 下出现的可能性越大。NP 引理说的是：按 Λ 排序，在使虚警率 = α 的前提下，割取最高分位数作拒绝域，就能使检测率最大。</p>
+</details>
+
+<h3 id="s3-lr">3.2 广义似然比检验（GLRT）</h3>
+
+<p>用于复合假设 \(H_0: \theta \in \Theta_0\) vs \(H_1: \theta \in \Theta_1\)：</p>
+
+<div class="math-block gold">
+  $$\Lambda(\mathbf{x}) = \frac{\sup_{\theta\in\Theta_0} L(\theta;\mathbf{x})}{\sup_{\theta\in\Theta} L(\theta;\mathbf{x})} = \frac{L(\hat\theta_0)}{L(\hat\theta_{\text{MLE}})}$$
+</div>
+
+<p>拒绝域：\(\Lambda(\mathbf{x}) \leq c\)（等价地，\(-2\log\Lambda \geq \chi^2_\alpha(r)\)），其中 r 为约束数量。</p>
+
+<div class="thm-box">
+  <div class="thm-label">Wilks 定理</div>
+  <p>在正则条件下，\(-2\log\Lambda \xrightarrow{d} \chi^2(r)\)（\(n\to\infty\)），其中 r = \(\dim\Theta - \dim\Theta_0\)。</p>
+</div>
+
+<h3 id="s3-ump">3.3 一致最大功效检验（UMP）</h3>
+
+<div class="def-box">
+  <div class="def-label">定义</div>
+  <p>若检验 \(\phi^*\) 对 \(H_1\) 中<strong>所有</strong> θ 都是 MP，则称 \(\phi^*\) 为<strong>一致最大功效检验（UMP）</strong>。</p>
+</div>
+
+<p>对指数族分布 \(f(x;\theta) = h(x)\exp[\eta(\theta)T(x) - A(\theta)]\)，单调似然比（MLR）性质保证 UMP 存在：</p>
+
+<div class="math-block">
+  $$H_0: \theta \leq \theta_0 \text{ vs } H_1: \theta > \theta_0 \quad \Rightarrow \quad \text{拒绝域} = \{T(\mathbf{x}) > c\}$$
+</div>
+
+<div class="note"><strong>UMP 的局限：</strong> 双侧备择假设 \(H_1: \theta \neq \theta_0\) 通常不存在 UMP（拒绝域左右各放一半，无法同时最优）。此时转而寻求<strong>无偏检验</strong>中的 UMP（UMPU）。</div>
+
+<!-- ════════════════════════════════════ SECTION 4 -->
+<h2 id="s4-intro" class="section-anchor">IV · 共轭先验与贝叶斯更新</h2>
+
+<p>在贝叶斯推断中，若先验分布与似然函数属于同一参数族，则后验分布与先验同族，称为<strong>共轭先验</strong>。</p>
+
+<div class="math-block teal">
+  $$\underbrace{p(\theta \mid \mathbf{x})}_{\text{后验}} \propto \underbrace{L(\theta;\mathbf{x})}_{\text{似然}} \cdot \underbrace{p(\theta)}_{\text{先验}}$$
+</div>
+
+<div class="thm-box">
+  <div class="thm-label">共轭的好处</div>
+  <p>先验 → 后验有解析表达式，无需 MCMC；先验超参数有直观的"伪数据"解释（如 Beta(α,β) 中 α 对应"伪成功次数"）；序贯更新极为方便。</p>
+</div>
+
+<!-- ─── BETA-BINOMIAL ─── -->
+<h3 id="s4-bb">4.1 Beta–Binomial 共轭</h3>
+
+<p>模型：\(X|\theta \sim \text{Binomial}(n, \theta)\)，先验：\(\theta \sim \text{Beta}(\alpha, \beta)\)。</p>
+
+<div class="math-block gold">
+  $$p(\theta) = \frac{\theta^{\alpha-1}(1-\theta)^{\beta-1}}{B(\alpha,\beta)}, \quad \theta \in (0,1)$$
+</div>
+
+<p>似然：</p>
+<div class="math-block">
+  $$L(\theta; x) = \binom{n}{x}\theta^x(1-\theta)^{n-x}$$
+</div>
+
+<p>后验：</p>
+<div class="math-block gold">
+  $$\theta | X=x \;\sim\; \text{Beta}(\alpha + x,\; \beta + n - x)$$
+</div>
+
+<details>
+<summary>▸ 推导</summary>
+<div class="math-block">
+  $$p(\theta|x) \propto \theta^x(1-\theta)^{n-x} \cdot \theta^{\alpha-1}(1-\theta)^{\beta-1} = \theta^{(\alpha+x)-1}(1-\theta)^{(\beta+n-x)-1}$$
+</div>
+<p>这正好是 Beta(α+x, β+n-x) 的核，故后验确为此分布。</p>
+</details>
+
+<div class="summary-grid">
+  <div class="summary-card">
+    <div class="card-title">先验均值</div>
+    <div class="card-body">\(\dfrac{\alpha}{\alpha+\beta}\)</div>
+  </div>
+  <div class="summary-card">
+    <div class="card-title">后验均值</div>
+    <div class="card-body">\(\dfrac{\alpha+x}{\alpha+\beta+n}\)</div>
+  </div>
+  <div class="summary-card">
+    <div class="card-title">后验众数（MAP）</div>
+    <div class="card-body">\(\dfrac{\alpha+x-1}{\alpha+\beta+n-2}\)</div>
+  </div>
+  <div class="summary-card">
+    <div class="card-title">后验方差</div>
+    <div class="card-body">\(\dfrac{(\alpha+x)(\beta+n-x)}{(\alpha+\beta+n)^2(\alpha+\beta+n+1)}\)</div>
+  </div>
+</div>
+
+<div class="note"><strong>超参数解释：</strong> \(\alpha\) ≈ 先验中"成功"的伪次数，\(\beta\) ≈ "失败"的伪次数，\(\alpha+\beta\) ≈ 先验信息量（等效样本量）。当 \(n \to \infty\)，后验均值 → MLE \(x/n\)。</div>
+
+<p><strong>后验预测分布</strong>（边际化 θ）：</p>
+<div class="math-block">
+  $$P(\tilde X = k | X=x) = \binom{m}{k}\frac{B(\alpha+x+k,\;\beta+n-x+m-k)}{B(\alpha+x,\;\beta+n-x)}$$
+</div>
+<p>即 Beta-Binomial 分布。</p>
+
+<!-- ─── GAMMA-POISSON ─── -->
+<h3 id="s4-gp">4.2 Gamma–Poisson 共轭</h3>
+
+<p>模型：\(X_1,...,X_n|\lambda \sim \text{Poisson}(\lambda)\)，先验：\(\lambda \sim \text{Gamma}(a, b)\)（rate 参数化：均值 = a/b）。</p>
+
+<div class="math-block gold">
+  $$p(\lambda) = \frac{b^a}{\Gamma(a)}\lambda^{a-1}e^{-b\lambda}, \quad \lambda > 0$$
+</div>
+
+<div class="math-block gold">
+  $$\lambda | \mathbf{x} \;\sim\; \text{Gamma}\!\left(a + \sum x_i,\; b + n\right)$$
+</div>
+
+<details>
+<summary>▸ 推导</summary>
+<div class="math-block">
+  $$L(\lambda) = \prod_i \frac{\lambda^{x_i}e^{-\lambda}}{x_i!} \propto \lambda^{\sum x_i}e^{-n\lambda}$$
+  $$p(\lambda|x) \propto \lambda^{\sum x_i}e^{-n\lambda}\cdot \lambda^{a-1}e^{-b\lambda} = \lambda^{(a+\sum x_i)-1}e^{-(b+n)\lambda}$$
+</div>
+</details>
+
+<div class="summary-grid">
+  <div class="summary-card">
+    <div class="card-title">后验均值</div>
+    <div class="card-body">\(\dfrac{a + \sum x_i}{b + n}\)</div>
+  </div>
+  <div class="summary-card">
+    <div class="card-title">收缩形式</div>
+    <div class="card-body">\(= w\bar x + (1-w)\dfrac{a}{b}\)<br>其中 \(w = \dfrac{n}{n+b}\)</div>
+  </div>
+  <div class="summary-card">
+    <div class="card-title">后验 MAP</div>
+    <div class="card-body">\(\dfrac{a + \sum x_i - 1}{b + n}\)</div>
+  </div>
+</div>
+
+<!-- ─── NORMAL-NORMAL ─── -->
+<h3 id="s4-nn">4.3 Normal–Normal 共轭（方差已知）</h3>
+
+<p>模型：\(X_i|\mu \sim \mathcal{N}(\mu, \sigma^2)\)（\(\sigma^2\) 已知，n 个观测），先验：\(\mu \sim \mathcal{N}(\mu_0, \tau^2)\)。</p>
+
+<div class="math-block gold">
+  $$\mu | \mathbf{x} \;\sim\; \mathcal{N}\!\left(\mu_n,\, \tau_n^2\right)$$
+  $$\frac{1}{\tau_n^2} = \frac{1}{\tau^2} + \frac{n}{\sigma^2} \qquad \mu_n = \tau_n^2\!\left(\frac{\mu_0}{\tau^2} + \frac{n\bar x}{\sigma^2}\right)$$
+</div>
+
+<details>
+<summary>▸ 精度（Precision）形式推导</summary>
+<p>设精度 \(\kappa = 1/\sigma^2\)，先验精度 \(\kappa_0 = 1/\tau^2\)：</p>
+<div class="math-block">
+  $$p(\mu|x) \propto \exp\!\left[-\frac{n}{2\sigma^2}(\bar x - \mu)^2 - \frac{1}{2\tau^2}(\mu-\mu_0)^2\right]$$
+</div>
+<p>展开 μ 的二次项，合并 μ² 系数得精度，合并线性系数得后验均值。关键步骤：</p>
+<div class="math-block">
+  $$\kappa_n = \kappa_0 + n\kappa, \qquad \mu_n = \frac{\kappa_0\mu_0 + n\kappa\bar x}{\kappa_n}$$
+</div>
+<p>即后验均值是先验均值和样本均值的<strong>精度加权平均</strong>。</p>
+</details>
+
+<div class="math-block teal">
+  $$\mu_n = \underbrace{\frac{n/\sigma^2}{1/\tau^2+n/\sigma^2}}_{\text{数据权重}}\bar x \;+\; \underbrace{\frac{1/\tau^2}{1/\tau^2+n/\sigma^2}}_{\text{先验权重}}\mu_0$$
+</div>
+
+<p>此为<strong>收缩估计</strong>：后验均值在先验均值与样本均值之间，权重由各自精度决定。当 \(n \to \infty\)，后验 → \(\mathcal{N}(\bar x, \sigma^2/n)\)（先验被淹没）。</p>
+
+<!-- ─── NORMAL-GAMMA ─── -->
+<h3 id="s4-ng">4.4 Normal–Gamma 共轭（均值与精度均未知）</h3>
+
+<p>模型：\(X_i|\mu,\lambda \sim \mathcal{N}(\mu, 1/\lambda)\)，联合先验：\(\mu|\lambda \sim \mathcal{N}(\mu_0, (n_0\lambda)^{-1})\)，\(\lambda \sim \text{Gamma}(a_0, b_0)\)。</p>
+
+<div class="def-box">
+  <div class="def-label">Normal-Gamma 先验</div>
+  <p>\((\mu,\lambda) \sim \text{NG}(\mu_0, n_0, a_0, b_0)\)</p>
+  <div class="math-block" style="margin-top:6px;">
+    $$p(\mu,\lambda) \propto \lambda^{a_0-\frac12}\exp\!\left[-b_0\lambda - \frac{n_0\lambda}{2}(\mu-\mu_0)^2\right]$$
+  </div>
+</div>
+
+<p>更新规则（观测到 \(n\) 个样本，均值 \(\bar x\)，样本方差 \(s^2\)）：</p>
+
+<div class="math-block gold">
+  $$n_n = n_0 + n, \quad \mu_n = \frac{n_0\mu_0 + n\bar x}{n_0 + n}$$
+  $$a_n = a_0 + \frac{n}{2}, \quad b_n = b_0 + \frac12\sum(x_i-\bar x)^2 + \frac{n_0 n(\bar x-\mu_0)^2}{2(n_0+n)}$$
+</div>
+
+<p>边际后验 \(\mu|\mathbf{x}\) 服从 <strong>t 分布</strong>：\(\mu|\mathbf{x} \sim t_{2a_n}(\mu_n, b_n/(a_n n_n))\)。</p>
+
+<!-- ─── DIRICHLET-MULTINOMIAL ─── -->
+<h3 id="s4-dm">4.5 Dirichlet–Multinomial 共轭</h3>
+
+<p>Beta-Binomial 到 k 个类别的推广。模型：\(\mathbf{X}|\boldsymbol\theta \sim \text{Multinomial}(n,\boldsymbol\theta)\)，先验：\(\boldsymbol\theta \sim \text{Dir}(\boldsymbol\alpha)\)。</p>
+
+<div class="math-block gold">
+  $$p(\boldsymbol\theta) = \frac{\Gamma(\sum_i \alpha_i)}{\prod_i\Gamma(\alpha_i)}\prod_i\theta_i^{\alpha_i-1}, \quad \theta_i>0, \;\sum\theta_i=1$$
+</div>
+
+<div class="math-block gold">
+  $$\boldsymbol\theta|\mathbf{x} \;\sim\; \text{Dir}(\alpha_1+x_1, \alpha_2+x_2, ..., \alpha_k+x_k)$$
+</div>
+
+<div class="summary-grid">
+  <div class="summary-card">
+    <div class="card-title">后验均值</div>
+    <div class="card-body">\(E[\theta_i|\mathbf{x}] = \dfrac{\alpha_i+x_i}{\sum_j(\alpha_j+x_j)}\)</div>
+  </div>
+  <div class="summary-card">
+    <div class="card-title">后验 MAP</div>
+    <div class="card-body">\(\hat\theta_i = \dfrac{\alpha_i+x_i-1}{\sum_j(\alpha_j+x_j)-k}\)</div>
+  </div>
+  <div class="summary-card">
+    <div class="card-title">均匀先验</div>
+    <div class="card-body">令 \(\alpha_i=1\)，后验均值 = Laplace 平滑估计</div>
+  </div>
+</div>
+
+<!-- ─── CONJUGATE TABLE ─── -->
+<h3 id="s4-table">4.6 共轭分布汇总表</h3>
+
+<table>
+  <tr>
+    <th>似然（模型）</th>
+    <th>参数</th>
+    <th>共轭先验</th>
+    <th>后验超参数更新</th>
+  </tr>
+  <tr>
+    <td>Bernoulli / Binomial</td>
+    <td>p</td>
+    <td>Beta(α, β)</td>
+    <td>α + Σxᵢ，β + n − Σxᵢ</td>
+  </tr>
+  <tr>
+    <td>Poisson</td>
+    <td>λ</td>
+    <td>Gamma(a, b)</td>
+    <td>a + Σxᵢ，b + n</td>
+  </tr>
+  <tr>
+    <td>Normal（σ² 已知）</td>
+    <td>μ</td>
+    <td>Normal(μ₀, τ²)</td>
+    <td>精度叠加，精度加权均值</td>
+  </tr>
+  <tr>
+    <td>Normal（μ 已知）</td>
+    <td>σ² (精度λ)</td>
+    <td>Gamma(a, b) / Inv-Gamma(a, b)</td>
+    <td>a + n/2，b + Σ(xᵢ−μ)²/2</td>
+  </tr>
+  <tr>
+    <td>Normal（均值方差均未知）</td>
+    <td>(μ, λ)</td>
+    <td>Normal-Gamma(μ₀,n₀,a,b)</td>
+    <td>见 4.4 节</td>
+  </tr>
+  <tr>
+    <td>Multinomial</td>
+    <td>θ</td>
+    <td>Dirichlet(α)</td>
+    <td>αᵢ + xᵢ</td>
+  </tr>
+  <tr>
+    <td>Exponential</td>
+    <td>λ (rate)</td>
+    <td>Gamma(a, b)</td>
+    <td>a + n，b + Σxᵢ</td>
+  </tr>
+  <tr>
+    <td>Negative Binomial (r 已知)</td>
+    <td>p</td>
+    <td>Beta(α, β)</td>
+    <td>α + nr，β + Σxᵢ</td>
+  </tr>
+  <tr>
+    <td>Geometric</td>
+    <td>p</td>
+    <td>Beta(α, β)</td>
+    <td>α + n，β + Σ(xᵢ−1)</td>
+  </tr>
+  <tr>
+    <td>Pareto (xₘ 已知)</td>
+    <td>α (shape)</td>
+    <td>Gamma(a, b)</td>
+    <td>a + n，b + Σlog(xᵢ/xₘ)</td>
+  </tr>
+</table>
+
+<!-- ════════════════════════════════════ SECTION 5 -->
+<h2 id="s5-bf" class="section-anchor">V · 贝叶斯假设检验</h2>
+
+<h3>5.1 贝叶斯因子（Bayes Factor）</h3>
+
+<div class="def-box">
+  <div class="def-label">定义</div>
+  <p>贝叶斯因子 \(B_{10}\) 量化数据对 \(H_1\) 相对于 \(H_0\) 的支持程度：</p>
+  <div class="math-block" style="margin-top:8px;">
+    $$B_{10} = \frac{P(\mathbf{x}|H_1)}{P(\mathbf{x}|H_0)} = \frac{\int L(\theta_1;\mathbf{x})p(\theta_1|H_1)d\theta_1}{\int L(\theta_0;\mathbf{x})p(\theta_0|H_0)d\theta_0}$$
+  </div>
+</div>
+
+<div class="math-block teal">
+  $$\underbrace{\frac{P(H_1|\mathbf{x})}{P(H_0|\mathbf{x})}}_{\text{后验比}} = B_{10} \times \underbrace{\frac{P(H_1)}{P(H_0)}}_{\text{先验比}}$$
+</div>
+
+<h4>Jeffreys 判断标准</h4>
+
+<table>
+  <tr><th>B₁₀</th><th>log₁₀(B₁₀)</th><th>证据强度</th></tr>
+  <tr><td>1 ~ 3</td><td>0 ~ 0.5</td><td>可忽略</td></tr>
+  <tr><td>3 ~ 10</td><td>0.5 ~ 1</td><td>一般</td></tr>
+  <tr><td>10 ~ 30</td><td>1 ~ 1.5</td><td>强</td></tr>
+  <tr><td>30 ~ 100</td><td>1.5 ~ 2</td><td>很强</td></tr>
+  <tr><td>> 100</td><td>> 2</td><td>决定性</td></tr>
+</table>
+
+<h3 id="s5-posterior">5.2 后验概率检验</h3>
+
+<p>直接计算后验概率，决策规则为：若 \(P(H_0|\mathbf{x}) < c\)（通常 c = 0.05 或 0.5），则拒绝 \(H_0\)。</p>
+
+<div class="math-block">
+  $$P(H_0|\mathbf{x}) = \frac{P(\mathbf{x}|H_0)P(H_0)}{P(\mathbf{x}|H_0)P(H_0) + P(\mathbf{x}|H_1)P(H_1)}$$
+</div>
+
+<h3 id="s5-credible">5.3 贝叶斯可信区间（Credible Interval）</h3>
+
+<div class="def-box">
+  <div class="def-label">定义</div>
+  <p><strong>可信区间</strong> \([l,u]\) 满足 \(P(l \leq \theta \leq u | \mathbf{x}) = 1-\alpha\)。</p>
+  <p><strong>HPD 区间</strong>（Highest Posterior Density）：后验密度最高的那些 θ 值构成的最短区间，满足 HPD \(\geq\) 所有其他等覆盖率区间内的密度。</p>
+</div>
+
+<div class="note"><strong>可信区间 vs 置信区间：</strong> 置信区间是"若重复实验，95% 的区间会覆盖真值"（θ 固定，区间随机）；可信区间是"在数据条件下，θ 落在区间内的概率为 95%"（θ 随机，区间固定）。这是根本性的哲学差异。</div>
+
+<p>对 Normal-Normal 共轭，\(\mu\) 的 \((1-\alpha)\) HPD 区间为：</p>
+<div class="math-block gold">
+  $$\left[\mu_n - z_{\alpha/2}\tau_n,\; \mu_n + z_{\alpha/2}\tau_n\right]$$
+</div>
+
+<!-- ════════════════════════════════════ SECTION 6: EXAMPLES -->
+<h2 id="ex1" class="section-anchor">VI · 例题精讲</h2>
+
+<!-- EXAMPLE 1 -->
+<div class="example">
+  <div class="example-header">例题 1 · Z / t 检验</div>
+  <div class="example-body">
+    <p>某量化策略在过去 36 个交易月产生月超额收益（相对 benchmark），均值 \(\bar x = 0.8\%\)，标准差 \(s = 2.4\%\)。检验该策略是否具有显著正 alpha（\(\alpha = 0.05\)）。同时计算该 t 统计量对应的 p 值。</p>
+  </div>
+  <div class="solution">
+    <div class="solution-header">解题过程</div>
+    <div class="solution-body">
+      <p><strong>步骤 1：建立假设</strong></p>
+      <div class="math-block green">
+        $$H_0: \mu = 0 \qquad H_1: \mu > 0 \quad \text{（右侧检验）}$$
+      </div>
+      <p><strong>步骤 2：计算 t 统计量</strong>（总体方差未知，用样本标准差）</p>
+      <div class="math-block">
+        $$t = \frac{\bar x - 0}{s/\sqrt{n}} = \frac{0.8\%}{2.4\%/\sqrt{36}} = \frac{0.8}{0.4} = 2.0$$
+      </div>
+      <p><strong>步骤 3：确定拒绝域</strong></p>
+      <p>自由度 \(df = 36 - 1 = 35\)，右侧检验临界值 \(t_{0.05}(35) \approx 1.690\)。</p>
+      <p>由于 \(t = 2.0 > 1.690\)，<strong>拒绝 \(H_0\)</strong>。</p>
+      <p><strong>步骤 4：计算 p 值</strong></p>
+      <div class="math-block">
+        $$p = P(t_{35} \geq 2.0) \approx 0.027$$
+      </div>
+      <p>由于 \(p = 0.027 < 0.05\)，在 5% 显著性水平下策略 alpha 显著大于零。</p>
+      <p><strong>结论：</strong> 有足够证据表明策略具有正 alpha，但注意样本量较小，需关注过拟合风险。</p>
+    </div>
+  </div>
+</div>
+
+<!-- EXAMPLE 2 -->
+<div class="example" id="ex2">
+  <div class="example-header">例题 2 · χ² 独立性检验</div>
+  <div class="example-body">
+    <p>分析 500 只股票，按市值（大/中/小）和收益率（正/负）分类，得如下列联表：</p>
+    <table>
+      <tr><th>市值</th><th>正收益</th><th>负收益</th><th>合计</th></tr>
+      <tr><td>大盘</td><td>110</td><td>90</td><td>200</td></tr>
+      <tr><td>中盘</td><td>80</td><td>70</td><td>150</td></tr>
+      <tr><td>小盘</td><td>60</td><td>90</td><td>150</td></tr>
+      <tr><td>合计</td><td>250</td><td>250</td><td>500</td></tr>
+    </table>
+    <p>在 α = 0.05 下检验市值与收益率是否独立。</p>
+  </div>
+  <div class="solution">
+    <div class="solution-header">解题过程</div>
+    <div class="solution-body">
+      <p><strong>步骤 1：假设</strong> \(H_0\)：市值与收益率独立；\(H_1\)：不独立。</p>
+      <p><strong>步骤 2：计算期望频数</strong> \(E_{ij} = R_i C_j / n\)：</p>
+      <div class="math-block">
+        $$E_{11} = \frac{200\times250}{500}=100,\quad E_{12}=100$$
+        $$E_{21} = \frac{150\times250}{500}=75,\quad E_{22}=75$$
+        $$E_{31} = 75,\quad E_{32}=75$$
+      </div>
+      <p><strong>步骤 3：计算 χ² 统计量</strong></p>
+      <div class="math-block">
+        $$\chi^2 = \frac{(110-100)^2}{100}+\frac{(90-100)^2}{100}+\frac{(80-75)^2}{75}+\frac{(70-75)^2}{75}+\frac{(60-75)^2}{75}+\frac{(90-75)^2}{75}$$
+        $$= 1 + 1 + 0.333 + 0.333 + 3 + 3 = 8.667$$
+      </div>
+      <p><strong>步骤 4：拒绝判断</strong></p>
+      <p>自由度 \(df = (3-1)(2-1) = 2\)，\(\chi^2_{0.05}(2) = 5.991\)。</p>
+      <p>由于 \(8.667 > 5.991\)，<strong>拒绝 \(H_0\)</strong>，即市值与收益率之间存在显著关联（p ≈ 0.013）。</p>
+    </div>
+  </div>
+</div>
+
+<!-- EXAMPLE 3 -->
+<div class="example" id="ex3">
+  <div class="example-header">例题 3 · Neyman-Pearson 引理应用</div>
+  <div class="example-body">
+    <p>设 \(X \sim \mathcal{N}(\mu, 1)\)，检验 \(H_0: \mu=0\) vs \(H_1: \mu=1\)，样本量 n=9，显著性水平 α=0.05。</p>
+    <p>(a) 用 NP 引理导出最大功效检验；(b) 计算该检验的功效（Power）；(c) 说明该检验是否为 UMP。</p>
+  </div>
+  <div class="solution">
+    <div class="solution-header">解题过程</div>
+    <div class="solution-body">
+      <p><strong>(a) NP 最大功效检验</strong></p>
+      <p>对数似然比：</p>
+      <div class="math-block">
+        $$\log\Lambda = \log\frac{L(1;\mathbf{x})}{L(0;\mathbf{x})} = \sum_{i=1}^9\left[x_i - \frac{1}{2}\right] = 9\bar x - \frac{9}{2}$$
+      </div>
+      <p>\(\Lambda > k \Leftrightarrow \bar x > c\)，故拒绝域形如 \(\{\bar X > c\}\)（右侧检验）。</p>
+      <p>在 \(H_0\) 下，\(\bar X \sim \mathcal{N}(0, 1/9)\)，确定 c：</p>
+      <div class="math-block">
+        $$P_{H_0}(\bar X > c) = 0.05 \Rightarrow c = z_{0.05}/\sqrt{9} = 1.645/3 \approx 0.548$$
+      </div>
+      <p><strong>最大功效检验：拒绝域 = \(\{\bar X > 0.548\}\)</strong></p>
+
+      <p><strong>(b) 计算功效</strong></p>
+      <p>在 \(H_1: \mu=1\) 下，\(\bar X \sim \mathcal{N}(1, 1/9)\)：</p>
+      <div class="math-block green">
+        $$\text{Power} = P_{\mu=1}(\bar X > 0.548) = P\!\left(Z > \frac{0.548-1}{1/3}\right) = P(Z > -1.356) = \Phi(1.356) \approx 0.913$$
+      </div>
+
+      <p><strong>(c) UMP 讨论</strong></p>
+      <p>对单侧备择 \(H_1: \mu > 0\)，正态族具有 MLR 性质（充分统计量 \(\bar X\) 在 μ 方向单调），故同样的拒绝域 \(\{\bar X > 0.548\}\) 是 <strong>UMP 检验</strong>（对所有 \(\mu > 0\) 均最大功效）。但对双侧备择 \(H_1: \mu \neq 0\) 则不是 UMP。</p>
+    </div>
+  </div>
+</div>
+
+<!-- EXAMPLE 4 -->
+<div class="example" id="ex4">
+  <div class="example-header">例题 4 · Beta–Binomial 贝叶斯更新</div>
+  <div class="example-body">
+    <p>某量化信号的"命中率"（预测方向正确的概率）\(\theta\) 未知。历史基础判断认为命中率约 55%，等效信息量约 20 次交易。</p>
+    <p>新的 60 笔交易中，35 笔方向预测正确。</p>
+    <p>(a) 写出先验分布；(b) 求后验分布；(c) 求后验均值和 95% 可信区间；(d) 检验 \(H_0: \theta \leq 0.5\)（计算后验概率）。</p>
+  </div>
+  <div class="solution">
+    <div class="solution-header">解题过程</div>
+    <div class="solution-body">
+      <p><strong>(a) 先验</strong></p>
+      <p>等效样本量 20，先验均值 0.55：</p>
+      <div class="math-block">
+        $$\frac{\alpha}{\alpha+\beta}=0.55,\quad \alpha+\beta=20 \;\Rightarrow\; \alpha=11,\;\beta=9$$
+      </div>
+      <div class="math-block gold">
+        $$\theta \sim \text{Beta}(11, 9)$$
+      </div>
+
+      <p><strong>(b) 后验</strong></p>
+      <div class="math-block gold">
+        $$\theta | \text{data} \sim \text{Beta}(11+35,\; 9+25) = \text{Beta}(46,\; 34)$$
+      </div>
+
+      <p><strong>(c) 后验均值与可信区间</strong></p>
+      <div class="math-block">
+        $$E[\theta|\text{data}] = \frac{46}{46+34} = \frac{46}{80} = 0.575$$
+      </div>
+      <p>Beta(46,34) 近似于 \(\mathcal{N}(0.575, \sigma^2)\)，后验标准差：</p>
+      <div class="math-block">
+        $$\sigma_n = \sqrt{\frac{46\times34}{80^2\times81}} \approx \sqrt{\frac{1564}{518400}} \approx 0.0549$$
+      </div>
+      <p>95% HPD 近似可信区间（利用正态近似）：</p>
+      <div class="math-block green">
+        $$[0.575 - 1.96\times0.0549,\; 0.575+1.96\times0.0549] \approx [0.467,\; 0.683]$$
+      </div>
+
+      <p><strong>(d) 检验 \(H_0: \theta \leq 0.5\)</strong></p>
+      <div class="math-block">
+        $$P(\theta \leq 0.5 | \text{data}) = I_{0.5}(46, 34) \approx 0.067$$
+      </div>
+      <p>（利用不完全 Beta 函数）</p>
+      <p>后验概率约 6.7%，即 \(P(\theta > 0.5 | \text{data}) \approx 93.3\%\)。在 95% 可信水平下尚不能完全排除 \(\theta \leq 0.5\)，但证据支持命中率确实高于 50%。</p>
+    </div>
+  </div>
+</div>
+
+<!-- EXAMPLE 5 -->
+<div class="example" id="ex5">
+  <div class="example-header">例题 5 · Normal–Normal 共轭更新</div>
+  <div class="example-body">
+    <p>某因子收益率 \(\mu\) 有先验 \(\mu \sim \mathcal{N}(0, \tau^2=0.04)\)（年化 Sharpe 的先验方差为 0.04）。观测到 T=25 年的年化超额收益样本均值 \(\bar x = 0.12\)，已知 \(\sigma^2 = 0.04\)（年化收益率方差）。</p>
+    <p>(a) 求后验分布；(b) 后验均值和后验方差；(c) 与 MLE 比较并解释收缩效应。</p>
+  </div>
+  <div class="solution">
+    <div class="solution-header">解题过程</div>
+    <div class="solution-body">
+      <p><strong>(a) 后验分布</strong></p>
+      <p>先验精度 \(\kappa_0 = 1/\tau^2 = 25\)，数据精度 \(n/\sigma^2 = 25/0.04 = 625\)：</p>
+      <div class="math-block">
+        $$\frac{1}{\tau_n^2} = 25 + 625 = 650 \;\Rightarrow\; \tau_n^2 = 1/650 \approx 0.00154$$
+      </div>
+      <div class="math-block gold">
+        $$\mu_n = \frac{25\times0 + 625\times0.12}{650} = \frac{75}{650} \approx 0.1154$$
+      </div>
+      <div class="math-block gold">
+        $$\mu|\text{data} \sim \mathcal{N}(0.1154,\; 0.00154)$$
+      </div>
+
+      <p><strong>(b) 后验均值 & 方差</strong></p>
+      <p>后验均值 ≈ 0.1154，后验标准差 ≈ 0.0392。</p>
+
+      <p><strong>(c) 收缩分析</strong></p>
+      <p>MLE 估计为 \(\bar x = 0.12\)，后验均值为 0.1154，<strong>向先验均值 0 收缩了约 3.8%</strong>。</p>
+      <div class="math-block teal">
+        $$\mu_n = \underbrace{\frac{625}{650}}_{w=0.962}\times0.12 + \underbrace{\frac{25}{650}}_{1-w=0.038}\times 0 = 0.1154$$
+      </div>
+      <p>由于数据精度（625）远高于先验精度（25），数据主导，收缩很小。若 T 减小（历史数据少），收缩效应更显著——这正是<strong>詹姆斯-斯坦因（James-Stein）收缩</strong>在实际因子选股中的应用原理。</p>
+    </div>
+  </div>
+</div>
+
+<!-- EXAMPLE 6 -->
+<div class="example" id="ex6">
+  <div class="example-header">例题 6 · 贝叶斯因子计算</div>
+  <div class="example-body">
+    <p>检验一枚硬币是否公平。先验 \(P(H_0: \theta=0.5) = P(H_1) = 0.5\)，\(H_1\) 下 \(\theta \sim \text{Beta}(1,1)\)（均匀先验）。投掷 10 次得 7 次正面。</p>
+    <p>(a) 计算边际似然 \(P(\mathbf{x}|H_0)\) 和 \(P(\mathbf{x}|H_1)\)；(b) 计算贝叶斯因子；(c) 计算后验概率 \(P(H_0|\mathbf{x})\)。</p>
+  </div>
+  <div class="solution">
+    <div class="solution-header">解题过程</div>
+    <div class="solution-body">
+      <p><strong>(a) 边际似然</strong></p>
+      <div class="math-block">
+        $$P(\mathbf{x}|H_0) = \binom{10}{7}(0.5)^7(0.5)^3 = 120 \times \frac{1}{1024} = \frac{120}{1024} \approx 0.1172$$
+      </div>
+      <p>在 \(H_1\) 下（对 Beta(1,1) 先验积分）：</p>
+      <div class="math-block">
+        $$P(\mathbf{x}|H_1) = \binom{10}{7}\int_0^1 \theta^7(1-\theta)^3 \cdot 1\, d\theta = \binom{10}{7} B(8,4)$$
+        $$= 120 \times \frac{\Gamma(8)\Gamma(4)}{\Gamma(12)} = 120 \times \frac{7!\cdot 3!}{11!} = 120 \times \frac{5040\times6}{39916800}$$
+        $$= 120 \times \frac{30240}{39916800} = 120 \times \frac{1}{1320} = \frac{120}{1320} = \frac{1}{11} \approx 0.0909$$
+      </div>
+
+      <p><strong>(b) 贝叶斯因子</strong>（支持 \(H_0\) 对 \(H_1\)）</p>
+      <div class="math-block gold">
+        $$B_{01} = \frac{P(\mathbf{x}|H_0)}{P(\mathbf{x}|H_1)} = \frac{120/1024}{1/11} = \frac{120\times11}{1024} = \frac{1320}{1024} \approx 1.289$$
+      </div>
+      <p>即 \(B_{10} = 1/B_{01} \approx 0.776\)，数据对 \(H_0\) 略有支持，但证据极弱（Jeffreys 标准下"可忽略"）。</p>
+
+      <p><strong>(c) 后验概率</strong></p>
+      <div class="math-block green">
+        $$P(H_0|\mathbf{x}) = \frac{B_{01}\times P(H_0)/P(H_1)}{1+B_{01}\times P(H_0)/P(H_1)} = \frac{1.289\times1}{1+1.289\times1} = \frac{1.289}{2.289} \approx 0.563$$
+      </div>
+      <p>7次正面/10次投掷后，硬币公平的后验概率约 56.3%——数据不足以提供强证据说明硬币不公平，这与频率派 p 值（单侧 p ≈ 0.172，双侧 p ≈ 0.344）的结论一致。</p>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════ QUICK REFERENCE -->
+<h2 class="section-anchor">VII · 快速参考：关键分布分位数</h2>
+
+<table>
+  <tr><th>分布</th><th>α=0.10</th><th>α=0.05</th><th>α=0.025</th><th>α=0.01</th><th>α=0.005</th></tr>
+  <tr><td>\(\mathcal{N}(0,1)\)（单尾）</td><td>1.282</td><td>1.645</td><td>1.960</td><td>2.326</td><td>2.576</td></tr>
+  <tr><td>t(10)</td><td>1.372</td><td>1.812</td><td>2.228</td><td>2.764</td><td>3.169</td></tr>
+  <tr><td>t(30)</td><td>1.310</td><td>1.697</td><td>2.042</td><td>2.457</td><td>2.750</td></tr>
+  <tr><td>\(\chi^2(1)\)</td><td>2.706</td><td>3.841</td><td>5.024</td><td>6.635</td><td>7.879</td></tr>
+  <tr><td>\(\chi^2(2)\)</td><td>4.605</td><td>5.991</td><td>7.378</td><td>9.210</td><td>10.597</td></tr>
+  <tr><td>\(\chi^2(5)\)</td><td>9.236</td><td>11.070</td><td>12.833</td><td>15.086</td><td>16.750</td></tr>
+  <tr><td>F(1,30)</td><td>2.88</td><td>4.17</td><td>—</td><td>7.56</td><td>—</td></tr>
+</table>
+
+</main>
+
+<script>
+// ── Progress bar
+const progress = document.getElementById('progress');
+function updateProgress() {
+  const main = document.getElementById('main');
+  const total = document.documentElement.scrollHeight - window.innerHeight;
+  const pct = (window.scrollY / total) * 100;
+  progress.style.width = pct + '%';
+}
+window.addEventListener('scroll', updateProgress, { passive: true });
+
+// ── Active nav highlight
+const sections = document.querySelectorAll('.section-anchor, [id]');
+const navLinks = document.querySelectorAll('.nav-link');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      navLinks.forEach(l => l.classList.remove('active'));
+      const active = document.querySelector(`.nav-link[href="#${e.target.id}"]`);
+      if (active) active.classList.add('active');
+    }
+  });
+}, { rootMargin: '-20% 0px -70% 0px' });
+document.querySelectorAll('[id]').forEach(el => observer.observe(el));
+
+// ── Smooth scroll
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', e => {
+    e.preventDefault();
+    const target = document.querySelector(a.getAttribute('href'));
+    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+});
+</script>
+</body>
+</html>
