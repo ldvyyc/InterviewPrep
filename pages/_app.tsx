@@ -9,9 +9,13 @@ import Head from 'next/head'
 
 const AuroraBackground = dynamic(
   () => import('@/components/AuroraBackground'),
-  { ssr: false }
+  { ssr: false, loading: () => null }
 )
 
+const ThemeToggle = dynamic(
+  () => import('@/components/ThemeToggle'),
+  { ssr: false, loading: () => null }
+)
 
 export default function App({ Component, pageProps }: AppProps) {
   return (
@@ -28,7 +32,7 @@ export default function App({ Component, pageProps }: AppProps) {
         `}} />
       </Head>
 
-      {/* Fixed aurora background — z-index 0 */}
+      {/* Fixed aurora background — z-index 0, auto-hidden in light mode via CSS */}
       <AuroraBackground />
 
       {/* Content wrapper — explicitly above aurora */}
@@ -36,6 +40,8 @@ export default function App({ Component, pageProps }: AppProps) {
         <Component {...pageProps} />
       </div>
 
+      {/* Theme toggle — on EVERY page, fixed bottom-left */}
+      <ThemeToggle />
     </>
   )
 }

@@ -62,21 +62,21 @@ export default function AuroraBackground() {
         }
       `}</style>
 
-      {/* Base dark gradient */}
-      <div style={{
+      {/* Base dark gradient — id lets CSS hide it in light mode */}
+      <div id="ldv-aurora-base" style={{
         position: "fixed", inset: 0, zIndex: 0,
         background: "radial-gradient(ellipse at 50% 0%, #0A0C14 0%, #050508 55%, #030305 100%)",
       }} />
 
       {/* Noise grain */}
-      <div style={{
+      <div id="ldv-aurora-noise" style={{
         position: "fixed", inset: 0, zIndex: 0, pointerEvents: "none",
         backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E")`,
         opacity: 0.55,
       }} />
 
       {/* Blobs — mouse parallax wrapper */}
-      <div ref={containerRef} style={{
+      <div id="ldv-aurora-blobs" ref={containerRef} style={{
         position: "fixed", inset: "-60px", zIndex: 0, pointerEvents: "none",
         transition: "transform 0.8s cubic-bezier(0.25,0.46,0.45,0.94)",
       }}>

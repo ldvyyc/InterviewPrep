@@ -236,3 +236,110 @@ a { color: inherit; text-decoration: none; }
 @media (prefers-reduced-motion: reduce) {
   .card, .back-link, .nav-back, .hero-back { transition: none; }
 }
+
+
+/* ═══════════════════════════════════════════════════════════════════
+   LIGHT MODE — [data-theme="light"]
+   Swaps to a soft light background, hides aurora, restores readability
+   ═══════════════════════════════════════════════════════════════════ */
+
+[data-theme="light"] {
+  --brand-bg:     #f4f5f7;
+  --brand-bg2:    #ffffff;
+  --brand-bg3:    #ffffff;
+  --brand-muted:  #9aa0aa;
+  --brand-text:   #1a1b1f;
+  --brand-dim:    #44474d;
+
+  --accent:       #337ea9;
+  --accent-dark:  #2a6589;
+  --bg:           #f4f5f7;
+  --surface:      #ffffff;
+  --border:       #e4e6ea;
+  --text:         #1a1b1f;
+  --text-muted:   #44474d;
+}
+
+/* Light mode page background */
+[data-theme="light"] html,
+[data-theme="light"] body {
+  background: #f4f5f7 !important;
+  color: #1a1b1f;
+}
+
+/* Hide ALL aurora layers in light mode */
+[data-theme="light"] #ldv-aurora-base,
+[data-theme="light"] #ldv-aurora-noise,
+[data-theme="light"] #ldv-aurora-blobs {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  transition: opacity 0.4s ease;
+}
+
+/* Light mode: soft light gradient applied directly to html background */
+[data-theme="light"] html {
+  background: radial-gradient(ellipse at 50% 0%, #ffffff 0%, #f4f5f7 60%, #eceef1 100%) !important;
+  background-attachment: fixed !important;
+}
+
+/* Light mode nav bar */
+[data-theme="light"] .nav {
+  background: rgba(255, 255, 255, 0.88) !important;
+  border-bottom: 1px solid #e4e6ea !important;
+}
+[data-theme="light"] .nav-logo,
+[data-theme="light"] .nav-logo-link { color: #1a1b1f !important; }
+[data-theme="light"] .nav-back { color: #44474d !important; }
+[data-theme="light"] .nav-back:hover { color: #337ea9 !important; }
+
+/* Light mode homepage cards */
+[data-theme="light"] .card {
+  background: #ffffff !important;
+  border: 1px solid #e4e6ea !important;
+  backdrop-filter: none !important;
+}
+[data-theme="light"] .card-title { color: #1a1b1f !important; }
+[data-theme="light"] .card-desc { color: #5b6168 !important; }
+[data-theme="light"] .card-count { color: #9aa0aa !important; }
+[data-theme="light"] .card-link:not(.card-disabled):hover .card {
+  border-color: rgba(51, 126, 169, 0.40) !important;
+  box-shadow: 0 4px 20px rgba(51, 126, 169, 0.10) !important;
+}
+
+/* Light mode hero text */
+[data-theme="light"] .hero-title { color: #1a1b1f !important; }
+[data-theme="light"] .hero-sub { color: #44474d !important; }
+[data-theme="light"] .hero-label { color: #337ea9 !important; }
+[data-theme="light"] .section-label { color: #5b6168 !important; }
+
+/* Light mode meta pills */
+[data-theme="light"] .meta-pill {
+  background: #ffffff !important;
+  border: 1px solid #e4e6ea !important;
+  color: #44474d !important;
+}
+[data-theme="light"] .meta-pill i { color: #337ea9 !important; }
+
+/* Light mode footer */
+[data-theme="light"] .footer { color: #9aa0aa !important; }
+
+/* Light mode database tables */
+[data-theme="light"] .db-table-wrap {
+  background: #ffffff !important;
+  border: 1px solid #e4e6ea !important;
+}
+[data-theme="light"] .db-table th {
+  background: #f7f8fa !important;
+  color: #44474d !important;
+  border-color: #e4e6ea !important;
+}
+[data-theme="light"] .db-table td {
+  color: #44474d !important;
+  border-color: #eceef1 !important;
+}
+[data-theme="light"] .db-table-title { color: #1a1b1f !important; }
+[data-theme="light"] .db-table-filter {
+  background: #ffffff !important;
+  border-color: #e4e6ea !important;
+  color: #1a1b1f !important;
+}

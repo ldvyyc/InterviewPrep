@@ -520,3 +520,56 @@
 [data-theme="light"] .katex-display::-webkit-scrollbar-thumb {
   background: rgba(0,0,0,0.15);
 }
+
+
+/* ═══════════════════════════════════════════════════════════════════
+   LIGHT MODE — bold text & code readability fixes
+   (these were missing → bold showed as near-white on white bg)
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* Bold / strong text — dark color so it's visible on light bg */
+[data-theme="light"] .notion-text b,
+[data-theme="light"] .notion-text strong,
+[data-theme="light"] .notion-page b,
+[data-theme="light"] .notion-page strong {
+  color: #14151a !important;
+  font-weight: 700;
+}
+
+/* Inline code — readable on light bg */
+[data-theme="light"] .notion-inline-code {
+  color: #c0392b !important;
+  background: rgba(192, 57, 43, 0.08) !important;
+}
+
+/* Code blocks — light bg, dark text */
+[data-theme="light"] .notion-code {
+  background: #f6f8fa !important;
+  border: 1px solid #e4e6ea !important;
+}
+[data-theme="light"] .notion-code,
+[data-theme="light"] .notion-code * {
+  color: #24292e !important;
+}
+/* Re-apply prism syntax colors that shouldn't be overridden to dark */
+[data-theme="light"] .notion-code .token.comment { color: #6a737d !important; }
+[data-theme="light"] .notion-code .token.string { color: #032f62 !important; }
+[data-theme="light"] .notion-code .token.keyword { color: #d73a49 !important; }
+[data-theme="light"] .notion-code .token.function { color: #6f42c1 !important; }
+[data-theme="light"] .notion-code .token.number { color: #005cc5 !important; }
+
+/* Copy button in light mode */
+[data-theme="light"] .code-copy-btn {
+  background: rgba(255, 255, 255, 0.92) !important;
+  border: 1px solid #d8dade !important;
+  color: #5b6168 !important;
+}
+[data-theme="light"] .code-copy-btn:hover {
+  border-color: #337ea9 !important;
+  color: #337ea9 !important;
+}
+
+/* KaTeX equations dark on light */
+[data-theme="light"] .katex,
+[data-theme="light"] .notion-equation-inline,
+[data-theme="light"] .notion-equation-block { color: #1c1d1f !important; }
