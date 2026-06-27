@@ -12,6 +12,7 @@ import { config, cardStyles, htmlResourcesForSection } from '@/lib/config'
 import SectionGrid, { CardData, accentForIndex } from '@/components/SectionGrid'
 import DatabaseTable from '@/components/DatabaseTable'
 import { useCopyButtons } from '@/components/useCopyButtons'
+const ThemeToggle = dynamic(() => import('@/components/ThemeToggle'), { ssr: false, loading: () => null })
 import type { ExtendedRecordMap } from 'notion-types'
 
 const Code = dynamic(() => import('react-notion-x/build/third-party/code').then((m) => m.Code))
@@ -53,6 +54,7 @@ export default function NotionPage({ recordMap, title, cards, databases, hasCont
   return (
     <>
       <Head><title>{title} · {config.siteName}</title></Head>
+      <ThemeToggle />
       <div className="page notion-page-wrap">
         <nav className="nav">
           <Link href="/" className="nav-logo nav-logo-link">

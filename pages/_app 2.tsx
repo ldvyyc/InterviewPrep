@@ -12,6 +12,10 @@ const AuroraBackground = dynamic(
   { ssr: false }
 )
 
+const ThemeToggle = dynamic(
+  () => import('@/components/ThemeToggle'),
+  { ssr: false }
+)
 
 export default function App({ Component, pageProps }: AppProps) {
   return (
@@ -36,6 +40,8 @@ export default function App({ Component, pageProps }: AppProps) {
         <Component {...pageProps} />
       </div>
 
+      {/* Theme toggle — fixed bottom-left */}
+      <ThemeToggle />
     </>
   )
 }
